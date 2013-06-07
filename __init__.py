@@ -264,12 +264,12 @@ class QRCode:
                      module_color, background)
         
     def text(self):
-        """This method returns a text based representation of the QR code.
+        """This method returns a string based representation of the QR code.
         The black modules are represented by 1's and the white modules are
         represented by 0's. This is useful for debugging purposes. It can also
         be used to allow a user to write their own output function.
         """
-        builder._text(self.code)
+        return builder._text(self.code)
 
 if __name__ == '__main__':
     code = QRCode('''This is an example!!''')

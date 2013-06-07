@@ -842,7 +842,12 @@ def _text(code):
     """
     buf = io.StringIO()
     
+    border_row = '0' * (len(code[0]) + 2)
+    
+    buf.write(border_row)
+    buf.write('\n')
     for row in code:
+        buf.write('0')
         for bit in row:
             if bit == 1:
                 buf.write('1')
@@ -852,7 +857,10 @@ def _text(code):
             #unset pixels will be spaces.
             else:
                 buf.write(' ')
-        buf.write('\n')
+        buf.write('0\n')
+
+    buf.write(border_row)
+
     return buf.getvalue()
 
 def _svg(code, version, file, scale=1, module_color='black', background=None):
