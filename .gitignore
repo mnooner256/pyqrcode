@@ -1,5 +1,8 @@
 *.png
 *.svg
 *.pyc
+bin
+lib
+include
 __pycache__
 qrtests
