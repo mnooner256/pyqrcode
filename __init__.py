@@ -28,7 +28,9 @@ class QRCode:
         However, there are cases where you may want to specify the various
         properties of the created code manually, this is what the other
         parameters do. Below, you will find a lengthy explanation of what
-        each parameter is for.
+        each parameter is for. Note, the parameter names and values are taken
+        directly from the standards. You may need to familiarize yourself
+        with the terminology of QR codes for the names to make sense.
         
         The error parameter sets the error correction level of the code. There
         are four levels defined by the standard. The first is level 'L' which
@@ -51,13 +53,13 @@ class QRCode:
         be used to guess the smallest possible QR code version that the 
         content will fit inside of. You may want to specify this parameter
         for consistency when generating several QR codes with varying amounts
-        of data.
+        of data. That way all of the generated codes would have the same size.
         
         The mode parameter specifies how the contents will be encoded. By
         default, the best possible encoding for the contents is guessed. There
         are four possible encoding methods. First, is 'numeric' which is
         used to encode integer numbers. Next, is 'alphanumeric' which is
-        used to encode ASCII characters. This mode can use only a limited
+        used to encode some ASCII characters. This mode uses only a limited
         set of characters. Most problematic is that it can only use upper case
         English characters, consequently, the content parameter will be
         subjected to str.upper() before encoding. See tables.ascii_codes for
@@ -178,8 +180,8 @@ class QRCode:
         """This is method helps users determine what scale to use when creating
         a PNG of this QR code. It is meant mostly to be used in the console
         to help a user figure out what scale to use. It will return an integer
-        representing the width and height of the QR code if it was drawn using
-        the given scale.
+        representing the width and height of the QR code in pixels, if it was
+        drawn using the given scale.
         
         Example:
             >>> code = pyqrcode.QRCode("I don't like spam!")
@@ -192,11 +194,11 @@ class QRCode:
         
     def png(self, file, scale=1, module_color=None, background=None):
         """This method writes the QR code out as an PNG image. The resulting
-        PNG has a bit depth of 1, i.e. it is a black and white file. The
-        file parameter is used to specify where to write the image to. It can
-        either be an writable stream or a file path.
+        PNG has a bit depth of 1. The file parameter is used to specify where
+        to write the image to. It can either be an writable stream or a
+        file path.
         
-        The scale parameter is sets how large to draw a single module. By
+        The scale parameter sets how large to draw a single module. By
         default one pixel is used to draw a single module. This may make the
         code to small to be read efficiently. Increasing the scale will make
         the code larger. Only integer scales are usable. This method will
@@ -221,8 +223,8 @@ class QRCode:
             >>> code = pyqrcode.QRCode('Are you suggesting coconuts migrate?')
             >>> code.png('swallow.png', scale=5)
             >>> code.png('swallow.png', scale=5,
-                         black=(0x66, 0x33, 0x0),        #Dark brown
-                         white=(0xff, 0xff, 0xff, 0x88)) #50% transparent white
+                         module_color=(0x66, 0x33, 0x0),      #Dark brown
+                         background=(0xff, 0xff, 0xff, 0x88)) #50% transparent white
         """
         builder._png(self.code, self.version, file, scale,
                      module_color, background)
@@ -232,12 +234,12 @@ class QRCode:
         code is drawn by drawing only the modules corresponding to a 1. They
         are drawn using a line, such that contiguous modules in a row
         are drawn with a single line. The file parameter is used to
-        specify where to write the document to. It can either be an writable
+        specify where to write the document to. It can either be a writable
         stream or a file path. The scale parameter is sets how large to draw
         a single module. By default one pixel is used to draw a single
         module. This may make the code to small to be read efficiently.
-        Increasing the scale will make the code larger. This method will accept
-        fractional scales (e.g. 2.5).
+        Increasing the scale will make the code larger. Unlike the png() method,
+        this will accept fractional scales (e.g. 2.5).
         
         Note, three things are done to make the code more appropriate for
         embedding in a HTML document. The "white" part of the code is actually
@@ -251,7 +253,8 @@ class QRCode:
         background parameter sets what color to use for the background (the
         white part on most QR codes). The parameters can be set to any valid
         SVG or HTML color. If the background is set to None, then no background
-        will be drawn, i.e. the background will be transparent.
+        will be drawn, i.e. the background will be transparent. Note, many color
+        combinations are unreadable by scanners, so be careful.
         
         Example:
             >>> code = pyqrcode.QRCode('Hello. Uhh, can we have your liver?')
@@ -262,8 +265,9 @@ class QRCode:
         
     def text(self):
         """This method returns a text based representation of the QR code.
-        This is useful for debugging purposes. The black modules are represented
-        by 1's and the white modules are represented by 0's.
+        The black modules are represented by 1's and the white modules are
+        represented by 0's. This is useful for debugging purposes. It can also
+        be used to allow a user to write their own output function.
         """
         builder._text(self.code)
 
