@@ -6,3 +6,4 @@ lib
 include
 __pycache__
 qrtests
+_build
