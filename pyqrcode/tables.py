@@ -1,15 +1,19 @@
 #This defines the QR Code's 'mode' which sets what
 #type of code it is along with its size.
 modes = {'numeric':1,
+         '1':1, 1:1,
          'alphanumeric':2,
          'alfanumeric':2,
          'text':2,
+         '2':2, 2:2,
          'binary':4,
          'bin':4,
          'byte':4,
          'bytes':4,
+         '4':4, 4:4,
          'japanese':8,
-         'kanji':8}
+         'kanji':8
+         '8':8, 8:8}
 
 #This defines the amount of error correction. The dictionary
 #allows the user to specify this in several ways.
