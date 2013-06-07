@@ -949,7 +949,7 @@ def _svg(code, version, file, scale=1, module_color='black', background=None):
         
 
     #Close the document
-    file.write("</svg>")
+    file.write("</svg>\n")
     
 def _png(code, version, file, scale=1, module_color=None, background=None):
     """See: pyqrcode.QRCode.png()

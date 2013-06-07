@@ -10,6 +10,7 @@ class QRCode:
     
     Examples:
         >>> from pyqrcode import QRCode
+        >>> import sys
         >>> url = QRCode('http://uca.edu')
         >>> url.svg(sys.stdout, scale=1)
         >>> url.svg('uca.svg', scale=4)
