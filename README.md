@@ -36,7 +36,7 @@ $ python setup.py install
 Usage
 -----
 
-This is the only import you need. The QRCode class will build the code and
+This is the only import you need. The QRCode class will build the code
 render the QR code.
 
 ```python
@@ -46,8 +46,10 @@ render the QR code.
 ### Encoding Data ###
 
 This module supports three encodings for data: numeric, alphanumeric, and
-binary. The numeric type is the most efficient way to encode digits. You can
-use a string containing only digits instead of an actual number.
+binary. The numeric type is the most efficient way to encode digits. As the
+name implys it is designed to encode integers. Some numbers might be two
+large, the object can use a string containing only digits instead of an
+actual number.
 
 ```python
 >>> number = QRCode(123456789012345)
@@ -55,9 +57,10 @@ use a string containing only digits instead of an actual number.
 
 The alphanumeric type is very limited in that it can only encode some ASCII
 characters. It encodes: uppercase letters, 0-9, the horizontal space, and eight
-punctuation characters. To see a complete list of the possible characters that
-can be encoded see the pyqrcode.tables.ascii_codes dictionary. The available
-characters will let you encode a URL (the string is uppercased automatically).
+punctuation characters. A complete list of the possible characters that
+can be encoded can be found in the  pyqrcode.tables.ascii_codes dictionary. The
+available characters will let you encode a URL (the string is uppercased
+automatically).
 
 ```python
 >>> url = QRCode('http://uca.edu')
@@ -70,9 +73,9 @@ must be encoded in binary because of the apostrophe and the new line character.
 >>> life = QRCode('''MR. CREOSOTE: Better get a bucket. I'm going to throw up.
     MAITRE D: Uh, Gaston! A bucket for monsieur. There you are, monsieur.''')
 ```
-There is one other encoding for Kanji characters, this is unimplemented at this
-time because I don't speak Japanese. If anyone wants to help me write an
-encoder for Kanji, shoot me an email.
+There is one other encoding that is used for Kanji characters. This encoding
+is unimplemented at this time because I don't speak Japanese. If anyone wants
+to help me write an encoder for Kanji, shoot me an email.
 
 ### Manually Setting The QR Code's Properties ###
 
@@ -82,10 +85,10 @@ QR code through the QRCode constructor. There are three main properties to a
 QR code.
 
 The _error_ parameter sets the error correction level of the code. Each level
-has an associated name given by a letter: L, M, Q, H; each level can correct up
-to 7, 15, 25, or 30 percoent of the data respectively. There are several ways
-to specify the level, see pyqrcode.tables.modes for all the possible
-values. By default this parameter is set to 'H' which is the highest
+has an associated name given by a letter: L, M, Q, or H; each level can
+correct up to 7, 15, 25, or 30 percent of the data respectively. There are
+several ways to specify the level, see pyqrcode.tables.modes for all the
+possible values. By default this parameter is set to 'H' which is the highest
 possible error correction, but it has the smallest available data
 capacity.
 
@@ -107,7 +110,7 @@ The code below constructs a QR code with 30% error correction, size 27, and
 forces the encoding to be binary (rather than numeric).
 
 ```python
->>> big_code = QRCode(123456789, error='L', version=27, mode='binary')
+>>> big_code = QRCode('0987654321', error='L', version=27, mode='binary')
 ```
 
 ### Rendering ###
