@@ -1,3 +1,6 @@
+"""This module does the actual generation of the QR Codes. The QRCodeBuilder
+builds the code. While the various output methods draw the code into a file.
+""""
 import pyqrcode.tables as tables
 import io
 import sys
@@ -625,8 +628,8 @@ class QRCodeBuilder:
 
         #DEBUG CODE!!!
         #Save all of the masks as png files
-        for i, m in enumerate(masks):
-            _png(m, self.version, 'mask-{}.png'.format(i), 5)
+        #for i, m in enumerate(masks):
+        #    _png(m, self.version, 'mask-{}.png'.format(i), 5)
             
         return masks
     
@@ -747,7 +750,6 @@ class QRCodeBuilder:
             total_pixels = len(mask)**2
             ratio = nblack / total_pixels
             percent = (ratio * 100) - 50
-            print(percent)
             self.scores[n][3] = int((abs(int(percent)) / 5) * 10)
             
         
@@ -759,13 +761,13 @@ class QRCodeBuilder:
 
         #DEBUG CODE!!!
         #Prints out a table of scores
-        print('Rule Scores\n      1     2     3     4    Total')
-        for i in range(len(self.scores)):
-            print(i, end='')
-            for s in self.scores[i]:
-                print('{: >6}'.format(s), end='')
-            print('{: >7}'.format(totals[i]))
-        print('Mask Chosen: {}'.format(totals.index(min(totals))))
+        #print('Rule Scores\n      1     2     3     4    Total')
+        #for i in range(len(self.scores)):
+        #    print(i, end='')
+        #    for s in self.scores[i]:
+        #        print('{: >6}'.format(s), end='')
+        #    print('{: >7}'.format(totals[i]))
+        #print('Mask Chosen: {}'.format(totals.index(min(totals))))
 
         #The lowest total wins
         return totals.index(min(totals))
@@ -917,8 +919,8 @@ def _svg(code, version, file, scale=1, module_color='black', background=None):
             elif bit == 0:
                 new_color = 'white'
                 
-            #This is for debugging unfinished QR Codes,
-            #unset pixels will be red
+            #DEBUG CODE!!
+            #In unfinished QR Codes, unset pixels will be red
             #else:
                 #new_color = 'red'
              
