@@ -1,6 +1,6 @@
 """This module does the actual generation of the QR Codes. The QRCodeBuilder
 builds the code. While the various output methods draw the code into a file.
-""""
+"""
 import pyqrcode.tables as tables
 import io
 import sys

@@ -9,6 +9,7 @@ class QRCode:
     You can find the PyPNG module at http://packages.python.org/pypng/.
     
     Examples:
+        >>> from pyqrcode import QRCode
         >>> url = QRCode('http://uca.edu')
         >>> url.svg(sys.stdout, scale=1)
         >>> url.svg('uca.svg', scale=4)
