@@ -1,4 +1,4 @@
-"""This module does the actual generation of the QR Codes. The QRCodeBuilder
+"""This module does the actual generation of the QR codes. The QRCodeBuilder
 builds the code. While the various output methods draw the code into a file.
 """
 import pyqrcode.tables as tables
@@ -6,7 +6,7 @@ import io
 import sys
 
 class QRCodeBuilder:
-    """This class generates a QR Code based on the standard. It is meant to
+    """This class generates a QR code based on the standard. It is meant to
     be used internally, not by users!!!
     
     This class implements the tutorials found at:
@@ -22,14 +22,14 @@ class QRCodeBuilder:
     Also, reference codes were generated at:
         http://www.morovia.com/free-online-barcode-generator/qrcode-maker.php
         
-    QR Code Debugger:
+    QR code Debugger:
         http://qrlogo.kaarposoft.dk/qrdecode.html
     """
     def __init__(self, data, version=1, mode='alphanumeric', error='Q'):
         """See pyqrcode.QRCode for information on the parameters."""
         
         #Set what data we are going to use to generate
-        #the QR Code
+        #the QR code
         if isinstance(data, bytes):
             self.data = data.decode('utf-8')
         elif not isinstance(data, str):
@@ -64,7 +64,7 @@ class QRCodeBuilder:
         #Create the binary data block
         self.add_data()
             
-        #Create the actual QR Code
+        #Create the actual QR code
         self.make_code()
     
     def grouper(self, n, iterable, fillvalue=None):
@@ -88,7 +88,7 @@ class QRCodeBuilder:
         return '{{:0{}b}}'.format(length).format(int(data))
         
     def get_data_length(self):
-        """QR Codes contain a "data length" field. This method creates this
+        """QR codes contain a "data length" field. This method creates this
         field. A binary string representing the appropriate length is
         returned.
         """
@@ -131,13 +131,13 @@ class QRCodeBuilder:
         return encoded
         
     def encode_alphanumeric(self):
-        """This method encodes the QR Code's data if its mode is
+        """This method encodes the QR code's data if its mode is
         alphanumeric. It returns the data encoded as a binary string.
         """
         #Convert the string to upper case
         self.data = self.data.upper()
         
-        #Change the data such that it uses a QR Code ascii table
+        #Change the data such that it uses a QR code ascii table
         ascii = []
         for char in self.data:
             ascii.append(tables.ascii_codes[char])
@@ -155,7 +155,7 @@ class QRCodeBuilder:
             return buf.getvalue()
             
     def encode_numeric(self):
-        """This method encodes the QR Code's data if its mode is
+        """This method encodes the QR code's data if its mode is
         numeric. It returns the data encoded as a binary string.
         """
         with io.StringIO() as buf:
@@ -185,7 +185,7 @@ class QRCodeBuilder:
             return buf.getvalue()
             
     def encode_bytes(self):
-        """This method encodes the QR Code's data if its mode is
+        """This method encodes the QR code's data if its mode is
         8 bit mode. It returns the data encoded as a binary string.
         """
         with io.StringIO() as buf:
@@ -195,10 +195,10 @@ class QRCodeBuilder:
             
             
     def add_data(self):
-        """This function properly constructs a QR Code's data string. It takes
+        """This function properly constructs a QR code's data string. It takes
         into account the interleaving pattern required by the standard.
         """
-        #Encode the data into a QR Code
+        #Encode the data into a QR code
         self.buffer.write(self.binary_string(self.mode, 4))
         self.buffer.write(self.get_data_length())
         self.buffer.write(self.encode())
@@ -282,7 +282,7 @@ class QRCodeBuilder:
 
         if len(payload) > data_capacity:
             raise ValueError('The supplied data will not fit '
-                             'within this version of a QR Code.')
+                             'within this version of a QR code.')
         
         #We must add up to 4 zeros to make up for any shortfall in the
         #length of the data field.
@@ -310,7 +310,7 @@ class QRCodeBuilder:
             return self.binary_string(0, bits_short)
             
     def add_words(self):
-        """The data block must fill the entire data capacity of the QR Code.
+        """The data block must fill the entire data capacity of the QR code.
         If we fall short, then we must add bytes to the end of the encoded
         data field. The value of these bytes are specified in the standard.
         """
@@ -397,7 +397,7 @@ class QRCodeBuilder:
         return mp_co
                     
     def make_code(self):
-        """This method returns the best possible QR Code."""
+        """This method returns the best possible QR code."""
         from copy import deepcopy
         
         #Get the size of the underlying matrix
@@ -419,8 +419,8 @@ class QRCodeBuilder:
         self.code = self.masks[self.best_mask]
         
     def add_detection_pattern(self, m):
-        """This method add the detection patterns to the QR Code. This lets
-        the scanner orient the pattern. It is required for all QR Codes.
+        """This method add the detection patterns to the QR code. This lets
+        the scanner orient the pattern. It is required for all QR codes.
         The detection pattern consists of three boxes located at the upper
         left, upper right, and lower left corners of the matrix. Also, two
         special lines called the timing pattern is also necessary. Finally,
@@ -481,7 +481,7 @@ class QRCodeBuilder:
         
     def add_position_pattern(self, m):
         """This method draws the position adjustment patterns onto the QR 
-        Code. All QR Code versions larger than one require these special boxes
+        Code. All QR code versions larger than one require these special boxes
         called position adjustment patterns.
         """
         #Version 1 does not have a position adjustment pattern
@@ -526,7 +526,7 @@ class QRCodeBuilder:
                         m[i+x][j-x] = 1
                     
     def add_version_pattern(self, m):
-        """For QR Codes with a version 7 or higher, a special pattern
+        """For QR codes with a version 7 or higher, a special pattern
         specifying the code's version is required.
         
         For further information see:
@@ -773,7 +773,7 @@ class QRCodeBuilder:
         return totals.index(min(totals))
         
     def add_type_pattern(self, m, type_bits):
-        """This will add the pattern to the QR Code that represents the error
+        """This will add the pattern to the QR code that represents the error
         level and the type of mask used to make the code.
         """
         field = iter(type_bits)
@@ -837,7 +837,7 @@ def _get_png_size(version, scale):
     return (scale * tables.version_size[version]) + (2 * scale)
     
 def _text(code):
-    """This method returns a text based representation of the QR Code.
+    """This method returns a text based representation of the QR code.
     This is useful for debugging purposes.
     """
     buf = io.StringIO()
@@ -848,7 +848,7 @@ def _text(code):
                 buf.write('1')
             elif bit == 0:
                 buf.write('0')
-            #This is for debugging unfinished QR Codes,
+            #This is for debugging unfinished QR codes,
             #unset pixels will be spaces.
             else:
                 buf.write(' ')
@@ -856,7 +856,7 @@ def _text(code):
     return buf.getvalue()
 
 def _svg(code, version, file, scale=1, module_color='black', background=None):
-    """This method writes the QR Code out as an SVG document. The
+    """This method writes the QR code out as an SVG document. The
     code is drawn by drawing only the modules corresponding to a 1. They
     are drawn using a line, such that contiguous modules in a row
     are drawn with a single line. The file parameter is used to
@@ -890,7 +890,7 @@ def _svg(code, version, file, scale=1, module_color='black', background=None):
 
         <svg xmlns="http://www.w3.org/2000/svg" class="pyqrcode"
              width="{0}" height="{0}">
-        <title>QR Code</title>
+        <title>QR code</title>
         """.format((tables.version_size[version]*scale)+(2*scale)))
     
     #Draw a background rectangle if necessary
@@ -920,7 +920,7 @@ def _svg(code, version, file, scale=1, module_color='black', background=None):
                 new_color = 'white'
                 
             #DEBUG CODE!!
-            #In unfinished QR Codes, unset pixels will be red
+            #In unfinished QR codes, unset pixels will be red
             #else:
                 #new_color = 'red'
              

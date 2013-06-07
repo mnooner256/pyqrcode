@@ -2,7 +2,7 @@ import pyqrcode.tables
 import pyqrcode.builder as builder
 
 class QRCode:
-    """This class represents a QR Code. To use this class simply give the
+    """This class represents a QR code. To use this class simply give the
     constructor a string representing the data to be encoded, it will then
     build a code in memory. You can then save it in various formats. Note,
     codes can be written out as PNG files but this requires the PyPNG module.
@@ -18,12 +18,12 @@ class QRCode:
         >>> number.png('big-number.png')
     """
     def __init__(self, content, error='H', version=None, mode=None):
-        """When creating a QR Code only the content to be encoded is required,
+        """When creating a QR code only the content to be encoded is required,
         all the other properties of the code will be guessed based on the
-        contents given. When the QRCode object is created the QR Code will be
+        contents given. When the QRCode object is created the QR code will be
         generated immediately.
         
-        Unless you are familiar with QR Code's inner workings 
+        Unless you are familiar with QR code's inner workings 
         it is recommended that you just specify the content and nothing else.
         However, there are cases where you may want to specify the various
         properties of the created code manually, this is what the other
@@ -46,11 +46,11 @@ class QRCode:
         
         The version parameter specifies the size and data capacity of the
         code. Versions are any integer between 1 and 40. Where version 1 is
-        the smallest QR Code, and version 40 is the largest. If this parameter
+        the smallest QR code, and version 40 is the largest. If this parameter
         is left unspecified, then the contents and error correction level will
-        be used to guess the smallest possible QR Code version that the 
+        be used to guess the smallest possible QR code version that the 
         content will fit inside of. You may want to specify this parameter
-        for consistency when generating several QR Codes with varying amounts
+        for consistency when generating several QR codes with varying amounts
         of data.
         
         The mode parameter specifies how the contents will be encoded. By
@@ -62,7 +62,7 @@ class QRCode:
         English characters, consequently, the content parameter will be
         subjected to str.upper() before encoding. See tables.ascii_codes for
         a complete list of available characters. We then have 'binary' encoding
-        which just encodes the bytes directly into the QR Code (this encoding
+        which just encodes the bytes directly into the QR code (this encoding
         is the least efficient). Finally, there is 'kanji'  encoding (i.e.
         Japanese characters), this is unimplemented at this time.
         """
@@ -120,7 +120,7 @@ class QRCode:
                                  'level (the code must be at least a '
                                  'version {}).'.format(version, self.version))
         
-        #Build the QR Code
+        #Build the QR code
         self.builder = builder.QRCodeBuilder(data=content,
                                      version=self.version,
                                      mode=self.mode,
@@ -158,7 +158,7 @@ class QRCode:
         return 'binary'
 
     def _pick_best_fit(self):
-        """This method return the smallest possible QR Code version number
+        """This method return the smallest possible QR code version number
         that will fit the specified data with the given error level.
         """
         for version in range(1,41):
@@ -171,7 +171,7 @@ class QRCode:
                capacity >= len(self.data):
                 return version
         
-        raise ValueError('The data will not fit in any QR Code version '
+        raise ValueError('The data will not fit in any QR code version '
                          'with the given encoding and error level.')
     
     def get_png_size(self, scale):
@@ -191,7 +191,7 @@ class QRCode:
         return builder._get_png_size(self.version, scale)
         
     def png(self, file, scale=1, module_color=None, background=None):
-        """This method writes the QR Code out as an PNG image. The resulting
+        """This method writes the QR code out as an PNG image. The resulting
         PNG has a bit depth of 1, i.e. it is a black and white file. The
         file parameter is used to specify where to write the image to. It can
         either be an writable stream or a file path.
@@ -204,9 +204,9 @@ class QRCode:
         and '3' will become 3).
         
         The module_color parameter sets what color to use for the encoded
-        modules (the black part on most QR Codes). The background parameter
+        modules (the black part on most QR codes). The background parameter
         sets what color to use for the background (the white part on most
-        QR Codes). If either parameter is set, then both must be
+        QR codes). If either parameter is set, then both must be
         set or a ValueError is raised. Colors should be specified as either
         a list or a tuple of length 3 or 4. The components of the list must
         be integers between 0 and 255. The first three member give the RGB
@@ -228,7 +228,7 @@ class QRCode:
                      module_color, background)
     
     def svg(self, file, scale=1, module_color='#000000', background=None):
-        """This method writes the QR Code out as an SVG document. The
+        """This method writes the QR code out as an SVG document. The
         code is drawn by drawing only the modules corresponding to a 1. They
         are drawn using a line, such that contiguous modules in a row
         are drawn with a single line. The file parameter is used to
@@ -247,9 +247,9 @@ class QRCode:
         
         You can also set the colors directly using the module_color and
         background parameters. The module_color parameter sets what color to
-        use for the encoded modules (the black part on most QR Codes). The
+        use for the encoded modules (the black part on most QR codes). The
         background parameter sets what color to use for the background (the
-        white part on most QR Codes). The parameters can be set to any valid
+        white part on most QR codes). The parameters can be set to any valid
         SVG or HTML color. If the background is set to None, then no background
         will be drawn, i.e. the background will be transparent.
         
@@ -261,7 +261,7 @@ class QRCode:
                      module_color, background)
         
     def text(self):
-        """This method returns a text based representation of the QR Code.
+        """This method returns a text based representation of the QR code.
         This is useful for debugging purposes. The black modules are represented
         by 1's and the white modules are represented by 0's.
         """
