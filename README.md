@@ -46,7 +46,8 @@ render the QR code.
 ### Encoding Data ###
 
 This module supports three encodings for data: numeric, alphanumeric, and
-binary. The numeric type is the most efficient way to encode digits.
+binary. The numeric type is the most efficient way to encode digits. You can
+use a string containing only digits instead of an actual number.
 
 ```python
 >>> number = QRCode(123456789012345)
@@ -134,4 +135,9 @@ take advantage of transparency.
 >>> number.png('big-number.png')
 >>> life.png('sketch.png', scale=6, module_color=[0, 0, 0, 128], background=[0xff, 0xff, 0xcc])
 ```    
+Finally, there is a text based renderer. This will output the QR code as a
+string of 1's and 0's, with each row of the code on a new line.
 
+```python
+>>> print(number.text())
+```

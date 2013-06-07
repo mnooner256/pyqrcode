@@ -12,7 +12,7 @@ modes = {'numeric':1,
          'bytes':4,
          '4':4, 4:4,
          'japanese':8,
-         'kanji':8
+         'kanji':8,
          '8':8, 8:8}
 
 #This defines the amount of error correction. The dictionary
