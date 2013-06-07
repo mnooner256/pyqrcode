@@ -33,8 +33,8 @@ or from the code
 $ python setup.py install
 ```
 
-Example Usage
--------------
+Usage
+-----
 
 This is the only import you need. The QRCode class will build the code and
 render the QR code.
@@ -108,6 +108,8 @@ forces the encoding to be binary (rather than numeric).
 ```python
 >>> big_code = QRCode(123456789, error='L', version=27, mode='binary')
 ```
+
+### Rendering ###
 
 There are three possible formats for rendering the QR Code. The first is
 to render it as a string of 1's and 0's. This is method is available so
