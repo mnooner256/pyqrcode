@@ -15,6 +15,10 @@ possible. The terminology and the encodings used in pyqrcode come directly
 from the standard. This module also follows the algorithm laid out in the
 standard.
 
+**Homepage**: https://github.com/mnooner256/pyqrcode
+
+**Documentation**: http://pythonhosted.org/PyQRCode/
+
 Requirements
 ============
 

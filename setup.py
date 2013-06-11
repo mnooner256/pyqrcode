@@ -1,7 +1,7 @@
 from setuptools import setup
-import sys, os.path
+import sys, os.path, shutil
 
-version = '0.9'
+version = '0.09'
 
 if sys.version_info < (3, 0, 0):
     sys.stderr.write("pyqrcode requires Python 3.\n")
@@ -11,10 +11,11 @@ if sys.version_info < (3, 0, 0):
 #Make the README.rst file the long description
 #This only happens when we are building from the
 #source.
-if os.path.exists('doc/README.rst'):
+if os.path.exists('docs/README.rst'):
     print('Reading README.rst file')
-    with open( 'doc/README.rst', 'r') as f:
+    with open( 'docs/README.rst', 'r') as f:
         longdesc = f.read()
+    shutil.copyfile('docs/README.rst', 'README.rst')
 else:
     longdesc = None
 
@@ -43,3 +44,6 @@ setup(name='PyQRCode',
         ],
       long_description=longdesc,
 )
+
+if os.path.exists('docs/README.rst'):
+    os.remove('README.rst')
