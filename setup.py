@@ -14,12 +14,13 @@ with open( 'doc/README.rst', 'r') as f:
 
 
 setup(name='PyQRCode',
-      packages=find_packages(),
+      packages=['pyqrcode'],
       version='0.9',
       description='A QR code generator written purely in python 3 with SVG and PNG output.',
       author='Michael Nooner',
       author_email='mnooner256@gmail.com',
       url='https://github.com/mnooner256/pyqrcode',
+      keywords=['qrcode', 'qr'],
       extras_require = {
         'PNG':  ["pypng>=0.0.13"],
       },

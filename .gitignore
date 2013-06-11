@@ -1,6 +1,10 @@
 *.png
 *.svg
 *.pyc
+build
+dist
+*egg*
+
 bin
 lib
 include
