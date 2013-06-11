@@ -1,5 +1,5 @@
-#This defines the QR Code's 'mode' which sets what
-#type of code it is along with its size.
+#: This defines the QR Code's 'mode' which sets what
+#: type of code it is along with its size.
 modes = {'numeric':1,
          '1':1, 1:1,
          'alphanumeric':2,
@@ -15,23 +15,23 @@ modes = {'numeric':1,
          'kanji':8,
          '8':8, 8:8}
 
-#This defines the amount of error correction. The dictionary
-#allows the user to specify this in several ways.
+#: This defines the amount of error correction. The dictionary
+#: allows the user to specify this in several ways.
 error_level = {'L':'L', 'l':'L', '7%':'L', .7:'L',
                'M':'M', 'm':'M', '15%':'M', .15:'M',
                'Q':'Q', 'q':'Q', '25%':'Q', .25:'Q',
                'H':'H', 'h':'H', '30%':'H', .30:'H'}
  
-#This is a dictionary holds how long the "data length" field is for
-#each version and mode of the QR Code.              
+#: This is a dictionary holds how long the "data length" field is for
+#: each version and mode of the QR Code.              
 data_length_field = {9:{1:10, 2:9, 4:8, 8:8},
                      26:{1:12, 2:11, 4:16, 8:10},
                      40:{1:14, 2:13, 4:16, 8:12}}
 
-#QR Codes uses a unique ASCII table for the 'alphanumeric' mode.
-#This is a dictionary representing that unique table, where the
-#keys are the possible characters in the data and the values
-#are the character's numeric representation.
+#: QR Codes uses a unique ASCII table for the 'alphanumeric' mode.
+#: This is a dictionary representing that unique table, where the
+#: keys are the possible characters in the data and the values
+#: are the character's numeric representation.
 ascii_codes = {'0':0, '1':1, '2':2, '3':3, '4':4, '5':5, '6':6, '7':7,
                '8':8, '9':9, 'A':10, 'B':11, 'C':12, 'D':13, 'E':14,
                'F':15, 'G':16, 'H':17, 'I':18, 'J':19, 'K':20, 'L':21,
@@ -40,22 +40,24 @@ ascii_codes = {'0':0, '1':1, '2':2, '3':3, '4':4, '5':5, '6':6, '7':7,
                ' ':36, '$':37, '%':38, '*':39, '+':40, '-':41, '.':42,
                '/':43, ':':44}
 
-#This array specifies the size of a QR Code in pixels. These numbers are
-#defined in the standard. The indexes correspond to the QR Code's
-#version number. This array was taken from:
-#   http://www.denso-wave.com/qrcode/vertable1-e.html
+#: This array specifies the size of a QR Code in pixels. These numbers are
+#: defined in the standard. The indexes correspond to the QR Code's
+#: version number. This array was taken from:
+#:
+#: http://www.denso-wave.com/qrcode/vertable1-e.html
 version_size = [None, 21, 25, 29, 33, 37, 41, 45, 49, 53, 57,
                 61, 65, 69, 73, 77, 81, 85, 89, 93, 97,
                 101, 105, 109, 113, 117, 121, 125, 129, 133, 137,
                 141, 145, 149, 153, 157, 161, 165, 169, 173, 177]
 
-#This dictionary lists the data capacity for all possible QR Codes.
-#This dictionary is organized where the first key corresponds to the
-#QR Code version number. The next key corresponds to the error
-#correction level, see error. The final key corresponds to
-#the mode number, see modes. The zero mode number represents the
-#possible "data bits." This table was taken from:
-#   http://www.denso-wave.com/qrcode/vertable1-e.html
+#: This dictionary lists the data capacity for all possible QR Codes.
+#: This dictionary is organized where the first key corresponds to the
+#: QR Code version number. The next key corresponds to the error
+#: correction level, see error. The final key corresponds to
+#: the mode number, see modes. The zero mode number represents the
+#: possible "data bits." This table was taken from:
+#:
+#: http://www.denso-wave.com/qrcode/vertable1-e.html
 data_capacity = {
     1: {
         "L":{0:152,1:41,2:25,4:17,8:10,},
@@ -259,19 +261,28 @@ data_capacity = {
         "H":{0:10208,1:3057,2:1852,4:1273,8:784,}}
 }
 
-#This table defines the "Error Correction Code Words and Block Information."
-#The table lists the number of error correction words that are required
-#to be generated for each version and error correction level. The table
-#is accessed by first using the version number as a key and then the
-#error level. The array values correspond to these columns from the source
-#table:
-#   0 = EC Code Words Per Block
-#   1 = Block 1 Count
-#   2 = Block 1 Data Code Words
-#   3 = Block 2 Count
-#   4 = Block 2 Data Code Words
-#This table was taken from:
-#   http://www.thonky.com/qr-code-tutorial/error-correction-table/
+#: This table defines the "Error Correction Code Words and Block Information."
+#: The table lists the number of error correction words that are required
+#: to be generated for each version and error correction level. The table
+#: is accessed by first using the version number as a key and then the
+#: error level. The array values correspond to these columns from the source
+#: table:
+#: 
+#: +----------------------------+
+#: |0 | EC Code Words Per Block |
+#: +----------------------------+
+#: |1 | Block 1 Count           |
+#: +----------------------------+
+#: |2 | Block 1 Data Code Words |
+#: +----------------------------+
+#: |3 | Block 2 Count           |
+#: +----------------------------+
+#: |4 | Block 2 Data Code Words |
+#: +----------------------------+
+#:
+#: This table was taken from:
+#: 
+#: http://www.thonky.com/qr-code-tutorial/error-correction-table/
 eccwbi = {
     1: {
         'L': [ 7, 1, 19, 0, 0, ],
@@ -515,10 +526,11 @@ eccwbi = {
     },
 }
 
-#This table lists all of the generator polynomials used by QR Codes.
-#They are indexed by the number of "ECC Code Words" (see table above).
-#This table is taken from:
-#   http://www.matchadesign.com/blog/qr-code-demystified-part-4/
+#: This table lists all of the generator polynomials used by QR Codes.
+#: They are indexed by the number of "ECC Code Words" (see table above).
+#: This table is taken from:
+#: 
+#: http://www.matchadesign.com/blog/qr-code-demystified-part-4/
 generator_polynomials = {
     7:[87, 229, 146, 149, 238, 102, 21],
     10:[251, 67, 46, 61, 118, 70, 64, 94, 32, 45],
@@ -545,10 +557,11 @@ generator_polynomials = {
         180]
 }
 
-#This table contains the log and values used in GF(256) arithmetic.
-#They are used to generate error correction codes for QR Codes.
-#This table is taken from:
-#   http://www.thonky.com/qr-code-tutorial/log-antilog-table/
+#: This table contains the log and values used in GF(256) arithmetic.
+#: They are used to generate error correction codes for QR Codes.
+#: This table is taken from:
+#: 
+#: vhttp://www.thonky.com/qr-code-tutorial/log-antilog-table/
 galois_log = [
     1, 2, 4, 8, 16, 32, 64, 128, 29, 58, 116, 232, 205, 135, 19, 38, 76, 152,
     45, 90, 180, 117, 234, 201, 143, 3, 6, 12, 24, 48, 96, 192, 157, 39, 78,
@@ -567,10 +580,11 @@ galois_log = [
     36, 72, 144, 61, 122, 244, 245, 247, 243, 251, 235, 203, 139, 11, 22, 44,
     88, 176, 125, 250, 233, 207, 131, 27, 54, 108, 216, 173, 71, 142, 1,]
 
-#This table contains the antilog and values used in GF(256) arithmetic.
-#They are used to generate error correction codes for QR Codes.
-#This table is taken from:
-#   http://www.thonky.com/qr-code-tutorial/log-antilog-table/
+#: This table contains the antilog and values used in GF(256) arithmetic.
+#: They are used to generate error correction codes for QR Codes.
+#: This table is taken from:
+#: 
+#: http://www.thonky.com/qr-code-tutorial/log-antilog-table/
 galois_antilog = [
     None, 0, 1, 25, 2, 50, 26, 198, 3, 223, 51, 238, 27, 104, 199, 75, 4, 100,
     224, 14, 52, 141, 239, 129, 28, 193, 105, 248, 200, 8, 76, 113, 5, 138,
@@ -589,10 +603,11 @@ galois_antilog = [
     89, 95, 176, 156, 169, 160, 81, 11, 245, 22, 235, 122, 117, 44, 215, 79,
     174, 213, 233, 230, 231, 173, 232, 116, 214, 244, 234, 168, 80, 88, 175,]
     
-#This table contains the coordinates for the position adjustment patterns.
-#The index of the table corresponds to the QR Code's version number.
-#This table is taken from:
-#   http://www.thonky.com/qr-code-tutorial/part-3-mask-pattern/
+#: This table contains the coordinates for the position adjustment patterns.
+#: The index of the table corresponds to the QR Code's version number.
+#: This table is taken from:
+#: 
+#: http://www.thonky.com/qr-code-tutorial/part-3-mask-pattern/
 position_adjustment = [
     None,               #There is not version 0
     None,               #Version 1 does not need adjustment
@@ -637,10 +652,11 @@ position_adjustment = [
     [6, 30, 58, 86, 114, 142, 170, ],
 ]
 
-#This table specifies the bit pattern to be added to a QR Code's
-#image to specify what version the code is. Note, this pattern
-#is not used for versions 1-6. This table is taken from:
-#   http://www.thonky.com/qr-code-tutorial/part-3-mask-pattern/
+#: This table specifies the bit pattern to be added to a QR Code's
+#: image to specify what version the code is. Note, this pattern
+#: is not used for versions 1-6. This table is taken from:
+#: 
+#: http://www.thonky.com/qr-code-tutorial/part-3-mask-pattern/
 version_pattern = [None,None,None,None,None,None,None, #0-6
     '000111110010010100', '001000010110111100', '001001101010011001',
     '001010010011010011', '001011101111110110', '001100011101100010',
@@ -656,9 +672,10 @@ version_pattern = [None,None,None,None,None,None,None, #0-6
     '101000110001101001'
 ]
 
-#This table contains the bit fields needed to specify the error code level and
-#mask pattern used by a QR Code. This table is take from:
-#   http://www.thonky.com/qr-code-tutorial/part-3-mask-pattern/
+#: This table contains the bit fields needed to specify the error code level and
+#: mask pattern used by a QR Code. This table is take from:
+#: 
+#: http://www.thonky.com/qr-code-tutorial/part-3-mask-pattern/
 type_bits = {
     'L':{
         0:'111011111000100',
@@ -702,11 +719,12 @@ type_bits = {
     },
 }
 
-#This table contains *functions* to compute whether to change current bit.
-#All of the functions in the table return a boolean value. A True result means
-#you should add the bit to the QR Code exactly as is. A False result means you
-#should add the opposite bit. This table was taken from:
-#   http://www.thonky.com/qr-code-tutorial/mask-patterns/
+#: This table contains *functions* to compute whether to change current bit.
+#: All of the functions in the table return a boolean value. A True result means
+#: you should add the bit to the QR Code exactly as is. A False result means you
+#: should add the opposite bit. This table was taken from:
+#: 
+#: http://www.thonky.com/qr-code-tutorial/mask-patterns/
 mask_patterns = [
     lambda row,col: (row + col) % 2 == 0,
     lambda row,col: row % 2 == 0,

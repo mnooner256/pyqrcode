@@ -32,7 +32,7 @@ class QRCode:
         directly from the standards. You may need to familiarize yourself
         with the terminology of QR codes for the names to make sense.
         
-        The error parameter sets the error correction level of the code. There
+        The *error* parameter sets the error correction level of the code. There
         are four levels defined by the standard. The first is level 'L' which
         allows for 7% of the code to be corrected. Second, is level 'M' which
         allows for 15% of the code to be corrected. Next, is level 'Q' which
@@ -46,7 +46,7 @@ class QRCode:
         possible error correction, but it has the smallest available data
         capacity.
         
-        The version parameter specifies the size and data capacity of the
+        The *version* parameter specifies the size and data capacity of the
         code. Versions are any integer between 1 and 40. Where version 1 is
         the smallest QR code, and version 40 is the largest. If this parameter
         is left unspecified, then the contents and error correction level will
@@ -55,7 +55,7 @@ class QRCode:
         for consistency when generating several QR codes with varying amounts
         of data. That way all of the generated codes would have the same size.
         
-        The mode parameter specifies how the contents will be encoded. By
+        The *mode* parameter specifies how the contents will be encoded. By
         default, the best possible encoding for the contents is guessed. There
         are four possible encoding methods. First, is 'numeric' which is
         used to encode integer numbers. Next, is 'alphanumeric' which is

@@ -5,9 +5,14 @@ build
 dist
 *egg*
 
+
+*.swp
 bin
 lib
 include
 __pycache__
 qrtests
+
 _build
+*.zip
+*.gz

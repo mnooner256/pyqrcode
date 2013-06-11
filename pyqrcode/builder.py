@@ -338,8 +338,9 @@ class QRCodeBuilder:
         """This function constructs the error correction block of the
         given data block. This is *very complicated* process. To
         understand the code you need to read:
-            http://www.thonky.com/qr-code-tutorial/part-2-error-correction/
-            http://www.matchadesign.com/blog/qr-code-demystified-part-4/
+        
+        * http://www.thonky.com/qr-code-tutorial/part-2-error-correction/
+        * http://www.matchadesign.com/blog/qr-code-demystified-part-4/
         """
         #Get the error information from the standards table
         error_info = tables.eccwbi[self.version][self.error]

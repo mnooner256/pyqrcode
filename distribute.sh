@@ -6,7 +6,9 @@
 python setup.py register
 python setup.py sdist --formats=gztar,zip upload
 
-rm -rfv build dist *egg*
+pushd doc
+make html
+popd
 
 echo
 echo "Be sure to change the version on PyPi's website!!!"
