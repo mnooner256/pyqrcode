@@ -9,6 +9,10 @@ if sys.version_info < (3, 0, 0):
     sys.stderr.write("pyqrcode requires Python 3.\n")
     sys.exit(1)
 
+with open( 'doc/README.rst', 'r') as f:
+    longdesc = f.read()
+
+
 setup(name='PyQRCode',
       packages=find_packages(),
       version='0.9',
@@ -31,6 +35,5 @@ setup(name='PyQRCode',
         'Operating System :: Microsoft :: Windows',
         'Programming Language :: Python :: 3',
         ],
-      long_description="""
-""",
+      long_description=longdesc,
 )
