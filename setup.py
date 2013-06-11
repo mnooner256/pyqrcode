@@ -1,21 +1,26 @@
 from setuptools import setup
-import sys
+import sys, os.path
 
-def normalizeWhitespace(s):
-    return ' '.join(s.split())
-
+version = '0.9'
 
 if sys.version_info < (3, 0, 0):
     sys.stderr.write("pyqrcode requires Python 3.\n")
     sys.exit(1)
 
-with open( 'doc/README.rst', 'r') as f:
-    longdesc = f.read()
 
+#Make the README.rst file the long description
+#This only happens when we are building from the
+#source.
+if os.path.exists('doc/README.rst'):
+    print('Reading README.rst file')
+    with open( 'doc/README.rst', 'r') as f:
+        longdesc = f.read()
+else:
+    longdesc = None
 
 setup(name='PyQRCode',
       packages=['pyqrcode'],
-      version='0.9',
+      version=version,
       description='A QR code generator written purely in python 3 with SVG and PNG output.',
       author='Michael Nooner',
       author_email='mnooner256@gmail.com',
