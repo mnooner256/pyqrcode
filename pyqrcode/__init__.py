@@ -1,5 +1,73 @@
+"""This module is used to create QR Codes. It is designed to be as simple and
+as possible. It does this by using sane defaults and autodetection to make
+creating a QR Code very simple.
+
+It is recommended that you use the :func:`pyqrcode.create` function to build the
+QRCode object. This results in cleaner looking code. 
+
+Examples:
+        >>> import pyqrcode
+        >>> import sys
+        >>> url = pyqrcode.create('http://uca.edu')
+        >>> url.svg(sys.stdout, scale=1)
+        >>> url.svg('uca.svg', scale=4)
+        >>> number = pyqrcode.create(123456789012345)
+        >>> number.png('big-number.png')
+"""
 import pyqrcode.tables
 import pyqrcode.builder as builder
+
+def create(content, error='H', version=None, mode=None):
+    """When creating a QR code only the content to be encoded is required,
+    all the other properties of the code will be guessed based on the
+    contents given. This function will return a QRCode object.
+    
+    Unless you are familiar with QR code's inner workings 
+    it is recommended that you just specify the content and nothing else.
+    However, there are cases where you may want to specify the various
+    properties of the created code manually, this is what the other
+    parameters do. Below, you will find a lengthy explanation of what
+    each parameter is for. Note, the parameter names and values are taken
+    directly from the standards. You may need to familiarize yourself
+    with the terminology of QR codes for the names to make sense.
+    
+    The *error* parameter sets the error correction level of the code. There
+    are four levels defined by the standard. The first is level 'L' which
+    allows for 7% of the code to be corrected. Second, is level 'M' which
+    allows for 15% of the code to be corrected. Next, is level 'Q' which
+    is the most common choice for error correction, it allow 25% of the
+    code to be corrected. Finally, there is the highest level 'H' which
+    allows for 30% of the code to be corrected. There are several ways to
+    specify this parameter, you can use an upper or lower case letter,
+    a float corresponding to the percentage of correction, or a string
+    containing the percentage. See tables.modes for all the possible
+    values. By default this parameter is set to 'H' which is the highest
+    possible error correction, but it has the smallest available data
+    capacity.
+    
+    The *version* parameter specifies the size and data capacity of the
+    code. Versions are any integer between 1 and 40. Where version 1 is
+    the smallest QR code, and version 40 is the largest. If this parameter
+    is left unspecified, then the contents and error correction level will
+    be used to guess the smallest possible QR code version that the 
+    content will fit inside of. You may want to specify this parameter
+    for consistency when generating several QR codes with varying amounts
+    of data. That way all of the generated codes would have the same size.
+    
+    The *mode* parameter specifies how the contents will be encoded. By
+    default, the best possible encoding for the contents is guessed. There
+    are four possible encoding methods. First, is 'numeric' which is
+    used to encode integer numbers. Next, is 'alphanumeric' which is
+    used to encode some ASCII characters. This mode uses only a limited
+    set of characters. Most problematic is that it can only use upper case
+    English characters, consequently, the content parameter will be
+    subjected to str.upper() before encoding. See tables.ascii_codes for
+    a complete list of available characters. We then have 'binary' encoding
+    which just encodes the bytes directly into the QR code (this encoding
+    is the least efficient). Finally, there is 'kanji'  encoding (i.e.
+    Japanese characters), this encoding is unimplemented at this time.
+    """
+    return QRCode(content, error, version, mode)
 
 class QRCode:
     """This class represents a QR code. To use this class simply give the
@@ -16,58 +84,13 @@ class QRCode:
         >>> url.svg('uca.svg', scale=4)
         >>> number = QRCode(123456789012345)
         >>> number.png('big-number.png')
+        
+    .. note::
+        For what all of the parameters do, see the :func:`pyqrcode.create`
+        function.
     """
     def __init__(self, content, error='H', version=None, mode=None):
-        """When creating a QR code only the content to be encoded is required,
-        all the other properties of the code will be guessed based on the
-        contents given. When the QRCode object is created the QR code will be
-        generated immediately.
         
-        Unless you are familiar with QR code's inner workings 
-        it is recommended that you just specify the content and nothing else.
-        However, there are cases where you may want to specify the various
-        properties of the created code manually, this is what the other
-        parameters do. Below, you will find a lengthy explanation of what
-        each parameter is for. Note, the parameter names and values are taken
-        directly from the standards. You may need to familiarize yourself
-        with the terminology of QR codes for the names to make sense.
-        
-        The *error* parameter sets the error correction level of the code. There
-        are four levels defined by the standard. The first is level 'L' which
-        allows for 7% of the code to be corrected. Second, is level 'M' which
-        allows for 15% of the code to be corrected. Next, is level 'Q' which
-        is the most common choice for error correction, it allow 25% of the
-        code to be corrected. Finally, there is the highest level 'H' which
-        allows for 30% of the code to be corrected. There are several ways to
-        specify this parameter, you can use an upper or lower case letter,
-        a float corresponding to the percentage of correction, or a string
-        containing the percentage. See tables.modes for all the possible
-        values. By default this parameter is set to 'H' which is the highest
-        possible error correction, but it has the smallest available data
-        capacity.
-        
-        The *version* parameter specifies the size and data capacity of the
-        code. Versions are any integer between 1 and 40. Where version 1 is
-        the smallest QR code, and version 40 is the largest. If this parameter
-        is left unspecified, then the contents and error correction level will
-        be used to guess the smallest possible QR code version that the 
-        content will fit inside of. You may want to specify this parameter
-        for consistency when generating several QR codes with varying amounts
-        of data. That way all of the generated codes would have the same size.
-        
-        The *mode* parameter specifies how the contents will be encoded. By
-        default, the best possible encoding for the contents is guessed. There
-        are four possible encoding methods. First, is 'numeric' which is
-        used to encode integer numbers. Next, is 'alphanumeric' which is
-        used to encode some ASCII characters. This mode uses only a limited
-        set of characters. Most problematic is that it can only use upper case
-        English characters, consequently, the content parameter will be
-        subjected to str.upper() before encoding. See tables.ascii_codes for
-        a complete list of available characters. We then have 'binary' encoding
-        which just encodes the bytes directly into the QR code (this encoding
-        is the least efficient). Finally, there is 'kanji'  encoding (i.e.
-        Japanese characters), this is unimplemented at this time.
-        """
         #Coerce the content into a string
         self.data = str(content)
         
@@ -220,7 +243,7 @@ class QRCode:
         depends on the PyPNG module to do this.
         
         Example:
-            >>> code = pyqrcode.QRCode('Are you suggesting coconuts migrate?')
+            >>> code = pyqrcode.create('Are you suggesting coconuts migrate?')
             >>> code.png('swallow.png', scale=5)
             >>> code.png('swallow.png', scale=5,
                          module_color=(0x66, 0x33, 0x0),      #Dark brown
@@ -257,7 +280,7 @@ class QRCode:
         combinations are unreadable by scanners, so be careful.
         
         Example:
-            >>> code = pyqrcode.QRCode('Hello. Uhh, can we have your liver?')
+            >>> code = pyqrcode.create('Hello. Uhh, can we have your liver?')
             >>> code.svg('live-organ-transplants.svg', 3)
         """
         builder._svg(self.code, self.version, file, scale,
@@ -268,10 +291,10 @@ class QRCode:
         The black modules are represented by 1's and the white modules are
         represented by 0's. This is useful for debugging purposes. It can also
         be used to allow a user to write their own output function.
+        
+        Example:
+            >>> code = pyqrcode.create('Example')
+            >>> text = code.text()
+            >>> print(text)
         """
         return builder._text(self.code)
-
-if __name__ == '__main__':
-    code = QRCode('''This is an example!!''')
-    code.png( "best-code.png", scale=4)
-

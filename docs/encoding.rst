@@ -20,8 +20,8 @@ digits as the data-type. This encoding is the optimal way to encode digits.
 
 .. code-block:: python
 
-  >>> number = QRCode(123456789012345)
-  >>> number2 = QRCode('0987654321')
+  >>> number = pyqrcode.create(123456789012345)
+  >>> number2 = pyqrcode.create('0987654321')
 
 Notice, though that you cannot encode negative or fractional numbers with this
 encoding. Instead you would use the Alphanumeric mode.
@@ -51,7 +51,7 @@ The available characters will let you encode a URL
 
 .. code-block:: python
 
-  >>> url = QRCode('http://uca.edu')
+  >>> url = pyqrcode.create('http://uca.edu')
 
 
 Binary
@@ -67,7 +67,7 @@ new line character.
 
 .. code-block:: python
 
-  >>> life = QRCode('''MR. CREOSOTE: Better get a bucket. I'm going to throw up.
+  >>> life = pyqrcode.create('''MR. CREOSOTE: Better get a bucket. I'm going to throw up.
       MAITRE D: Uh, Gaston! A bucket for monsieur. There you are, monsieur.''')
 
 Kanji

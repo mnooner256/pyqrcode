@@ -1,6 +1,7 @@
 #!/usr/bin/env python
-#Test against codes generated at: 
+#Test against codes generated at:
 #   http://www.morovia.com/free-online-barcode-generator/qrcode-maker.php
+
 import pyqrcode
 import os, sys
 
@@ -8,7 +9,7 @@ code_dir = './qrtests'
 scale = 4
 
 data = 'HELLO WORLD'
-error='Q'
+error='H'
 version=None
 mode=None
 
@@ -28,8 +29,8 @@ if len(sys.argv) > 2:
 #    print('Generating version {}'.format(i))
 #    try:
 code = pyqrcode.QRCode(data, error=error, version=version, mode=mode)
-#code.png('{}/v{}.png'.format(code_dir, code.version), scale)
-code.svg('{}/v{}.svg'.format(code_dir, code.version), scale, background="white")
+code.png('{}/v{}.png'.format(code_dir, code.version), scale)
+#code.svg('{}/v{}.svg'.format(code_dir, code.version), scale, background="white")
 
 print('Error={}\nVersion={}\nMode={}\nScale={}'.format(code.error, code.version, code.mode, scale))
 #    except ValueError:

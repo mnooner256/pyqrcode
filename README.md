@@ -36,11 +36,11 @@ $ python setup.py install
 Usage
 -----
 
-This is the only import you need. The QRCode class will build the code
-render the QR code.
+This is the only import you need. The heart of the module is the QRCode class.
+You can construct the class normally, or use the *create* wrapper function.
 
 ```python
->>> from pyqrcode import QRCode
+>>> import pyqrcode
 ```
 
 ### Encoding Data ###
@@ -52,7 +52,7 @@ large, the object can use a string containing only digits instead of an
 actual number.
 
 ```python
->>> number = QRCode(123456789012345)
+>>> number = pyqrcode.create(123456789012345)
 ````
 
 The alphanumeric type is very limited in that it can only encode some ASCII
@@ -63,14 +63,14 @@ available characters will let you encode a URL (the string is uppercased
 automatically).
 
 ```python
->>> url = QRCode('http://uca.edu')
+>>> url = pyqrcode.create('http://uca.edu')
 ```
 
 When all else fails the data can be encoded in pure binary. The quotation below
 must be encoded in binary because of the apostrophe and the new line character.
 
 ```python
->>> life = QRCode('''MR. CREOSOTE: Better get a bucket. I'm going to throw up.
+>>> life = pyqrcode.create('''MR. CREOSOTE: Better get a bucket. I'm going to throw up.
     MAITRE D: Uh, Gaston! A bucket for monsieur. There you are, monsieur.''')
 ```
 There is one other encoding that is used for Kanji characters. This encoding
@@ -110,7 +110,7 @@ The code below constructs a QR code with 30% error correction, size 27, and
 forces the encoding to be binary (rather than numeric).
 
 ```python
->>> big_code = QRCode('0987654321', error='L', version=27, mode='binary')
+>>> big_code = pyqrcode.create('0987654321', error='L', version=27, mode='binary')
 ```
 
 ### Rendering ###

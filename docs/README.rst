@@ -1,8 +1,8 @@
-.. contents::
-
 ========
 PyQRCode
 ========
+
+.. contents::
 
 The pyqrcode module is a QR code generator that is simple to use and written
 in pure python. The module has the ability to choose the best encoding for your
@@ -45,14 +45,14 @@ example of creating a QR code for a URL. The code is rendered out as an svg
 file.
 ::
 
-    >>> from pyqrcode import QRCode
-    >>> url = QRCode('http://uca.edu')
+    >>> import pyqrcode
+    >>> url = pyqrcode.create('http://uca.edu')
     >>> url.svg('uca-url.svg', scale=8)
 
-The pyqrcode module, while easy to use, is powerful. You can set all of the
-properties of your code. If you install the optional pypng library, you can
+The pyqrcode module, while easy to use, is powerful. You can set every
+property of your code. If you install the optional pypng library, you can
 render the code as a PNG image. Below is a more complex example::
 
-    >>> big_code = QRCode('0987654321', error='L', version=27, mode='binary')
+    >>> big_code = pyqrcode.create('0987654321', error='L', version=27, mode='binary')
     >>> big_code.png('code.png', scale=6, module_color=[0, 0, 0, 128], background=[0xff, 0xff, 0xcc])
 

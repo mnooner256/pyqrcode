@@ -17,7 +17,7 @@ neither the svg or png renderers are satisfactory.
 
 .. code-block:: python
 
-  >>> number = QRCode(123)
+  >>> number = pyqrcode.create(123)
   >>> print(number.text())
   00000000000000000000000
   01111111001101011111110
@@ -54,7 +54,7 @@ code there. The methods should auto-detect what to do.
 
 Both renderers take a scale parameter. This parameter sets how many pixels a
 single data module will take. Usually setting this parameter to one, will result
-in QR codes that are too small to scan. What scale to use is depends on how you
+in QR codes that are too small to scan. What scale to use depends on how you
 plan to use the QR code.
 
 Both renderers, also, allow you to set the module and background colors.
@@ -72,7 +72,7 @@ default foreground color is black.
 
 .. code-block:: python
 
-  >>> url = QRCode('http://uca.edu')
+  >>> url = pyqrcode.create('http://uca.edu')
   >>> url.svg(sys.stdout, scale=1)
   >>> url.svg('uca.svg', scale=4)
   
@@ -106,5 +106,5 @@ black, and the background modules colored white.
 .. code-block:: python
 
   >>> url.png('uca.png')
-  >>> life.png('uca.png', scale=6, module_color=[0, 0, 0, 128], background=[0xff, 0xff, 0xcc])
+  >>> colors.png('uca.png', scale=6, module_color=[0, 0, 0, 128], background=[0xff, 0xff, 0xcc])
 

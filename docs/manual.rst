@@ -10,8 +10,8 @@ Below are some examples of creating QR Codes using the automatic system.
 
 .. code-block:: python
 
-  >>> url = QRCode('http://uca.edu')
-  >>> url = QRCode('http://uca.edu', error='L')
+  >>> url = pyqrcode.create('http://uca.edu')
+  >>> url = pyqrcode.create('http://uca.edu', error='L')
 
 There are many situation where you might wish to have more
 fine grained control over how the QR Code is generated. You can specify all the
@@ -19,13 +19,13 @@ properties of your QR code through the QRCode constructor. All of them are
 optional except the error level (which you can leave at the default). There
 are three main properties to a QR code.
 
-The :term:`error` parameter sets the error correction level of the code. Each level
-has an associated name given by a letter: L, M, Q, or H; each level can
+The :term:`error` parameter sets the error correction level of the code. Each
+level has an associated name given by a letter: L, M, Q, or H; each level can
 correct up to 7, 15, 25, or 30 percent of the data respectively. There are
 several ways to specify the level, see :py:data:`pyqrcode.tables.error_level`
 for all the possible values. By default this parameter is set to 'H' which is
 the highest possible error correction, but it has the smallest available data
-capacity.
+capacity for a given version.
 
 The :term:`version` parameter specifies the size and data capacity of the
 code. Versions are any integer between 1 and 40. Where version 1 is
@@ -46,5 +46,5 @@ forces the encoding to be binary (rather than numeric).
 
 .. code-block:: python
 
-  >>> big_code = QRCode('0987654321', error='L', version=27, mode='binary')
+  >>> big_code = pyqrcode.create('0987654321', error='L', version=27, mode='binary')
 
