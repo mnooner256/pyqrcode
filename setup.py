@@ -1,7 +1,7 @@
 from setuptools import setup
 import sys, os.path, shutil
 
-version = '0.09'
+version = '0.10'
 
 if sys.version_info < (3, 0, 0):
     sys.stderr.write("pyqrcode requires Python 3.\n")

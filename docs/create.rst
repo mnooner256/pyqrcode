@@ -1,4 +1,4 @@
-Manually Setting The QR Code's Properties
+Creating QR Codes
 *****************************************
 
 The QRCode object is designed to be smart about how it constructs QR codes.
@@ -6,7 +6,7 @@ It can automatically figure out what mode and version to use to construct a
 QR code, based on the data and error level. The error level defaults to the
 highest possible level of error correction.
 
-Below are some examples of creating QR Codes using the automatic system.
+Below are some examples of creating QR Codes using the automatated system.
 
 .. code-block:: python
 
@@ -15,9 +15,9 @@ Below are some examples of creating QR Codes using the automatic system.
 
 There are many situation where you might wish to have more
 fine grained control over how the QR Code is generated. You can specify all the
-properties of your QR code through the QRCode constructor. All of them are
-optional except the error level (which you can leave at the default). There
-are three main properties to a QR code.
+properties of your QR code through the :func:`pyqrcode.create` function. All of
+them are optional except the error level (which you can leave at the default).
+There are three main properties to a QR code.
 
 The :term:`error` parameter sets the error correction level of the code. Each
 level has an associated name given by a letter: L, M, Q, or H; each level can
@@ -35,11 +35,12 @@ possible version. You may want to specify this parameter for consistency when
 generating several QR codes with varying amounts of data. That way all of the
 generated codes would have the same size.
 
-Finally, the :term:`mode` parameter sets how the contents will be encoded. As
-mentioned above three of the four possible encodings have been written. By
-default the object uses the most efficient encoding for the contents. You can
-change this though. See :py:data:`pyqrcode.tables.modes` for a list of possible
-values for this parameter.
+Finally, the :term:`mode` parameter sets how the contents will be encoded.
+Three of the four possible encodings are available. By default the object uses
+the most efficient encoding for the contents. You can change this though. See
+:py:data:`pyqrcode.tables.modes` for a list of possible values for this
+parameter. A much longer discussion on modes can be found in the next section
+:doc:`encoding`.
         
 The code below constructs a QR code with 25% error correction, size 27, and
 forces the encoding to be binary (rather than numeric).

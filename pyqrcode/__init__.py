@@ -20,7 +20,7 @@ import pyqrcode.builder as builder
 def create(content, error='H', version=None, mode=None):
     """When creating a QR code only the content to be encoded is required,
     all the other properties of the code will be guessed based on the
-    contents given. This function will return a QRCode object.
+    contents given. This function will return a :class:`QRCode` object.
     
     Unless you are familiar with QR code's inner workings 
     it is recommended that you just specify the content and nothing else.
@@ -200,11 +200,11 @@ class QRCode:
                          'with the given encoding and error level.')
     
     def get_png_size(self, scale):
-        """This is method helps users determine what scale to use when creating
-        a PNG of this QR code. It is meant mostly to be used in the console
-        to help a user figure out what scale to use. It will return an integer
-        representing the width and height of the QR code in pixels, if it was
-        drawn using the given scale.
+        """This is method helps users determine what *scale* to use when
+        creating a PNG of this QR code. It is meant mostly to be used in the
+        console to help a user figure out what scale to use. It will return an
+        integer representing the width and height of the QR code in pixels, if
+        it was drawn using the given scale.
         
         Example:
             >>> code = pyqrcode.QRCode("I don't like spam!")
@@ -221,26 +221,26 @@ class QRCode:
         to write the image to. It can either be an writable stream or a
         file path.
         
-        The scale parameter sets how large to draw a single module. By
+        The *scale* parameter sets how large to draw a single module. By
         default one pixel is used to draw a single module. This may make the
-        code to small to be read efficiently. Increasing the scale will make
+        code too small to be read efficiently. Increasing the scale will make
         the code larger. Only integer scales are usable. This method will
-        attempt to coerce parameter into an integer (e.g. 2.5 will become 2,
+        attempt to coerce the parameter into an integer (e.g. 2.5 will become 2,
         and '3' will become 3).
         
-        The module_color parameter sets what color to use for the encoded
-        modules (the black part on most QR codes). The background parameter
+        The *module_color* parameter sets what color to use for the encoded
+        modules (the black part on most QR codes). The *background* parameter
         sets what color to use for the background (the white part on most
         QR codes). If either parameter is set, then both must be
         set or a ValueError is raised. Colors should be specified as either
         a list or a tuple of length 3 or 4. The components of the list must
         be integers between 0 and 255. The first three member give the RGB
         color. The fourth member gives the alpha component, where 0 is
-        transparent and 255 is without transparency. Note, many color
+        transparent and 255 is opaque. Note, many color
         combinations are unreadable by scanners, so be careful.
         
-        This method will write the given file out as a PNG file. Note, it
-        depends on the PyPNG module to do this.
+        This method will write the given *file* out as a PNG file. Note, it
+        depends on the pypng module to do this.
         
         Example:
             >>> code = pyqrcode.create('Are you suggesting coconuts migrate?')
@@ -256,24 +256,24 @@ class QRCode:
         """This method writes the QR code out as an SVG document. The
         code is drawn by drawing only the modules corresponding to a 1. They
         are drawn using a line, such that contiguous modules in a row
-        are drawn with a single line. The file parameter is used to
+        are drawn with a single line. The *file* parameter is used to
         specify where to write the document to. It can either be a writable
-        stream or a file path. The scale parameter is sets how large to draw
+        stream or a file path. The *scale* parameter sets how large to draw
         a single module. By default one pixel is used to draw a single
-        module. This may make the code to small to be read efficiently.
+        module. This may make the code too small to be read efficiently.
         Increasing the scale will make the code larger. Unlike the png() method,
-        this will accept fractional scales (e.g. 2.5).
+        this method will accept fractional scales (e.g. 2.5).
         
         Note, three things are done to make the code more appropriate for
         embedding in a HTML document. The "white" part of the code is actually
         transparent. The code itself has a class of "pyqrcode". The lines
-        making up the QR code have a class pyqrline. These should make the code
-        easier to style using CSS.
+        making up the QR code have a class "pyqrline". These should make the
+        code easier to style using CSS.
         
-        You can also set the colors directly using the module_color and
-        background parameters. The module_color parameter sets what color to
-        use for the encoded modules (the black part on most QR codes). The
-        background parameter sets what color to use for the background (the
+        You can also set the colors directly using the *module_color* and
+        *background* parameters. The *module_color* parameter sets what color to
+        use for the data modules (the black part on most QR codes). The
+        *background* parameter sets what color to use for the background (the
         white part on most QR codes). The parameters can be set to any valid
         SVG or HTML color. If the background is set to None, then no background
         will be drawn, i.e. the background will be transparent. Note, many color
@@ -281,16 +281,18 @@ class QRCode:
         
         Example:
             >>> code = pyqrcode.create('Hello. Uhh, can we have your liver?')
-            >>> code.svg('live-organ-transplants.svg', 3)
+            >>> code.svg('live-organ-transplants.svg', 3.6)
+            >>> code.svg('live-organ-transplants.svg', scale=4,
+                         module_color='brown', background='0xFFFFFF')
         """
         builder._svg(self.code, self.version, file, scale,
                      module_color, background)
         
     def text(self):
         """This method returns a string based representation of the QR code.
-        The black modules are represented by 1's and the white modules are
-        represented by 0's. This is useful for debugging purposes. It can also
-        be used to allow a user to write their own output function.
+        The data modules are represented by 1's and the background modules are
+        represented by 0's. The main purpose of this method is to allow a user
+        to write their own renderer.
         
         Example:
             >>> code = pyqrcode.create('Example')

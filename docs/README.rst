@@ -5,15 +5,21 @@ PyQRCode
 .. contents::
 
 The pyqrcode module is a QR code generator that is simple to use and written
-in pure python. The module has the ability to choose the best encoding for your
-data automatically. You can also specify the error correction level. The module
-can also choose the smallest QR code to fit your data automatically. All of
-these helpers can be controlled manually.
+in pure python 3, PIL is not used. The module automates most of the building
+process for you. Generally, QR codes can be created using only two lines of
+code!
+
+Unlike other generators, all of the automation can be controlled manually. You
+are free to set any or all of the properties of your QR code.
+
+QR codes can be saved as SVG, PNG (by using the
+`pypng <https://pypi.python.org/pypi/pypng/>`_ module), and plain text. 
 
 The pyqrcode module attempts to follow the QR code standard as closely as
 possible. The terminology and the encodings used in pyqrcode come directly
 from the standard. This module also follows the algorithm laid out in the
 standard.
+
 
 **Homepage**: https://github.com/mnooner256/pyqrcode
 
@@ -22,8 +28,10 @@ standard.
 Requirements
 ============
 
-The pyqrcode module only requires Python 3. You may want to install pypng in
-order to render PNG files, but it is optional.
+The pyqrcode module only requires Python 3. You may want to install
+`pypng <https://pypi.python.org/pypi/pypng/>`_ in order to render PNG files,
+but it is optional. Note, pypng is a pure python PNG writer which does not
+require any other libraries.
 
 Installation
 ============
@@ -50,7 +58,8 @@ file.
     >>> url.svg('uca-url.svg', scale=8)
 
 The pyqrcode module, while easy to use, is powerful. You can set every
-property of your code. If you install the optional pypng library, you can
+property of the QR code. If you install the optional
+`pypng <https://pypi.python.org/pypi/pypng/>`_ module, you can
 render the code as a PNG image. Below is a more complex example::
 
     >>> big_code = pyqrcode.create('0987654321', error='L', version=27, mode='binary')

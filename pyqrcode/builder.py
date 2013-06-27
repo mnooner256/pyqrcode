@@ -10,8 +10,9 @@ class QRCodeBuilder:
     be used internally, not by users!!!
     
     This class implements the tutorials found at:
-        http://www.thonky.com/qr-code-tutorial/
-        http://www.matchadesign.com/blog/qr-code-demystified-part-6/
+        * http://www.thonky.com/qr-code-tutorial/
+        
+        * http://www.matchadesign.com/blog/qr-code-demystified-part-6/
         
     It also uses the standard. It can be read online at:
         http://raidenii.net/files/datasheets/misc/qr_code.pdf

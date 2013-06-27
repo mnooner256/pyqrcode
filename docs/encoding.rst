@@ -4,7 +4,8 @@ Encoding Data
 The standard calls the data's encoding its :term:`mode`. The QR code standard
 defines how to encode any given piece of data. There are 
 four possible modes. This module supports three modes:
-numeric, alphanumeric, and binary.
+numeric, alphanumeric, and binary. Each mode is worse at encoding the QR code's
+contents.
 
 .. note::
    The QRCode object can automatically choose the best mode based on the data
@@ -14,17 +15,18 @@ numeric, alphanumeric, and binary.
 Numeric Encoding
 ================
 
-The numeric type is the most efficient way to encode digits. Internally, an
-integer is converted into a string of digits. You can also specify a string of
-digits as the data-type. This encoding is the optimal way to encode digits.
+The numeric type is the most efficient way to encode digits. Problematically,
+the standard make no provisions for encoding negative or fractional numbers.
+This encoding is better than Alphanumeric, when you only have a list of
+digits.
+
+To use this encoding, simply specify a string of digits as the data.
+You can also use a positive integer and the code's contents.
 
 .. code-block:: python
 
   >>> number = pyqrcode.create(123456789012345)
   >>> number2 = pyqrcode.create('0987654321')
-
-Notice, though that you cannot encode negative or fractional numbers with this
-encoding. Instead you would use the Alphanumeric mode.
 
 Alphanumeric
 ============
@@ -39,7 +41,7 @@ characters. It encodes:
   
 A complete list of the possible characters can be found in the
 :py:data:`pyqrcode.tables.ascii_codes` dictionary. While limited, this encoding
-is much more efficient for many cases than using the binary encoding. 
+is much more efficient for many cases than using the binary encoding.
 
 .. note::
    The QRCode object will try to use this encoding by using the
@@ -62,8 +64,8 @@ not change the data in any way. Instead its pure bytes are represented
 directly in the QR code. This is the least efficient way to store data in a 
 QR code. You should only use this as a last resort.
 
-The quotation below must be encoded in binary because of the apostrophe and the
-new line character.
+The quotation below must be encoded in binary because of the apostrophe,
+exclamation point, and the new line character.
 
 .. code-block:: python
 
