@@ -147,9 +147,9 @@ class QRCode:
         
         #Build the QR code
         self.builder = builder.QRCodeBuilder(data=content,
-                                     version=self.version,
-                                     mode=self.mode,
-                                     error=self.error)
+                                             version=self.version,
+                                             mode=self.mode,
+                                             error=self.error)
        
         #Save the code for easier reference
         self.code = self.builder.code
@@ -202,9 +202,12 @@ class QRCode:
     def get_png_size(self, scale):
         """This is method helps users determine what *scale* to use when
         creating a PNG of this QR code. It is meant mostly to be used in the
-        console to help a user figure out what scale to use. It will return an
-        integer representing the width and height of the QR code in pixels, if
-        it was drawn using the given scale.
+        console to help the user determine the pixel size of the code
+        using various scales.
+        
+        This method will return an integer representing the width and height of
+        the QR code in pixels, as if it was drawn using the given *scale*.
+        Because QR codes are square, the number represents both dimensions.
         
         Example:
             >>> code = pyqrcode.QRCode("I don't like spam!")
@@ -220,6 +223,13 @@ class QRCode:
         PNG has a bit depth of 1. The file parameter is used to specify where
         to write the image to. It can either be an writable stream or a
         file path.
+        
+        .. note::
+            This method depends on the pypng module to actually create the
+            PNG file.
+        
+        This method will write the given *file* out as a PNG file. The file
+        can be either a string file path, or a writable stream.
         
         The *scale* parameter sets how large to draw a single module. By
         default one pixel is used to draw a single module. This may make the
@@ -239,8 +249,7 @@ class QRCode:
         transparent and 255 is opaque. Note, many color
         combinations are unreadable by scanners, so be careful.
         
-        This method will write the given *file* out as a PNG file. Note, it
-        depends on the pypng module to do this.
+       
         
         Example:
             >>> code = pyqrcode.create('Are you suggesting coconuts migrate?')
@@ -256,9 +265,12 @@ class QRCode:
         """This method writes the QR code out as an SVG document. The
         code is drawn by drawing only the modules corresponding to a 1. They
         are drawn using a line, such that contiguous modules in a row
-        are drawn with a single line. The *file* parameter is used to
-        specify where to write the document to. It can either be a writable
-        stream or a file path. The *scale* parameter sets how large to draw
+        are drawn with a single line.
+        
+        The *file* parameter is used to specify where to write the document
+        to. It can either be a writable stream or a file path.
+        
+        The *scale* parameter sets how large to draw
         a single module. By default one pixel is used to draw a single
         module. This may make the code too small to be read efficiently.
         Increasing the scale will make the code larger. Unlike the png() method,

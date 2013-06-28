@@ -1,19 +1,28 @@
+'''This module lists out all of the tables needed to create a QR code.
+If you are viewing this in the HTML documentation, I recommend reading the
+actual file instead. The formating for the tables is much more readable.
+'''
+
 #: This defines the QR Code's 'mode' which sets what
 #: type of code it is along with its size.
 modes = {'numeric':1,
-         '1':1, 1:1,
+         '1':1,
+         1:1,
          'alphanumeric':2,
          'alfanumeric':2,
          'text':2,
-         '2':2, 2:2,
+         '2':2,
+         2:2,
          'binary':4,
          'bin':4,
          'byte':4,
          'bytes':4,
-         '4':4, 4:4,
+         '4':4,
+         4:4,
          'japanese':8,
          'kanji':8,
-         '8':8, 8:8}
+         '8':8,
+         8:8}
 
 #: This defines the amount of error correction. The dictionary
 #: allows the user to specify this in several ways.
@@ -28,7 +37,7 @@ data_length_field = {9:{1:10, 2:9, 4:8, 8:8},
                      26:{1:12, 2:11, 4:16, 8:10},
                      40:{1:14, 2:13, 4:16, 8:12}}
 
-#: QR Codes uses a unique ASCII table for the 'alphanumeric' mode.
+#: QR Codes uses a unique ASCII-like table for the 'alphanumeric' mode.
 #: This is a dictionary representing that unique table, where the
 #: keys are the possible characters in the data and the values
 #: are the character's numeric representation.
@@ -719,10 +728,11 @@ type_bits = {
     },
 }
 
-#: This table contains *functions* to compute whether to change current bit.
-#: All of the functions in the table return a boolean value. A True result means
-#: you should add the bit to the QR Code exactly as is. A False result means you
-#: should add the opposite bit. This table was taken from:
+#: This table contains *functions* to compute whether to change current bit when
+#: creating the masks. All of the functions in the table return a boolean value.
+#: A True result means you should add the bit to the QR Code exactly as is. A
+#: False result means you should add the opposite bit. This table was taken
+#: from:
 #: 
 #: http://www.thonky.com/qr-code-tutorial/mask-patterns/
 mask_patterns = [

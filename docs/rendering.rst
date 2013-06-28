@@ -67,7 +67,8 @@ Although, how the colors are represented are renderer specific.
 Scalable Vector Graphic
 -----------------------
 
-The SVG renderer outputs the QR code as a scalable vector graphic. *This
+The SVG renderer outputs the QR code as a scalable vector graphic using
+the :py:meth:`pyqrcode.QRCode.svg` method. *This
 renderer does not require any external modules.*
 
 The method draws the QR code using a set of horizontal lines. By default, no
@@ -80,9 +81,9 @@ default foreground color is black.
   >>> url.svg(sys.stdout, scale=1)
   >>> url.svg('uca.svg', scale=4)
   
-You can change the colors of the data-modules using the *module* parameter.
-Likewise, you can specify a background using the *background* parameter. Each
-of these parameters take a HTML style color.
+You can change the colors of the data-modules using the *module_color*
+parameter. Likewise, you can specify a background using the *background*
+parameter. Each of these parameters take a HTML style color.
 
 .. code-block:: python
 
@@ -91,12 +92,20 @@ of these parameters take a HTML style color.
 Portable Network Graphic
 ------------------------
 
-The PNG renderer ouputs the QR code as a portable network graphic file.
+The PNG renderer ouputs the QR code as a portable network graphic file using
+the :py:meth:`pyqrcode.QRCode.png` method.
 
 .. note::
 
   This renderer requires the `pypng <https://pypi.python.org/pypi/pypng/>`_
   module.
+
+.. code-block:: python
+
+  >>> url = pyqrcode.create('http://uca.edu')
+  >>> with open('code.png', 'w') as fstream:
+  ...     url.png(fstream, scale=5)
+
 
 Colors should be a list or tuple containing numbers between zero an 255. The
 lists should be of length three (for RGB) or four (for RGBA). The color (0,0,0)
@@ -109,6 +118,5 @@ black, and the background modules colored white.
 
 .. code-block:: python
 
-  >>> url.png('uca.png')
   >>> url.png('uca-colors.png', scale=6, module_color=[0, 0, 0, 128], background=[0xff, 0xff, 0xcc])
 

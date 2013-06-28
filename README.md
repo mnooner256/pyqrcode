@@ -48,6 +48,13 @@ You can construct the class normally, or use the *create* wrapper function.
 >>> import pyqrcode
 ```
 
+PyPi
+----
+
+* _PyPi page_: https://pypi.python.org/pypi?name=PyQRCode&:action=display
+
+* _Documentation_: http://pythonhosted.org/PyQRCode/
+
 ### Encoding Data ###
 
 This module supports three encodings for data: numeric, alphanumeric, and
@@ -86,7 +93,7 @@ to help me write an encoder for Kanji, shoot me an email.
 
 There are many situation where you might wish to have more fine grained control
 over how the QR Code is generated. You can specify all the properties of your
-QR code through the QRCode constructor. There are three main properties to a
+QR code through the *create* function. There are three main properties to a
 QR code.
 
 The _error_ parameter sets the error correction level of the code. Each level

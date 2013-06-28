@@ -2,10 +2,16 @@ Welcome to PyQRCode's documentation!
 ************************************
 
 The pyqrcode module is a QR code generator that is simple to use and written
-in pure python 3. The module can automate most of the building process for you.
-Unlike other generators, all of these helpers can be controlled manually.
+in pure python 3. The module automates most of the building
+process for you. Generally, QR codes can be created using only two lines of
+code!
+
+Unlike many other generators, all of the automation can be controlled manually.
+You are free to set any or all of the properties of your QR code.
+
 QR codes can be saved as SVG, PNG (by using the
-`pypng <https://pypi.python.org/pypi/pypng/>`_ module), and plain text. 
+`pypng <https://pypi.python.org/pypi/pypng/>`_ module), and plain text. PIL is
+not used to render the image files.
 
 The pyqrcode module attempts to follow the QR code standard as closely as
 possible. The terminology and the encodings used in pyqrcode come directly

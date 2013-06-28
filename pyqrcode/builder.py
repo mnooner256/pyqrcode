@@ -10,11 +10,12 @@ class QRCodeBuilder:
     be used internally, not by users!!!
     
     This class implements the tutorials found at:
-        * http://www.thonky.com/qr-code-tutorial/
+
+    * http://www.thonky.com/qr-code-tutorial/
+    
+    * http://www.matchadesign.com/blog/qr-code-demystified-part-6/
         
-        * http://www.matchadesign.com/blog/qr-code-demystified-part-6/
-        
-    It also uses the standard. It can be read online at:
+    This class also uses the standard, which can be read online at:
         http://raidenii.net/files/datasheets/misc/qr_code.pdf
         
     Test codes were tested against:
@@ -26,8 +27,8 @@ class QRCodeBuilder:
     QR code Debugger:
         http://qrlogo.kaarposoft.dk/qrdecode.html
     """
-    def __init__(self, data, version=1, mode='alphanumeric', error='Q'):
-        """See pyqrcode.QRCode for information on the parameters."""
+    def __init__(self, data, version, mode, error):
+        """See :py:class:`pyqrcode.QRCode` for information on the parameters."""
         
         #Set what data we are going to use to generate
         #the QR code
