@@ -147,13 +147,14 @@ class QRCodeBuilder:
         #Now perform the algorithm that will make the ascii into bit fields
         with io.StringIO() as buf:
             for (a,b) in self.grouper(2, ascii):
-                if b:
+                if b is not None:
                     buf.write(self.binary_string((45*a)+b, 11))
                 else:
                     #This occurs when there is an odd number
                     #of characters in the data
                     buf.write(self.binary_string(a, 6))
-                    
+            
+            #Return the binary string
             return buf.getvalue()
             
     def encode_numeric(self):

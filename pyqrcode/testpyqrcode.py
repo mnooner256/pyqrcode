@@ -8,10 +8,10 @@ import os, sys
 code_dir = './qrtests'
 scale = 4
 
-data = 'HELLO WORLD'
+data = 'CSCI 0'
 error='H'
 version=None
-mode=None
+mode='alphanumeric'
 
 
 if not os.path.exists(code_dir):
