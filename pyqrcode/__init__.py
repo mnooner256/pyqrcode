@@ -153,6 +153,14 @@ class QRCode:
        
         #Save the code for easier reference
         self.code = self.builder.code
+        
+    def __str__(self):
+        return repr(self)
+
+    def __repr__(self):
+        return 'QRCode(content=\'{}\', error=\'{}\', version={}, mode=\'{}\')'.format(
+                       self.data, self.error, self.version, self.mode)
+    
 
     def _detect_content_type(self):
         """This method tries to auto-detect the type of the data. It first
