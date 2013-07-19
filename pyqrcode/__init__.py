@@ -175,10 +175,10 @@ class QRCode:
         """
         #See if the data is an integer
         try:
-            test = int(content)
+            test = int(self.data)
             return 'numeric'
         except:
-            #Content is not numeric, this is not an error
+            #Data is not numeric, this is not an error
             pass
         
         #See if that data is alphanumeric based on the standards

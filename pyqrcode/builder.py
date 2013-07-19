@@ -4,6 +4,7 @@ builds the code. While the various output methods draw the code into a file.
 import pyqrcode.tables as tables
 import io
 import sys
+import itertools
 
 class QRCodeBuilder:
     """This class generates a QR code based on the standard. It is meant to
@@ -34,8 +35,6 @@ class QRCodeBuilder:
         #the QR code
         if isinstance(data, bytes):
             self.data = data.decode('utf-8')
-        elif not isinstance(data, str):
-            self.data = str(data)
         else:
             self.data = data
           
@@ -78,9 +77,8 @@ class QRCodeBuilder:
         This function is copied from the standard docs on
         itertools.
         """
-        from itertools import zip_longest
         args = [iter(iterable)] * n
-        return zip_longest(*args, fillvalue=fillvalue)
+        return itertools.zip_longest(*args, fillvalue=fillvalue)
         
     def binary_string(self, data, length):
         """This method returns a string of length n that is the binary
@@ -317,7 +315,6 @@ class QRCodeBuilder:
         If we fall short, then we must add bytes to the end of the encoded
         data field. The value of these bytes are specified in the standard.
         """
-        from itertools import cycle
         
         data_blocks = len(self.buffer.getvalue()) // 8
         total_blocks = tables.data_capacity[self.version][self.error][0] // 8
@@ -327,7 +324,7 @@ class QRCodeBuilder:
             return None
             
         #This will return item1, item2, item1, item2, etc.
-        block = cycle(['11101100', '00010001'])
+        block = itertools.cycle(['11101100', '00010001'])
         
         #Create a string of the needed blocks
         return ''.join([next(block) for x in range(needed_blocks)])
@@ -430,7 +427,6 @@ class QRCodeBuilder:
         special lines called the timing pattern is also necessary. Finally,
         a single black pixel is added just above the lower left black box.
         """
-        import itertools
         
         #Draw outer black box
         for i in range(7):
@@ -565,8 +561,6 @@ class QRCodeBuilder:
         server as the base for all the generated masks.
         """
         from copy import deepcopy
-        import itertools
-        import sys
         
         nmasks = len(tables.mask_patterns)
         masks = [''] * nmasks
