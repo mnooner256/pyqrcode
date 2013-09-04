@@ -16,3 +16,5 @@ qrtests
 _build
 *.zip
 *.gz
+
+png.py
