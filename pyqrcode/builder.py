@@ -1,6 +1,8 @@
 """This module does the actual generation of the QR codes. The QRCodeBuilder
 builds the code. While the various output methods draw the code into a file.
 """
+from __future__ import absolute_import, division, print_function, with_statement, unicode_literals
+
 import pyqrcode.tables as tables
 import io
 import sys
@@ -78,7 +80,9 @@ class QRCodeBuilder:
         itertools.
         """
         args = [iter(iterable)] * n
-        return itertools.zip_longest(*args, fillvalue=fillvalue)
+        if hasattr(itertools, 'zip_longest'):
+            return itertools.zip_longest(*args, fillvalue=fillvalue)
+        return itertools.izip_longest(*args, fillvalue=fillvalue)
         
     def binary_string(self, data, length):
         """This method returns a string of length n that is the binary
@@ -191,7 +195,10 @@ class QRCodeBuilder:
         """
         with io.StringIO() as buf:
             for char in self.data.encode('ascii'):
-                buf.write('{{:0{}b}}'.format(8).format(char))
+                if isinstance(char, int):
+                    buf.write('{{:0{}b}}'.format(8).format(char))
+                if isinstance(char, str):
+                    buf.write('{{:0{}b}}'.format(8).format(ord(char)))
             return buf.getvalue()
             
             
