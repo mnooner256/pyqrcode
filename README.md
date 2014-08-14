@@ -10,7 +10,7 @@ Unlike other generators, all of the helpers can be controlled manually. You are
 free to any or all of the properties of your QR code.
 
 QR codes can be saved as SVG, PNG (by using the
-[pypng](https://pypi.python.org/pypi/pypng/) module), or plain text. 
+[pypng](https://pypi.python.org/pypi/pypng/) module), or plain text.
 
 The pyqrcode module attempts to follow the QR code standard as closely as
 possible. The terminology and the encodings used in pyqrcode come directly
@@ -20,13 +20,14 @@ standard.
 Requirements
 -------------------------
 
-The pyqrcode module only requires Python 3. You may want to install pypng in
-order to render PNG files, but it is optional.
+The pyqrcode module only requires Python 2.7 or Python 3. You may want to
+install pypng in order to render PNG files, but it is optional.
 
 Installation
 ------------
 
-Installation is simple. It can be installed from pip using the following command:
+Installation is simple. It can be installed from pip using the following
+command:
 
 ```bash
 $ pip install pyqrcode
@@ -59,7 +60,7 @@ PyPi
 
 This module supports three encodings for data: numeric, alphanumeric, and
 binary. The numeric type is the most efficient way to encode digits. As the
-name implys it is designed to encode integers. Some numbers might be two
+name implies it is designed to encode integers. Some numbers might be two
 large, the object can use a string containing only digits instead of an
 actual number.
 
@@ -117,7 +118,7 @@ mentioned above three of the four possible encodings have been written. By
 default the object uses the most efficient encoding for the contents. You can
 change this though. See qrcode.tables.modes for a list of possible values
 for this parameter.
-        
+
 The code below constructs a QR code with 30% error correction, size 27, and
 forces the encoding to be binary (rather than numeric).
 
@@ -137,7 +138,7 @@ The SVG renderer outputs the QR Code as a scalable vector graphic. This
 renderer does not require any external modules. Instead it hand draws the
 QR code as a set of lines.
 
-```python    
+```python
 >>> url.svg(sys.stdout, scale=1)
 >>> url.svg('uca.svg', scale=4, module_color="#7D007D")
 ```
@@ -149,7 +150,7 @@ take advantage of transparency.
 ```python
 >>> number.png('big-number.png')
 >>> life.png('sketch.png', scale=6, module_color=[0, 0, 0, 128], background=[0xff, 0xff, 0xcc])
-```    
+```
 Finally, there is a text based renderer. This will output the QR code as a
 string of 1's and 0's, with each row of the code on a new line.
 

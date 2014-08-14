@@ -29,10 +29,10 @@ standard.
 Requirements
 ============
 
-The pyqrcode module only requires Python 3. You may want to install
-`pypng <https://pypi.python.org/pypi/pypng/>`_ in order to render PNG files,
-but it is optional. Note, pypng is a pure python PNG writer which does not
-require any other libraries.
+The pyqrcode module only requires Python 2.7 or Python 3. You may want to
+install `pypng <https://pypi.python.org/pypi/pypng/>`_ in order to render PNG
+files, but it is optional. Note, pypng is a pure python PNG writer which does
+not require any other libraries.
 
 Installation
 ============
@@ -65,4 +65,3 @@ render the code as a PNG image. Below is a more complex example::
 
     >>> big_code = pyqrcode.create('0987654321', error='L', version=27, mode='binary')
     >>> big_code.png('code.png', scale=6, module_color=[0, 0, 0, 128], background=[0xff, 0xff, 0xcc])
-
