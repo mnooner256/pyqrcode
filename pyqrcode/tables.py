@@ -5,6 +5,8 @@ actual file instead. The formating for the tables is much more readable.
 
 #: This defines the QR Code's 'mode' which sets what
 #: type of code it is along with its size.
+from __future__ import absolute_import, division, print_function, with_statement, unicode_literals
+
 modes = {'numeric':1,
          '1':1,
          1:1,

@@ -14,6 +14,8 @@ Examples:
         >>> number = pyqrcode.create(123456789012345)
         >>> number.png('big-number.png')
 """
+from __future__ import absolute_import, division, print_function, with_statement, unicode_literals
+
 import pyqrcode.tables
 import pyqrcode.builder as builder
 
