@@ -1,10 +1,10 @@
 from setuptools import setup
 import sys, os.path, shutil
 
-version = '0.10.1'
+version = '0.11'
 
-if sys.version_info < (3, 0, 0):
-    sys.stderr.write("pyqrcode requires Python 3.\n")
+if sys.version_info < (2, 7, 0) and sys.version_info < (3, 0, 0):
+    sys.stderr.write("pyqrcode requires Python 2.7 or 3.\n")
     sys.exit(1)
 
 
@@ -22,7 +22,7 @@ else:
 setup(name='PyQRCode',
       packages=['pyqrcode'],
       version=version,
-      description='A QR code generator written purely in python 3 with SVG and PNG output.',
+      description='A QR code generator written purely in Python 3 and 2.7 with SVG and PNG output.',
       author='Michael Nooner',
       author_email='mnooner256@gmail.com',
       url='https://github.com/mnooner256/pyqrcode',
@@ -41,6 +41,7 @@ setup(name='PyQRCode',
         'Operating System :: POSIX',
         'Operating System :: Microsoft :: Windows',
         'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: 2.7',
         ],
       long_description=longdesc,
 )
