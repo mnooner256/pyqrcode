@@ -312,7 +312,7 @@ class QRCode:
         builder._svg(self.code, self.version, file, scale,
                      module_color, background)
 
-    def text(self):
+    def text(self, ansi_color=False):
         """This method returns a string based representation of the QR code.
         The data modules are represented by 1's and the background modules are
         represented by 0's. The main purpose of this method is to allow a user
@@ -323,4 +323,4 @@ class QRCode:
             >>> text = code.text()
             >>> print(text)
         """
-        return builder._text(self.code)
+        return builder._text(self.code, ansi_color)
