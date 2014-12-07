@@ -18,3 +18,7 @@ _build
 *.gz
 
 png.py
+py3
+py2
+
+test.py
