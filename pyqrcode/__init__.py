@@ -345,6 +345,11 @@ class QRCode:
         terminal is system dependent. This is the least transportable option.
         To use the 256 color scheme set *module_color* and/or
         *background* to a number between 0 and 256.
+
+        Example:
+            >>> code = pyqrcode.create('Example')
+            >>> text = code.terminal()
+            >>> print(text)
         """
         return builder._terminal(self.code, module_color, background)
 
