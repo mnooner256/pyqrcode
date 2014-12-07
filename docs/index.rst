@@ -11,7 +11,8 @@ You are free to set any or all of the properties of your QR code.
 
 QR codes can be saved as SVG, PNG (by using the
 `pypng <https://pypi.python.org/pypi/pypng/>`_ module), and plain text. PIL is
-not used to render the image files.
+not used to render the image files. You can also display a QR code directly in
+a compatible terminal.
 
 The pyqrcode module attempts to follow the QR code standard as closely as
 possible. The terminology and the encodings used in pyqrcode come directly
@@ -68,7 +69,7 @@ and white scalable vector graphics file.
 
 The pyqrcode module, while easy to use, is powerful. You can set all of the
 properties of the QR code. If you install the optional pypng library, you can
-render the code as a PNG image. Below is a more complex example::
+also render the code as a PNG image. Below is a more complex example::
 
     >>> big_code = pyqrcode.create('0987654321', error='L', version=27, mode='binary')
     >>> big_code.png('code.png', scale=6, module_color=[0, 0, 0, 128], background=[0xff, 0xff, 0xcc])

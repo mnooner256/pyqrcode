@@ -45,6 +45,40 @@ neither the svg or png renderers are satisfactory.
   01111111000001010100100
   00000000000000000000000
 
+Terminal Rendering
+==================
+
+QR codes can be directly rendered to a compatible terminal in a
+manner readable by QR code scanners. Most Linux terminals are supported. This
+is done using ASCII escape codes. The QR code's colors can even be set.
+
+.. code-block:: python
+
+  >>> text = pyqrcode.create('Example')
+  >>> print(text.terminal())
+  >>> print(text.terminal(module_color='red', background='yellow'))
+  >>> print(text.terminal(module_color=5, background=123))
+
+Rendering colors in a terminal is a tricky business. Beyond the eight named
+colors, compatability becomes problematic. With this in mind it is best to
+stick to the eight well known colors: black, red, green, yellow, blue, magenta,
+and cyan. Although, these colors are also supported on almost every color 
+terminal: light gray, dark gray, light red, light green, light blue, light
+yellow, light magenta, light cyan, and white. There are two additional named
+colors.
+
+The first is "default" it corresponds to the default background color
+of the terminal. The other is "reverse", this inverts the current background
+color. These are the default colors used by the terminal method.
+
+The terminal method also support the 256 color scheme. This is the least
+transportable of the color schemes. To use this color scheme simply supply a
+number between 0 and 256. This number will act as an index to the terminal's
+color pallete. What color that index actually corresponds to is system
+dependent. In other words, while most terminal emulators support 256 colors,
+the there is no way to tell what color will be actually displayed.
+
+
 Image Rendering
 ===============
 
