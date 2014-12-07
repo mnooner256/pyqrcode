@@ -854,30 +854,38 @@ def _get_png_size(version, scale):
     #Formula: scale times number of modules plus the border on each side
     return (scale * tables.version_size[version]) + (2 * scale)
 
-def _text(code):
+def _text(code, ansi_color):
     """This method returns a text based representation of the QR code.
     This is useful for debugging purposes.
     """
+    if ansi_color:
+        data = '\033[0;30;40m  \033[0m'
+        background = '\033[0;37;47m  \033[0m'
+    else:
+        data = '1'
+        background = '0'
+
     buf = io.StringIO()
 
-    border_row = '0' * (len(code[0]) + 2)
+    buf.write('\n')
+    border_row = background * (len(code[0]) + 2)
 
     buf.write(border_row)
     buf.write('\n')
     for row in code:
-        buf.write('0')
+        buf.write(background)
         for bit in row:
             if bit == 1:
-                buf.write('1')
+                buf.write(data)
             elif bit == 0:
-                buf.write('0')
+                buf.write(background)
             #This is for debugging unfinished QR codes,
             #unset pixels will be spaces.
             else:
                 buf.write(' ')
-        buf.write('0\n')
+        buf.write(background + '\n')
 
-    buf.write(border_row)
+    buf.write(border_row + '\n')
 
     return buf.getvalue()
 
