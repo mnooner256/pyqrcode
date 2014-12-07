@@ -1,0 +1,459 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pyqrcode &mdash; pyqrcode 0.11 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.11',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="pyqrcode 0.11 documentation" href="../index.html" />
+    <link rel="up" title="Module code" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">pyqrcode 0.11 documentation</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for pyqrcode</h1><div class="highlight"><pre>
+<span class="sd">&quot;&quot;&quot;This module is used to create QR Codes. It is designed to be as simple and</span>
+<span class="sd">as possible. It does this by using sane defaults and autodetection to make</span>
+<span class="sd">creating a QR Code very simple.</span>
+
+<span class="sd">It is recommended that you use the :func:`pyqrcode.create` function to build the</span>
+<span class="sd">QRCode object. This results in cleaner looking code.</span>
+
+<span class="sd">Examples:</span>
+<span class="sd">        &gt;&gt;&gt; import pyqrcode</span>
+<span class="sd">        &gt;&gt;&gt; import sys</span>
+<span class="sd">        &gt;&gt;&gt; url = pyqrcode.create(&#39;http://uca.edu&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; url.svg(sys.stdout, scale=1)</span>
+<span class="sd">        &gt;&gt;&gt; url.svg(&#39;uca.svg&#39;, scale=4)</span>
+<span class="sd">        &gt;&gt;&gt; number = pyqrcode.create(123456789012345)</span>
+<span class="sd">        &gt;&gt;&gt; number.png(&#39;big-number.png&#39;)</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="c">#Imports required for 2.7 support</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">absolute_import</span><span class="p">,</span> <span class="n">division</span><span class="p">,</span> <span class="n">print_function</span><span class="p">,</span> <span class="n">with_statement</span><span class="p">,</span> <span class="n">unicode_literals</span>
+
+<span class="kn">import</span> <span class="nn">pyqrcode.tables</span>
+<span class="kn">import</span> <span class="nn">pyqrcode.builder</span> <span class="kn">as</span> <span class="nn">builder</span>
+
+<div class="viewcode-block" id="create"><a class="viewcode-back" href="../moddoc.html#pyqrcode.create">[docs]</a><span class="k">def</span> <span class="nf">create</span><span class="p">(</span><span class="n">content</span><span class="p">,</span> <span class="n">error</span><span class="o">=</span><span class="s">&#39;H&#39;</span><span class="p">,</span> <span class="n">version</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;When creating a QR code only the content to be encoded is required,</span>
+<span class="sd">    all the other properties of the code will be guessed based on the</span>
+<span class="sd">    contents given. This function will return a :class:`QRCode` object.</span>
+
+<span class="sd">    Unless you are familiar with QR code&#39;s inner workings</span>
+<span class="sd">    it is recommended that you just specify the content and nothing else.</span>
+<span class="sd">    However, there are cases where you may want to specify the various</span>
+<span class="sd">    properties of the created code manually, this is what the other</span>
+<span class="sd">    parameters do. Below, you will find a lengthy explanation of what</span>
+<span class="sd">    each parameter is for. Note, the parameter names and values are taken</span>
+<span class="sd">    directly from the standards. You may need to familiarize yourself</span>
+<span class="sd">    with the terminology of QR codes for the names to make sense.</span>
+
+<span class="sd">    The *error* parameter sets the error correction level of the code. There</span>
+<span class="sd">    are four levels defined by the standard. The first is level &#39;L&#39; which</span>
+<span class="sd">    allows for 7% of the code to be corrected. Second, is level &#39;M&#39; which</span>
+<span class="sd">    allows for 15% of the code to be corrected. Next, is level &#39;Q&#39; which</span>
+<span class="sd">    is the most common choice for error correction, it allow 25% of the</span>
+<span class="sd">    code to be corrected. Finally, there is the highest level &#39;H&#39; which</span>
+<span class="sd">    allows for 30% of the code to be corrected. There are several ways to</span>
+<span class="sd">    specify this parameter, you can use an upper or lower case letter,</span>
+<span class="sd">    a float corresponding to the percentage of correction, or a string</span>
+<span class="sd">    containing the percentage. See tables.modes for all the possible</span>
+<span class="sd">    values. By default this parameter is set to &#39;H&#39; which is the highest</span>
+<span class="sd">    possible error correction, but it has the smallest available data</span>
+<span class="sd">    capacity.</span>
+
+<span class="sd">    The *version* parameter specifies the size and data capacity of the</span>
+<span class="sd">    code. Versions are any integer between 1 and 40. Where version 1 is</span>
+<span class="sd">    the smallest QR code, and version 40 is the largest. If this parameter</span>
+<span class="sd">    is left unspecified, then the contents and error correction level will</span>
+<span class="sd">    be used to guess the smallest possible QR code version that the</span>
+<span class="sd">    content will fit inside of. You may want to specify this parameter</span>
+<span class="sd">    for consistency when generating several QR codes with varying amounts</span>
+<span class="sd">    of data. That way all of the generated codes would have the same size.</span>
+
+<span class="sd">    The *mode* parameter specifies how the contents will be encoded. By</span>
+<span class="sd">    default, the best possible encoding for the contents is guessed. There</span>
+<span class="sd">    are four possible encoding methods. First, is &#39;numeric&#39; which is</span>
+<span class="sd">    used to encode integer numbers. Next, is &#39;alphanumeric&#39; which is</span>
+<span class="sd">    used to encode some ASCII characters. This mode uses only a limited</span>
+<span class="sd">    set of characters. Most problematic is that it can only use upper case</span>
+<span class="sd">    English characters, consequently, the content parameter will be</span>
+<span class="sd">    subjected to str.upper() before encoding. See tables.ascii_codes for</span>
+<span class="sd">    a complete list of available characters. We then have &#39;binary&#39; encoding</span>
+<span class="sd">    which just encodes the bytes directly into the QR code (this encoding</span>
+<span class="sd">    is the least efficient). Finally, there is &#39;kanji&#39;  encoding (i.e.</span>
+<span class="sd">    Japanese characters), this encoding is unimplemented at this time.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">QRCode</span><span class="p">(</span><span class="n">content</span><span class="p">,</span> <span class="n">error</span><span class="p">,</span> <span class="n">version</span><span class="p">,</span> <span class="n">mode</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="QRCode"><a class="viewcode-back" href="../moddoc.html#pyqrcode.QRCode">[docs]</a><span class="k">class</span> <span class="nc">QRCode</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;This class represents a QR code. To use this class simply give the</span>
+<span class="sd">    constructor a string representing the data to be encoded, it will then</span>
+<span class="sd">    build a code in memory. You can then save it in various formats. Note,</span>
+<span class="sd">    codes can be written out as PNG files but this requires the PyPNG module.</span>
+<span class="sd">    You can find the PyPNG module at http://packages.python.org/pypng/.</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        &gt;&gt;&gt; from pyqrcode import QRCode</span>
+<span class="sd">        &gt;&gt;&gt; import sys</span>
+<span class="sd">        &gt;&gt;&gt; url = QRCode(&#39;http://uca.edu&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; url.svg(sys.stdout, scale=1)</span>
+<span class="sd">        &gt;&gt;&gt; url.svg(&#39;uca.svg&#39;, scale=4)</span>
+<span class="sd">        &gt;&gt;&gt; number = QRCode(123456789012345)</span>
+<span class="sd">        &gt;&gt;&gt; number.png(&#39;big-number.png&#39;)</span>
+
+<span class="sd">    .. note::</span>
+<span class="sd">        For what all of the parameters do, see the :func:`pyqrcode.create`</span>
+<span class="sd">        function.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">content</span><span class="p">,</span> <span class="n">error</span><span class="o">=</span><span class="s">&#39;H&#39;</span><span class="p">,</span> <span class="n">version</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+
+        <span class="c">#Coerce the content into a string</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">content</span><span class="p">)</span>
+
+        <span class="c">#Check that the passed in error level is valid</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">error</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">error_level</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">error</span><span class="p">)</span><span class="o">.</span><span class="n">upper</span><span class="p">()]</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&#39;The error parameter is not one of &#39;</span>
+                             <span class="s">&#39;&quot;L&quot;, &quot;M&quot;, &quot;Q&quot;, or &quot;H.&quot;&#39;</span><span class="p">)</span>
+
+        <span class="c">#Guess the mode of the code, this will also be used for</span>
+        <span class="c">#error checking</span>
+        <span class="n">guessed_content_type</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_detect_content_type</span><span class="p">()</span>
+
+        <span class="c">#Force a passed in mode to be lowercase</span>
+        <span class="k">if</span> <span class="n">mode</span><span class="p">:</span>
+            <span class="n">mode</span> <span class="o">=</span> <span class="n">mode</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+
+        <span class="c">#Check that the mode parameter is compatible with the contents</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">mode</span><span class="p">:</span>
+            <span class="c">#Use the guessed mode</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">mode</span> <span class="o">=</span> <span class="n">guessed_content_type</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">mode_num</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">modes</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">mode</span><span class="p">]</span>
+        <span class="k">elif</span> <span class="n">guessed_content_type</span> <span class="o">==</span> <span class="s">&#39;binary&#39;</span> <span class="ow">and</span> \
+             <span class="n">tables</span><span class="o">.</span><span class="n">modes</span><span class="p">[</span><span class="n">mode</span><span class="p">]</span> <span class="o">!=</span> <span class="n">tables</span><span class="o">.</span><span class="n">modes</span><span class="p">[</span><span class="s">&#39;binary&#39;</span><span class="p">]:</span>
+            <span class="c">#Binary is only guessed as a last resort, if the</span>
+            <span class="c">#passed in mode is not binary the data won&#39;t encode</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&#39;The content provided cannot be encoded with &#39;</span>
+                             <span class="s">&#39;the mode {}, it can only be encoded as &#39;</span>
+                             <span class="s">&#39;binary.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">mode</span><span class="p">))</span>
+        <span class="k">elif</span> <span class="n">tables</span><span class="o">.</span><span class="n">modes</span><span class="p">[</span><span class="n">mode</span><span class="p">]</span> <span class="o">==</span> <span class="n">tables</span><span class="o">.</span><span class="n">modes</span><span class="p">[</span><span class="s">&#39;numeric&#39;</span><span class="p">]</span> <span class="ow">and</span> \
+             <span class="n">guessed_content_type</span> <span class="o">!=</span> <span class="s">&#39;numeric&#39;</span><span class="p">:</span>
+            <span class="c">#If numeric encoding is requested make sure the data can</span>
+            <span class="c">#be encoded in that format</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&#39;The content cannot be encoded as numeric.&#39;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c">#The data should encode with the passed in mode</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">mode</span> <span class="o">=</span> <span class="n">mode</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">mode_num</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">modes</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">mode</span><span class="p">]</span>
+
+        <span class="c">#Guess the &quot;best&quot; version</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">version</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pick_best_fit</span><span class="p">()</span>
+
+        <span class="c">#If the user supplied a version, then check that it has</span>
+        <span class="c">#sufficient data capacity for the contents passed in</span>
+        <span class="k">if</span> <span class="n">version</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">version</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">version</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">version</span> <span class="o">=</span> <span class="n">version</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&#39;The data will not fit inside a version {} &#39;</span>
+                                 <span class="s">&#39;code with the given encoding and error &#39;</span>
+                                 <span class="s">&#39;level (the code must be at least a &#39;</span>
+                                 <span class="s">&#39;version {}).&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">version</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">version</span><span class="p">))</span>
+
+        <span class="c">#Build the QR code</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">builder</span> <span class="o">=</span> <span class="n">builder</span><span class="o">.</span><span class="n">QRCodeBuilder</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">content</span><span class="p">,</span>
+                                             <span class="n">version</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">version</span><span class="p">,</span>
+                                             <span class="n">mode</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">mode</span><span class="p">,</span>
+                                             <span class="n">error</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">error</span><span class="p">)</span>
+
+        <span class="c">#Save the code for easier reference</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">code</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">builder</span><span class="o">.</span><span class="n">code</span>
+
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">repr</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s">&#39;QRCode(content=</span><span class="se">\&#39;</span><span class="s">{}</span><span class="se">\&#39;</span><span class="s">, error=</span><span class="se">\&#39;</span><span class="s">{}</span><span class="se">\&#39;</span><span class="s">, version={}, mode=</span><span class="se">\&#39;</span><span class="s">{}</span><span class="se">\&#39;</span><span class="s">)&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                       <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">error</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">version</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mode</span><span class="p">)</span>
+
+
+    <span class="k">def</span> <span class="nf">_detect_content_type</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;This method tries to auto-detect the type of the data. It first</span>
+<span class="sd">        tries to see if the data is a valid integer, in which case it returns</span>
+<span class="sd">        numeric. Next, it tests the data to see if it is &#39;alphanumeric.&#39; QR</span>
+<span class="sd">        Codes use a special table with very limited range of ASCII characters.</span>
+<span class="sd">        The code&#39;s data is tested to make sure it fits inside this limited</span>
+<span class="sd">        range. If all else fails, the data is determined to be of type</span>
+<span class="sd">        &#39;binary.&#39;</span>
+
+<span class="sd">        Note, encoding &#39;kanji&#39; is not yet implemented.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c">#See if the data is an integer</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">test</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+            <span class="k">return</span> <span class="s">&#39;numeric&#39;</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="c">#Data is not numeric, this is not an error</span>
+            <span class="k">pass</span>
+
+        <span class="c">#See if that data is alphanumeric based on the standards</span>
+        <span class="c">#special ASCII table</span>
+        <span class="n">valid_characters</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">ascii_codes</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+        <span class="k">if</span> <span class="nb">all</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">valid_characters</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">upper</span><span class="p">())):</span>
+            <span class="k">return</span> <span class="s">&#39;alphanumeric&#39;</span>
+
+        <span class="c">#All of the tests failed. The content can only be binary.</span>
+        <span class="k">return</span> <span class="s">&#39;binary&#39;</span>
+
+    <span class="k">def</span> <span class="nf">_pick_best_fit</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;This method return the smallest possible QR code version number</span>
+<span class="sd">        that will fit the specified data with the given error level.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">version</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">41</span><span class="p">):</span>
+            <span class="c">#Get the maximum possible capacity</span>
+            <span class="n">capacity</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">data_capacity</span><span class="p">[</span><span class="n">version</span><span class="p">][</span><span class="bp">self</span><span class="o">.</span><span class="n">error</span><span class="p">][</span><span class="bp">self</span><span class="o">.</span><span class="n">mode_num</span><span class="p">]</span>
+
+            <span class="c">#Check the capacity</span>
+            <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mode_num</span> <span class="o">==</span> <span class="n">tables</span><span class="o">.</span><span class="n">modes</span><span class="p">[</span><span class="s">&#39;binary&#39;</span><span class="p">]</span> <span class="ow">and</span> \
+               <span class="n">capacity</span> <span class="o">&gt;=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s">&#39;ascii&#39;</span><span class="p">)))</span> <span class="ow">or</span> \
+               <span class="n">capacity</span> <span class="o">&gt;=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">):</span>
+                <span class="k">return</span> <span class="n">version</span>
+
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&#39;The data will not fit in any QR code version &#39;</span>
+                         <span class="s">&#39;with the given encoding and error level.&#39;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="QRCode.get_png_size"><a class="viewcode-back" href="../moddoc.html#pyqrcode.QRCode.get_png_size">[docs]</a>    <span class="k">def</span> <span class="nf">get_png_size</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">scale</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;This is method helps users determine what *scale* to use when</span>
+<span class="sd">        creating a PNG of this QR code. It is meant mostly to be used in the</span>
+<span class="sd">        console to help the user determine the pixel size of the code</span>
+<span class="sd">        using various scales.</span>
+
+<span class="sd">        This method will return an integer representing the width and height of</span>
+<span class="sd">        the QR code in pixels, as if it was drawn using the given *scale*.</span>
+<span class="sd">        Because QR codes are square, the number represents both dimensions.</span>
+
+<span class="sd">        Example:</span>
+<span class="sd">            &gt;&gt;&gt; code = pyqrcode.QRCode(&quot;I don&#39;t like spam!&quot;)</span>
+<span class="sd">            &gt;&gt;&gt; print(code.get_png_size(1))</span>
+<span class="sd">            31</span>
+<span class="sd">            &gt;&gt;&gt; print(code.get_png_size(5))</span>
+<span class="sd">            155</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">builder</span><span class="o">.</span><span class="n">_get_png_size</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">version</span><span class="p">,</span> <span class="n">scale</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="QRCode.png"><a class="viewcode-back" href="../moddoc.html#pyqrcode.QRCode.png">[docs]</a>    <span class="k">def</span> <span class="nf">png</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">file</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">module_color</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">background</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;This method writes the QR code out as an PNG image. The resulting</span>
+<span class="sd">        PNG has a bit depth of 1. The file parameter is used to specify where</span>
+<span class="sd">        to write the image to. It can either be an writable stream or a</span>
+<span class="sd">        file path.</span>
+
+<span class="sd">        .. note::</span>
+<span class="sd">            This method depends on the pypng module to actually create the</span>
+<span class="sd">            PNG file.</span>
+
+<span class="sd">        This method will write the given *file* out as a PNG file. The file</span>
+<span class="sd">        can be either a string file path, or a writable stream.</span>
+
+<span class="sd">        The *scale* parameter sets how large to draw a single module. By</span>
+<span class="sd">        default one pixel is used to draw a single module. This may make the</span>
+<span class="sd">        code too small to be read efficiently. Increasing the scale will make</span>
+<span class="sd">        the code larger. Only integer scales are usable. This method will</span>
+<span class="sd">        attempt to coerce the parameter into an integer (e.g. 2.5 will become 2,</span>
+<span class="sd">        and &#39;3&#39; will become 3).</span>
+
+<span class="sd">        The *module_color* parameter sets what color to use for the encoded</span>
+<span class="sd">        modules (the black part on most QR codes). The *background* parameter</span>
+<span class="sd">        sets what color to use for the background (the white part on most</span>
+<span class="sd">        QR codes). If either parameter is set, then both must be</span>
+<span class="sd">        set or a ValueError is raised. Colors should be specified as either</span>
+<span class="sd">        a list or a tuple of length 3 or 4. The components of the list must</span>
+<span class="sd">        be integers between 0 and 255. The first three member give the RGB</span>
+<span class="sd">        color. The fourth member gives the alpha component, where 0 is</span>
+<span class="sd">        transparent and 255 is opaque. Note, many color</span>
+<span class="sd">        combinations are unreadable by scanners, so be careful.</span>
+
+
+
+<span class="sd">        Example:</span>
+<span class="sd">            &gt;&gt;&gt; code = pyqrcode.create(&#39;Are you suggesting coconuts migrate?&#39;)</span>
+<span class="sd">            &gt;&gt;&gt; code.png(&#39;swallow.png&#39;, scale=5)</span>
+<span class="sd">            &gt;&gt;&gt; code.png(&#39;swallow.png&#39;, scale=5,</span>
+<span class="sd">                         module_color=(0x66, 0x33, 0x0),      #Dark brown</span>
+<span class="sd">                         background=(0xff, 0xff, 0xff, 0x88)) #50% transparent white</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">builder</span><span class="o">.</span><span class="n">_png</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">code</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">version</span><span class="p">,</span> <span class="nb">file</span><span class="p">,</span> <span class="n">scale</span><span class="p">,</span>
+                     <span class="n">module_color</span><span class="p">,</span> <span class="n">background</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="QRCode.svg"><a class="viewcode-back" href="../moddoc.html#pyqrcode.QRCode.svg">[docs]</a>    <span class="k">def</span> <span class="nf">svg</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">file</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">module_color</span><span class="o">=</span><span class="s">&#39;#000000&#39;</span><span class="p">,</span> <span class="n">background</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;This method writes the QR code out as an SVG document. The</span>
+<span class="sd">        code is drawn by drawing only the modules corresponding to a 1. They</span>
+<span class="sd">        are drawn using a line, such that contiguous modules in a row</span>
+<span class="sd">        are drawn with a single line.</span>
+
+<span class="sd">        The *file* parameter is used to specify where to write the document</span>
+<span class="sd">        to. It can either be a writable stream or a file path.</span>
+
+<span class="sd">        The *scale* parameter sets how large to draw</span>
+<span class="sd">        a single module. By default one pixel is used to draw a single</span>
+<span class="sd">        module. This may make the code too small to be read efficiently.</span>
+<span class="sd">        Increasing the scale will make the code larger. Unlike the png() method,</span>
+<span class="sd">        this method will accept fractional scales (e.g. 2.5).</span>
+
+<span class="sd">        Note, three things are done to make the code more appropriate for</span>
+<span class="sd">        embedding in a HTML document. The &quot;white&quot; part of the code is actually</span>
+<span class="sd">        transparent. The code itself has a class of &quot;pyqrcode&quot;. The lines</span>
+<span class="sd">        making up the QR code have a class &quot;pyqrline&quot;. These should make the</span>
+<span class="sd">        code easier to style using CSS.</span>
+
+<span class="sd">        You can also set the colors directly using the *module_color* and</span>
+<span class="sd">        *background* parameters. The *module_color* parameter sets what color to</span>
+<span class="sd">        use for the data modules (the black part on most QR codes). The</span>
+<span class="sd">        *background* parameter sets what color to use for the background (the</span>
+<span class="sd">        white part on most QR codes). The parameters can be set to any valid</span>
+<span class="sd">        SVG or HTML color. If the background is set to None, then no background</span>
+<span class="sd">        will be drawn, i.e. the background will be transparent. Note, many color</span>
+<span class="sd">        combinations are unreadable by scanners, so be careful.</span>
+
+<span class="sd">        Example:</span>
+<span class="sd">            &gt;&gt;&gt; code = pyqrcode.create(&#39;Hello. Uhh, can we have your liver?&#39;)</span>
+<span class="sd">            &gt;&gt;&gt; code.svg(&#39;live-organ-transplants.svg&#39;, 3.6)</span>
+<span class="sd">            &gt;&gt;&gt; code.svg(&#39;live-organ-transplants.svg&#39;, scale=4,</span>
+<span class="sd">                         module_color=&#39;brown&#39;, background=&#39;0xFFFFFF&#39;)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">builder</span><span class="o">.</span><span class="n">_svg</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">code</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">version</span><span class="p">,</span> <span class="nb">file</span><span class="p">,</span> <span class="n">scale</span><span class="p">,</span>
+                     <span class="n">module_color</span><span class="p">,</span> <span class="n">background</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="QRCode.terminal"><a class="viewcode-back" href="../moddoc.html#pyqrcode.QRCode.terminal">[docs]</a>    <span class="k">def</span> <span class="nf">terminal</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">module_color</span><span class="o">=</span><span class="s">&#39;default&#39;</span><span class="p">,</span> <span class="n">background</span><span class="o">=</span><span class="s">&#39;reverse&#39;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;This method returns a string containing ASCII escape codes,</span>
+<span class="sd">        such that if printed to a compatible terminal, it will display</span>
+<span class="sd">        a vaild QR code. The code is printed using ASCII escape</span>
+<span class="sd">        codes that alter the coloring of the background.</span>
+
+<span class="sd">        The *module_color* parameter sets what color to</span>
+<span class="sd">        use for the data modules (the black part on most QR codes).</span>
+<span class="sd">        Likewise, the *background* parameter sets what color to use</span>
+<span class="sd">        for the background (the white part on most QR codes).  </span>
+
+<span class="sd">        There are two options for colors. The first, and most widely</span>
+<span class="sd">        supported, is to use the 8 or 16 color scheme. This scheme uses</span>
+<span class="sd">        eight to sixteen named colors. The following colors are</span>
+<span class="sd">        supported the most widely supported: black, red, green,</span>
+<span class="sd">        yellow, blue, magenta, and cyan. There are an some additional</span>
+<span class="sd">        named colors that are supported by most termials: light gray,</span>
+<span class="sd">        dark gray, light red, light green, light blue, light yellow,</span>
+<span class="sd">        light magenta, light cyan, and white. </span>
+
+<span class="sd">        There are two special named colors. The first is the</span>
+<span class="sd">        &quot;default&quot; color. This color is the color the background of</span>
+<span class="sd">        the terminal is set to. The next color is the &quot;reverse&quot;</span>
+<span class="sd">        color. This is not really a color at all but a special</span>
+<span class="sd">        property that will reverse the current color. These two colors</span>
+<span class="sd">        are the default values for *module_color* and *background*</span>
+<span class="sd">        respectively. These values should work on most terminals.</span>
+
+<span class="sd">        Finally, there is one more way to specify the color. Some</span>
+<span class="sd">        terminals support 256 colors. The actual colors displayed in the</span>
+<span class="sd">        terminal is system dependent. This is the least transportable option.</span>
+<span class="sd">        To use the 256 color scheme set *module_color* and/or</span>
+<span class="sd">        *background* to a number between 0 and 256.</span>
+
+<span class="sd">        Example:</span>
+<span class="sd">            &gt;&gt;&gt; code = pyqrcode.create(&#39;Example&#39;)</span>
+<span class="sd">            &gt;&gt;&gt; text = code.terminal()</span>
+<span class="sd">            &gt;&gt;&gt; print(text)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">builder</span><span class="o">.</span><span class="n">_terminal</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">code</span><span class="p">,</span> <span class="n">module_color</span><span class="p">,</span> <span class="n">background</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="QRCode.text"><a class="viewcode-back" href="../moddoc.html#pyqrcode.QRCode.text">[docs]</a>    <span class="k">def</span> <span class="nf">text</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;This method returns a string based representation of the QR code.</span>
+<span class="sd">        The data modules are represented by 1&#39;s and the background modules are</span>
+<span class="sd">        represented by 0&#39;s. The main purpose of this method is to allow a user</span>
+<span class="sd">        to write their own renderer.</span>
+
+<span class="sd">        Example:</span>
+<span class="sd">            &gt;&gt;&gt; code = pyqrcode.create(&#39;Example&#39;)</span>
+<span class="sd">            &gt;&gt;&gt; text = code.text()</span>
+<span class="sd">            &gt;&gt;&gt; print(text)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">builder</span><span class="o">.</span><span class="n">_text</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">code</span><span class="p">)</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">pyqrcode 0.11 documentation</a> &raquo;</li>
+          <li><a href="index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013-2014, Michael Nooner.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>

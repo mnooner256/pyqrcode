@@ -1,0 +1,154 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Creating QR Codes &mdash; pyqrcode 0.11 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.11',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="pyqrcode 0.11 documentation" href="index.html" />
+    <link rel="next" title="Encoding Data" href="encoding.html" />
+    <link rel="prev" title="Welcome to PyQRCode’s documentation!" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="encoding.html" title="Encoding Data"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Welcome to PyQRCode’s documentation!"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">pyqrcode 0.11 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="creating-qr-codes">
+<h1>Creating QR Codes<a class="headerlink" href="#creating-qr-codes" title="Permalink to this headline">¶</a></h1>
+<p>The QRCode object is designed to be smart about how it constructs QR codes.
+It can automatically figure out what mode and version to use to construct a
+QR code, based on the data and the amount error correction. The error correction
+level defaults to the highest possible level of error correction.</p>
+<p>Below are some examples of creating QR Codes using the automatated system.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">url</span> <span class="o">=</span> <span class="n">pyqrcode</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="s">&#39;http://uca.edu&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">url</span> <span class="o">=</span> <span class="n">pyqrcode</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="s">&#39;http://uca.edu&#39;</span><span class="p">,</span> <span class="n">error</span><span class="o">=</span><span class="s">&#39;L&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>There are many situations where you might wish to have more
+fine grained control over how the QR Code is generated. You can specify all the
+properties of your QR code through the optional parameters of the
+<a class="reference internal" href="moddoc.html#pyqrcode.create" title="pyqrcode.create"><tt class="xref py py-func docutils literal"><span class="pre">pyqrcode.create()</span></tt></a> function. There are three main properties to a QR code.</p>
+<p>The <a class="reference internal" href="glossary.html#term-error"><em class="xref std std-term">error</em></a> parameter sets the error correction level of the code. Each
+level has an associated name given by a letter: L, M, Q, or H; each level can
+correct up to 7, 15, 25, or 30 percent of the data respectively. There are
+several ways to specify the level, see <a class="reference internal" href="tables.html#pyqrcode.tables.error_level" title="pyqrcode.tables.error_level"><tt class="xref py py-data docutils literal"><span class="pre">pyqrcode.tables.error_level</span></tt></a>
+for all the possible values. By default this parameter is set to &#8216;H&#8217; which is
+the highest possible error correction, but it has the smallest available data
+capacity for a given version.</p>
+<p>The <a class="reference internal" href="glossary.html#term-version"><em class="xref std std-term">version</em></a> parameter specifies the size and data capacity of the
+code. Versions are any integer between 1 and 40. Where version 1 is
+the smallest QR code, and version 40 is the largest. By default, the object
+uses the data&#8217;s encoding and error correction level to calculate the smallest
+possible version. You may want to specify this parameter for consistency when
+generating several QR codes with varying amounts of data. That way all of the
+generated codes would have the same size.</p>
+<p>Finally, the <a class="reference internal" href="glossary.html#term-mode"><em class="xref std std-term">mode</em></a> parameter sets how the contents will be encoded.
+Three of the four possible encodings are available. By default, the object uses
+the most efficient encoding for the contents. You can override this behavior
+by setting this parameter. See <a class="reference internal" href="tables.html#pyqrcode.tables.modes" title="pyqrcode.tables.modes"><tt class="xref py py-data docutils literal"><span class="pre">pyqrcode.tables.modes</span></tt></a> for a list of
+possible values for this parameter. A much longer discussion on modes can be
+found in the next section <a class="reference internal" href="encoding.html"><em>Encoding Data</em></a>.</p>
+<p>The code below constructs a QR code with 25% error correction, size 27, and
+forces the encoding to be binary (rather than numeric).</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">big_code</span> <span class="o">=</span> <span class="n">pyqrcode</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="s">&#39;0987654321&#39;</span><span class="p">,</span> <span class="n">error</span><span class="o">=</span><span class="s">&#39;L&#39;</span><span class="p">,</span> <span class="n">version</span><span class="o">=</span><span class="mi">27</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s">&#39;binary&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="index.html"
+                        title="previous chapter">Welcome to PyQRCode&#8217;s documentation!</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="encoding.html"
+                        title="next chapter">Encoding Data</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/create.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="encoding.html" title="Encoding Data"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Welcome to PyQRCode’s documentation!"
+             >previous</a> |</li>
+        <li><a href="index.html">pyqrcode 0.11 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013-2014, Michael Nooner.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>

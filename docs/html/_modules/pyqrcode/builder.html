@@ -1,0 +1,1277 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pyqrcode.builder &mdash; pyqrcode 0.11 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.11',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="pyqrcode 0.11 documentation" href="../../index.html" />
+    <link rel="up" title="pyqrcode" href="../pyqrcode.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../index.html">pyqrcode 0.11 documentation</a> &raquo;</li>
+          <li><a href="../index.html" >Module code</a> &raquo;</li>
+          <li><a href="../pyqrcode.html" accesskey="U">pyqrcode</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for pyqrcode.builder</h1><div class="highlight"><pre>
+<span class="sd">&quot;&quot;&quot;This module does the actual generation of the QR codes. The QRCodeBuilder</span>
+<span class="sd">builds the code. While the various output methods draw the code into a file.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="c">#Imports required for 2.7 support</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">absolute_import</span><span class="p">,</span> <span class="n">division</span><span class="p">,</span> <span class="n">print_function</span><span class="p">,</span> <span class="n">with_statement</span><span class="p">,</span> <span class="n">unicode_literals</span>
+
+<span class="kn">import</span> <span class="nn">pyqrcode.tables</span> <span class="kn">as</span> <span class="nn">tables</span>
+<span class="kn">import</span> <span class="nn">io</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">itertools</span>
+
+<div class="viewcode-block" id="QRCodeBuilder"><a class="viewcode-back" href="../../builder.html#pyqrcode.builder.QRCodeBuilder">[docs]</a><span class="k">class</span> <span class="nc">QRCodeBuilder</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;This class generates a QR code based on the standard. It is meant to</span>
+<span class="sd">    be used internally, not by users!!!</span>
+
+<span class="sd">    This class implements the tutorials found at:</span>
+
+<span class="sd">    * http://www.thonky.com/qr-code-tutorial/</span>
+
+<span class="sd">    * http://www.matchadesign.com/blog/qr-code-demystified-part-6/</span>
+
+<span class="sd">    This class also uses the standard, which can be read online at:</span>
+<span class="sd">        http://raidenii.net/files/datasheets/misc/qr_code.pdf</span>
+
+<span class="sd">    Test codes were tested against:</span>
+<span class="sd">        http://zxing.org/w/decode.jspx</span>
+
+<span class="sd">    Also, reference codes were generated at:</span>
+<span class="sd">        http://www.morovia.com/free-online-barcode-generator/qrcode-maker.php</span>
+
+<span class="sd">    QR code Debugger:</span>
+<span class="sd">        http://qrlogo.kaarposoft.dk/qrdecode.html</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="QRCodeBuilder.__init__"><a class="viewcode-back" href="../../builder.html#pyqrcode.builder.QRCodeBuilder.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">version</span><span class="p">,</span> <span class="n">mode</span><span class="p">,</span> <span class="n">error</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;See :py:class:`pyqrcode.QRCode` for information on the parameters.&quot;&quot;&quot;</span>
+
+        <span class="c">#Set what data we are going to use to generate</span>
+        <span class="c">#the QR code</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s">&#39;utf-8&#39;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">data</span>
+
+        <span class="c">#Check that the user passed in a valid mode</span>
+        <span class="k">if</span> <span class="n">mode</span> <span class="ow">in</span> <span class="n">tables</span><span class="o">.</span><span class="n">modes</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">mode</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">modes</span><span class="p">[</span><span class="n">mode</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">LookupError</span><span class="p">(</span><span class="s">&#39;{} is not a valid mode.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">mode</span><span class="p">))</span>
+
+        <span class="c">#Check that the user passed in a valid error level</span>
+        <span class="k">if</span> <span class="n">error</span> <span class="ow">in</span> <span class="n">tables</span><span class="o">.</span><span class="n">error_level</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">error</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">error_level</span><span class="p">[</span><span class="n">error</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">LookupError</span><span class="p">(</span><span class="s">&#39;{} is not a valid error &#39;</span>
+                                <span class="s">&#39;level.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">error</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="mi">1</span> <span class="o">&lt;=</span> <span class="n">version</span> <span class="o">&lt;=</span> <span class="mi">40</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">version</span> <span class="o">=</span> <span class="n">version</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;The version must between 1 and 40.&quot;</span><span class="p">)</span>
+
+        <span class="c">#Look up the proper row for error correction code words</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">error_code_words</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">eccwbi</span><span class="p">[</span><span class="n">version</span><span class="p">][</span><span class="bp">self</span><span class="o">.</span><span class="n">error</span><span class="p">]</span>
+
+        <span class="c">#This property will hold the binary string as it is built</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">buffer</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">StringIO</span><span class="p">()</span>
+
+        <span class="c">#Create the binary data block</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add_data</span><span class="p">()</span>
+
+        <span class="c">#Create the actual QR code</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">make_code</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="QRCodeBuilder.grouper"><a class="viewcode-back" href="../../builder.html#pyqrcode.builder.QRCodeBuilder.grouper">[docs]</a>    <span class="k">def</span> <span class="nf">grouper</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">iterable</span><span class="p">,</span> <span class="n">fillvalue</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;This generator yields a set of tuples, where the</span>
+<span class="sd">        iterable is broken into n sized chunks. If the</span>
+<span class="sd">        iterable is not evenly sized then fillvalue will</span>
+<span class="sd">        be appended to the last tuple to make up the difference.</span>
+
+<span class="sd">        This function is copied from the standard docs on</span>
+<span class="sd">        itertools.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">args</span> <span class="o">=</span> <span class="p">[</span><span class="nb">iter</span><span class="p">(</span><span class="n">iterable</span><span class="p">)]</span> <span class="o">*</span> <span class="n">n</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">itertools</span><span class="p">,</span> <span class="s">&#39;zip_longest&#39;</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">itertools</span><span class="o">.</span><span class="n">zip_longest</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="n">fillvalue</span><span class="o">=</span><span class="n">fillvalue</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">itertools</span><span class="o">.</span><span class="n">izip_longest</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="n">fillvalue</span><span class="o">=</span><span class="n">fillvalue</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="QRCodeBuilder.binary_string"><a class="viewcode-back" href="../../builder.html#pyqrcode.builder.QRCodeBuilder.binary_string">[docs]</a>    <span class="k">def</span> <span class="nf">binary_string</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">length</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;This method returns a string of length n that is the binary</span>
+<span class="sd">        representation of the given data. This function is used to</span>
+<span class="sd">        basically create bit fields of a given size.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="s">&#39;{{:0{}b}}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">length</span><span class="p">)</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">data</span><span class="p">))</span>
+</div>
+<div class="viewcode-block" id="QRCodeBuilder.get_data_length"><a class="viewcode-back" href="../../builder.html#pyqrcode.builder.QRCodeBuilder.get_data_length">[docs]</a>    <span class="k">def</span> <span class="nf">get_data_length</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;QR codes contain a &quot;data length&quot; field. This method creates this</span>
+<span class="sd">        field. A binary string representing the appropriate length is</span>
+<span class="sd">        returned.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c">#The &quot;data length&quot; field varies by the type of code and its mode.</span>
+        <span class="c">#discover how long the &quot;data length&quot; field should be.</span>
+        <span class="k">if</span> <span class="mi">1</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">version</span> <span class="o">&lt;=</span> <span class="mi">9</span><span class="p">:</span>
+            <span class="n">max_version</span> <span class="o">=</span> <span class="mi">9</span>
+        <span class="k">elif</span> <span class="mi">10</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">version</span> <span class="o">&lt;=</span> <span class="mi">26</span><span class="p">:</span>
+            <span class="n">max_version</span> <span class="o">=</span> <span class="mi">26</span>
+        <span class="k">elif</span> <span class="mi">27</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">version</span> <span class="o">&lt;=</span> <span class="mi">40</span><span class="p">:</span>
+            <span class="n">max_version</span> <span class="o">=</span> <span class="mi">40</span>
+
+        <span class="n">data_length</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">data_length_field</span><span class="p">[</span><span class="n">max_version</span><span class="p">][</span><span class="bp">self</span><span class="o">.</span><span class="n">mode</span><span class="p">]</span>
+
+        <span class="n">length_string</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">binary_string</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">),</span> <span class="n">data_length</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">length_string</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">data_length</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&#39;The supplied data will not fit &#39;</span>
+                               <span class="s">&#39;within this version of a QRCode.&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">length_string</span>
+</div>
+<div class="viewcode-block" id="QRCodeBuilder.encode"><a class="viewcode-back" href="../../builder.html#pyqrcode.builder.QRCodeBuilder.encode">[docs]</a>    <span class="k">def</span> <span class="nf">encode</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;This method encodes the data into a binary string using</span>
+<span class="sd">        the appropriate algorithm specified by the mode.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mode</span> <span class="o">==</span> <span class="n">tables</span><span class="o">.</span><span class="n">modes</span><span class="p">[</span><span class="s">&#39;alphanumeric&#39;</span><span class="p">]:</span>
+            <span class="n">encoded</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">encode_alphanumeric</span><span class="p">()</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">mode</span> <span class="o">==</span> <span class="n">tables</span><span class="o">.</span><span class="n">modes</span><span class="p">[</span><span class="s">&#39;numeric&#39;</span><span class="p">]:</span>
+            <span class="n">encoded</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">encode_numeric</span><span class="p">()</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">mode</span> <span class="o">==</span> <span class="n">tables</span><span class="o">.</span><span class="n">modes</span><span class="p">[</span><span class="s">&#39;bytes&#39;</span><span class="p">]:</span>
+            <span class="n">encoded</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">encode_bytes</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&#39;This mode is not yet implemented.&#39;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">encoded</span>
+</div>
+<div class="viewcode-block" id="QRCodeBuilder.encode_alphanumeric"><a class="viewcode-back" href="../../builder.html#pyqrcode.builder.QRCodeBuilder.encode_alphanumeric">[docs]</a>    <span class="k">def</span> <span class="nf">encode_alphanumeric</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;This method encodes the QR code&#39;s data if its mode is</span>
+<span class="sd">        alphanumeric. It returns the data encoded as a binary string.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c">#Convert the string to upper case</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span>
+
+        <span class="c">#Change the data such that it uses a QR code ascii table</span>
+        <span class="n">ascii</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">char</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">:</span>
+            <span class="n">ascii</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">tables</span><span class="o">.</span><span class="n">ascii_codes</span><span class="p">[</span><span class="n">char</span><span class="p">])</span>
+        
+        <span class="c">#Now perform the algorithm that will make the ascii into bit fields</span>
+        <span class="k">with</span> <span class="n">io</span><span class="o">.</span><span class="n">StringIO</span><span class="p">()</span> <span class="k">as</span> <span class="n">buf</span><span class="p">:</span>
+            <span class="k">for</span> <span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">)</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">grouper</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">ascii</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">b</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+                    <span class="n">buf</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">binary_string</span><span class="p">((</span><span class="mi">45</span><span class="o">*</span><span class="n">a</span><span class="p">)</span><span class="o">+</span><span class="n">b</span><span class="p">,</span> <span class="mi">11</span><span class="p">))</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="c">#This occurs when there is an odd number</span>
+                    <span class="c">#of characters in the data</span>
+                    <span class="n">buf</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">binary_string</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
+
+            <span class="c">#Return the binary string</span>
+            <span class="k">return</span> <span class="n">buf</span><span class="o">.</span><span class="n">getvalue</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="QRCodeBuilder.encode_numeric"><a class="viewcode-back" href="../../builder.html#pyqrcode.builder.QRCodeBuilder.encode_numeric">[docs]</a>    <span class="k">def</span> <span class="nf">encode_numeric</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;This method encodes the QR code&#39;s data if its mode is</span>
+<span class="sd">        numeric. It returns the data encoded as a binary string.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">with</span> <span class="n">io</span><span class="o">.</span><span class="n">StringIO</span><span class="p">()</span> <span class="k">as</span> <span class="n">buf</span><span class="p">:</span>
+            <span class="c">#Break the number into groups of three digits</span>
+            <span class="k">for</span> <span class="n">triplet</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">grouper</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">):</span>
+                <span class="n">number</span> <span class="o">=</span> <span class="s">&#39;&#39;</span>
+                <span class="k">for</span> <span class="n">digit</span> <span class="ow">in</span> <span class="n">triplet</span><span class="p">:</span>
+                    <span class="c">#Only build the string if digit is not None</span>
+                    <span class="k">if</span> <span class="n">digit</span><span class="p">:</span>
+                        <span class="n">number</span> <span class="o">=</span> <span class="s">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">number</span><span class="p">,</span> <span class="n">digit</span><span class="p">])</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="k">break</span>
+
+                <span class="c">#If the number is one digits, make a 4 bit field</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">number</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                    <span class="nb">bin</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">binary_string</span><span class="p">(</span><span class="n">number</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
+
+                <span class="c">#If the number is two digits, make a 7 bit field</span>
+                <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">number</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+                    <span class="nb">bin</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">binary_string</span><span class="p">(</span><span class="n">number</span><span class="p">,</span> <span class="mi">7</span><span class="p">)</span>
+
+                <span class="c">#Three digit numbers use a 10 bit field</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="nb">bin</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">binary_string</span><span class="p">(</span><span class="n">number</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
+
+                <span class="n">buf</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="nb">bin</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">buf</span><span class="o">.</span><span class="n">getvalue</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="QRCodeBuilder.encode_bytes"><a class="viewcode-back" href="../../builder.html#pyqrcode.builder.QRCodeBuilder.encode_bytes">[docs]</a>    <span class="k">def</span> <span class="nf">encode_bytes</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;This method encodes the QR code&#39;s data if its mode is</span>
+<span class="sd">        8 bit mode. It returns the data encoded as a binary string.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">with</span> <span class="n">io</span><span class="o">.</span><span class="n">StringIO</span><span class="p">()</span> <span class="k">as</span> <span class="n">buf</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">char</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s">&#39;ascii&#39;</span><span class="p">):</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">char</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+                    <span class="n">buf</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;{{:0{}b}}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="mi">8</span><span class="p">)</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">char</span><span class="p">))</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">char</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+                    <span class="n">buf</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;{{:0{}b}}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="mi">8</span><span class="p">)</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">ord</span><span class="p">(</span><span class="n">char</span><span class="p">)))</span>
+            <span class="k">return</span> <span class="n">buf</span><span class="o">.</span><span class="n">getvalue</span><span class="p">()</span>
+
+</div>
+<div class="viewcode-block" id="QRCodeBuilder.add_data"><a class="viewcode-back" href="../../builder.html#pyqrcode.builder.QRCodeBuilder.add_data">[docs]</a>    <span class="k">def</span> <span class="nf">add_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;This function properly constructs a QR code&#39;s data string. It takes</span>
+<span class="sd">        into account the interleaving pattern required by the standard.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c">#Encode the data into a QR code</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">buffer</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">binary_string</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mode</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">buffer</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_data_length</span><span class="p">())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">buffer</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">encode</span><span class="p">())</span>
+        
+        <span class="c">#Fix for issue #3: https://github.com/mnooner256/pyqrcode/issues/3#</span>
+        <span class="c">#I was performing the terminate_bits() part in the encoding.</span>
+        <span class="c">#As per the standard, terminating bits are only supposed to</span>
+        <span class="c">#be added after the bit stream is complete. I took that to</span>
+        <span class="c">#mean after the encoding, but actually it is after the entire</span>
+        <span class="c">#bit stream has been constructed.</span>
+        <span class="n">bits</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">terminate_bits</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">buffer</span><span class="o">.</span><span class="n">getvalue</span><span class="p">())</span>
+        <span class="k">if</span> <span class="n">bits</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">buffer</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">bits</span><span class="p">)</span>
+
+        <span class="c">#delimit_words and add_words can return None</span>
+        <span class="n">add_bits</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">delimit_words</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">add_bits</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">buffer</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">add_bits</span><span class="p">)</span>
+        
+        <span class="n">fill_bytes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">add_words</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">fill_bytes</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">buffer</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">fill_bytes</span><span class="p">)</span>
+        
+        <span class="c">#Get a numeric representation of the data</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="s">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">x</span><span class="p">),</span><span class="mi">2</span><span class="p">)</span>
+                    <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">grouper</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">buffer</span><span class="o">.</span><span class="n">getvalue</span><span class="p">())]</span>
+
+        <span class="c">#This is the error information for the code</span>
+        <span class="n">error_info</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">eccwbi</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">version</span><span class="p">][</span><span class="bp">self</span><span class="o">.</span><span class="n">error</span><span class="p">]</span>
+
+        <span class="c">#This will hold our data blocks</span>
+        <span class="n">data_blocks</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="c">#This will hold our error blocks</span>
+        <span class="n">error_blocks</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="c">#Some codes have the data sliced into two different sized blocks</span>
+        <span class="c">#for example, first two 14 word sized blocks, then four 15 word</span>
+        <span class="c">#sized blocks. This means that slicing size can change over time.</span>
+        <span class="n">data_block_sizes</span> <span class="o">=</span> <span class="p">[</span><span class="n">error_info</span><span class="p">[</span><span class="mi">2</span><span class="p">]]</span> <span class="o">*</span> <span class="n">error_info</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">error_info</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">data_block_sizes</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="n">error_info</span><span class="p">[</span><span class="mi">4</span><span class="p">]]</span> <span class="o">*</span> <span class="n">error_info</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span>
+
+        <span class="c">#For every block of data, slice the data into the appropriate</span>
+        <span class="c">#sized block</span>
+        <span class="n">current_byte</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">n_data_blocks</span> <span class="ow">in</span> <span class="n">data_block_sizes</span><span class="p">:</span>
+            <span class="n">data_blocks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">current_byte</span><span class="p">:</span><span class="n">current_byte</span><span class="o">+</span><span class="n">n_data_blocks</span><span class="p">])</span>
+            <span class="n">current_byte</span> <span class="o">+=</span> <span class="n">n_data_blocks</span>
+        
+        <span class="c">#I am not sure about the test after the &quot;and&quot;. This was added to</span>
+        <span class="c">#fix a bug where after delimit_words padded the bit stream, a zero</span>
+        <span class="c">#byte ends up being added. After checking around, it seems this extra</span>
+        <span class="c">#byte is supposed to be chopped off, but I cannot find that in the</span>
+        <span class="c">#standard! I am adding it to solve the bug, I believe it is correct.</span>
+        <span class="k">if</span> <span class="n">current_byte</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&#39;Too much data for this code version.&#39;</span><span class="p">)</span>
+
+        <span class="c">#DEBUG CODE!!!!</span>
+        <span class="c">#Print out the data blocks</span>
+        <span class="c">#print(&#39;Data Blocks:\n{}&#39;.format(data_blocks))</span>
+
+        <span class="c">#Calculate the error blocks</span>
+        <span class="k">for</span> <span class="n">n</span><span class="p">,</span> <span class="n">block</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">data_blocks</span><span class="p">):</span>
+            <span class="n">error_blocks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">make_error_block</span><span class="p">(</span><span class="n">block</span><span class="p">,</span> <span class="n">n</span><span class="p">))</span>
+
+        <span class="c">#DEBUG CODE!!!!</span>
+        <span class="c">#Print out the error blocks</span>
+        <span class="c">#print(&#39;Error Blocks:\n{}&#39;.format(error_blocks))</span>
+
+        <span class="c">#Buffer we will write our data blocks into</span>
+        <span class="n">data_buffer</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">StringIO</span><span class="p">()</span>
+
+        <span class="c">#Add the data blocks</span>
+        <span class="c">#Write the buffer such that: block 1 byte 1, block 2 byte 1, etc.</span>
+        <span class="n">largest_block</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">error_info</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">error_info</span><span class="p">[</span><span class="mi">4</span><span class="p">])</span><span class="o">+</span><span class="n">error_info</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">largest_block</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">block</span> <span class="ow">in</span> <span class="n">data_blocks</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">block</span><span class="p">):</span>
+                    <span class="n">data_buffer</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">binary_string</span><span class="p">(</span><span class="n">block</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="mi">8</span><span class="p">))</span>
+
+        <span class="c">#Add the error code blocks.</span>
+        <span class="c">#Write the buffer such that: block 1 byte 1, block 2 byte 2, etc.</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">error_info</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+            <span class="k">for</span> <span class="n">block</span> <span class="ow">in</span> <span class="n">error_blocks</span><span class="p">:</span>
+                <span class="n">data_buffer</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">binary_string</span><span class="p">(</span><span class="n">block</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="mi">8</span><span class="p">))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">buffer</span> <span class="o">=</span> <span class="n">data_buffer</span>
+</div>
+<div class="viewcode-block" id="QRCodeBuilder.terminate_bits"><a class="viewcode-back" href="../../builder.html#pyqrcode.builder.QRCodeBuilder.terminate_bits">[docs]</a>    <span class="k">def</span> <span class="nf">terminate_bits</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">payload</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;This method adds zeros to the end of the encoded data so that the</span>
+<span class="sd">        encoded data is of the correct length. It returns a binary string</span>
+<span class="sd">        containing the bits to be added.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">data_capacity</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">data_capacity</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">version</span><span class="p">][</span><span class="bp">self</span><span class="o">.</span><span class="n">error</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">payload</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">data_capacity</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&#39;The supplied data will not fit &#39;</span>
+                             <span class="s">&#39;within this version of a QR code.&#39;</span><span class="p">)</span>
+
+        <span class="c">#We must add up to 4 zeros to make up for any shortfall in the</span>
+        <span class="c">#length of the data field.</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">payload</span><span class="p">)</span> <span class="o">==</span> <span class="n">data_capacity</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">None</span>
+        <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">payload</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="n">data_capacity</span><span class="o">-</span><span class="mi">4</span><span class="p">:</span>
+            <span class="n">bits</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">binary_string</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">4</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c">#Make up any shortfall need with less than 4 zeros</span>
+            <span class="n">bits</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">binary_string</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">data_capacity</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">payload</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="n">bits</span>
+</div>
+<div class="viewcode-block" id="QRCodeBuilder.delimit_words"><a class="viewcode-back" href="../../builder.html#pyqrcode.builder.QRCodeBuilder.delimit_words">[docs]</a>    <span class="k">def</span> <span class="nf">delimit_words</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;This method takes the existing encoded binary string</span>
+<span class="sd">        and returns a binary string that will pad it such that</span>
+<span class="sd">        the encoded string contains only full bytes.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">bits_short</span> <span class="o">=</span> <span class="mi">8</span> <span class="o">-</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">buffer</span><span class="o">.</span><span class="n">getvalue</span><span class="p">())</span> <span class="o">%</span> <span class="mi">8</span><span class="p">)</span>
+        
+        <span class="c">#The string already falls on an byte boundary do nothing</span>
+        <span class="k">if</span> <span class="n">bits_short</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">bits_short</span> <span class="o">==</span> <span class="mi">8</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">None</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">binary_string</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">bits_short</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="QRCodeBuilder.add_words"><a class="viewcode-back" href="../../builder.html#pyqrcode.builder.QRCodeBuilder.add_words">[docs]</a>    <span class="k">def</span> <span class="nf">add_words</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;The data block must fill the entire data capacity of the QR code.</span>
+<span class="sd">        If we fall short, then we must add bytes to the end of the encoded</span>
+<span class="sd">        data field. The value of these bytes are specified in the standard.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">data_blocks</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">buffer</span><span class="o">.</span><span class="n">getvalue</span><span class="p">())</span> <span class="o">//</span> <span class="mi">8</span>
+        <span class="n">total_blocks</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">data_capacity</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">version</span><span class="p">][</span><span class="bp">self</span><span class="o">.</span><span class="n">error</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">//</span> <span class="mi">8</span>
+        <span class="n">needed_blocks</span> <span class="o">=</span> <span class="n">total_blocks</span> <span class="o">-</span> <span class="n">data_blocks</span>
+
+        <span class="k">if</span> <span class="n">needed_blocks</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">None</span>
+
+        <span class="c">#This will return item1, item2, item1, item2, etc.</span>
+        <span class="n">block</span> <span class="o">=</span> <span class="n">itertools</span><span class="o">.</span><span class="n">cycle</span><span class="p">([</span><span class="s">&#39;11101100&#39;</span><span class="p">,</span> <span class="s">&#39;00010001&#39;</span><span class="p">])</span>
+
+        <span class="c">#Create a string of the needed blocks</span>
+        <span class="k">return</span> <span class="s">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">next</span><span class="p">(</span><span class="n">block</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">needed_blocks</span><span class="p">)])</span>
+</div>
+    <span class="k">def</span> <span class="nf">_fix_exp</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exponent</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Makes sure the exponent ranges from 0 to 255.&quot;&quot;&quot;</span>
+        <span class="c">#return (exponent % 256) + (exponent // 256)</span>
+        <span class="k">return</span> <span class="n">exponent</span> <span class="o">%</span> <span class="mi">255</span>
+
+<div class="viewcode-block" id="QRCodeBuilder.make_error_block"><a class="viewcode-back" href="../../builder.html#pyqrcode.builder.QRCodeBuilder.make_error_block">[docs]</a>    <span class="k">def</span> <span class="nf">make_error_block</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">block</span><span class="p">,</span> <span class="n">block_number</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;This function constructs the error correction block of the</span>
+<span class="sd">        given data block. This is *very complicated* process. To</span>
+<span class="sd">        understand the code you need to read:</span>
+
+<span class="sd">        * http://www.thonky.com/qr-code-tutorial/part-2-error-correction/</span>
+<span class="sd">        * http://www.matchadesign.com/blog/qr-code-demystified-part-4/</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c">#Get the error information from the standards table</span>
+        <span class="n">error_info</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">eccwbi</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">version</span><span class="p">][</span><span class="bp">self</span><span class="o">.</span><span class="n">error</span><span class="p">]</span>
+
+        <span class="c">#This is the number of 8-bit words per block</span>
+        <span class="k">if</span> <span class="n">block_number</span> <span class="o">&lt;</span> <span class="n">error_info</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
+            <span class="n">code_words_per_block</span> <span class="o">=</span> <span class="n">error_info</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">code_words_per_block</span> <span class="o">=</span> <span class="n">error_info</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span>
+
+        <span class="c">#This is the size of the error block</span>
+        <span class="n">error_block_size</span> <span class="o">=</span> <span class="n">error_info</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="c">#Copy the block as the message polynomial coefficients</span>
+        <span class="n">mp_co</span> <span class="o">=</span> <span class="n">block</span><span class="p">[:]</span>
+
+        <span class="c">#Add the error blocks to the message polynomial</span>
+        <span class="n">mp_co</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">error_block_size</span><span class="p">))</span>
+
+        <span class="c">#Get the generator polynomial</span>
+        <span class="n">generator</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">generator_polynomials</span><span class="p">[</span><span class="n">error_block_size</span><span class="p">]</span>
+
+        <span class="c">#This will hold the temporary sum of the message coefficient and the</span>
+        <span class="c">#generator polynomial</span>
+        <span class="n">gen_result</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">generator</span><span class="p">)</span>
+
+        <span class="c">#Go through every code word in the block</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">code_words_per_block</span><span class="p">):</span>
+            <span class="c">#Get the first coefficient from the message polynomial</span>
+            <span class="n">coefficient</span> <span class="o">=</span> <span class="n">mp_co</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+
+            <span class="c">#Skip coefficients that are zero</span>
+            <span class="k">if</span> <span class="n">coefficient</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c">#Turn the coefficient into an alpha exponent</span>
+                <span class="n">alpha_exp</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">galois_antilog</span><span class="p">[</span><span class="n">coefficient</span><span class="p">]</span>
+
+            <span class="c">#Add the alpha to the generator polynomial</span>
+            <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">generator</span><span class="p">)):</span>
+                <span class="n">gen_result</span><span class="p">[</span><span class="n">n</span><span class="p">]</span> <span class="o">=</span> <span class="n">alpha_exp</span> <span class="o">+</span> <span class="n">generator</span><span class="p">[</span><span class="n">n</span><span class="p">]</span>
+                <span class="k">if</span> <span class="n">gen_result</span><span class="p">[</span><span class="n">n</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">255</span><span class="p">:</span>
+                    <span class="n">gen_result</span><span class="p">[</span><span class="n">n</span><span class="p">]</span> <span class="o">=</span> <span class="n">gen_result</span><span class="p">[</span><span class="n">n</span><span class="p">]</span> <span class="o">%</span> <span class="mi">255</span>
+
+                <span class="c">#Convert the alpha notation back into coefficients</span>
+                <span class="n">gen_result</span><span class="p">[</span><span class="n">n</span><span class="p">]</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">galois_log</span><span class="p">[</span><span class="n">gen_result</span><span class="p">[</span><span class="n">n</span><span class="p">]]</span>
+
+                <span class="c">#XOR the sum with the message coefficients</span>
+                <span class="n">mp_co</span><span class="p">[</span><span class="n">n</span><span class="p">]</span> <span class="o">=</span> <span class="n">gen_result</span><span class="p">[</span><span class="n">n</span><span class="p">]</span> <span class="o">^</span> <span class="n">mp_co</span><span class="p">[</span><span class="n">n</span><span class="p">]</span>
+
+        <span class="c">#Pad the end of the error blocks with zeros if needed</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">mp_co</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">code_words_per_block</span><span class="p">:</span>
+            <span class="n">mp_co</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">code_words_per_block</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">mp_co</span><span class="p">)))</span>
+
+        <span class="k">return</span> <span class="n">mp_co</span>
+</div>
+<div class="viewcode-block" id="QRCodeBuilder.make_code"><a class="viewcode-back" href="../../builder.html#pyqrcode.builder.QRCodeBuilder.make_code">[docs]</a>    <span class="k">def</span> <span class="nf">make_code</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;This method returns the best possible QR code.&quot;&quot;&quot;</span>
+        <span class="kn">from</span> <span class="nn">copy</span> <span class="kn">import</span> <span class="n">deepcopy</span>
+
+        <span class="c">#Get the size of the underlying matrix</span>
+        <span class="n">matrix_size</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">version_size</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">version</span><span class="p">]</span>
+
+        <span class="c">#Create a template matrix we will build the codes with</span>
+        <span class="n">row</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39; &#39;</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">matrix_size</span><span class="p">)]</span>
+        <span class="n">template</span> <span class="o">=</span> <span class="p">[</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">row</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">matrix_size</span><span class="p">)]</span>
+
+        <span class="c">#Add mandatory information to the template</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add_detection_pattern</span><span class="p">(</span><span class="n">template</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add_position_pattern</span><span class="p">(</span><span class="n">template</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add_version_pattern</span><span class="p">(</span><span class="n">template</span><span class="p">)</span>
+
+        <span class="c">#Create the various types of masks of the template</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">masks</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">make_masks</span><span class="p">(</span><span class="n">template</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">best_mask</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">choose_best_mask</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">code</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">masks</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">best_mask</span><span class="p">]</span>
+</div>
+<div class="viewcode-block" id="QRCodeBuilder.add_detection_pattern"><a class="viewcode-back" href="../../builder.html#pyqrcode.builder.QRCodeBuilder.add_detection_pattern">[docs]</a>    <span class="k">def</span> <span class="nf">add_detection_pattern</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">m</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;This method add the detection patterns to the QR code. This lets</span>
+<span class="sd">        the scanner orient the pattern. It is required for all QR codes.</span>
+<span class="sd">        The detection pattern consists of three boxes located at the upper</span>
+<span class="sd">        left, upper right, and lower left corners of the matrix. Also, two</span>
+<span class="sd">        special lines called the timing pattern is also necessary. Finally,</span>
+<span class="sd">        a single black pixel is added just above the lower left black box.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c">#Draw outer black box</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">7</span><span class="p">):</span>
+            <span class="n">inv</span> <span class="o">=</span> <span class="o">-</span><span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">6</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">7</span><span class="p">]:</span>
+                <span class="n">m</span><span class="p">[</span><span class="n">j</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+                <span class="n">m</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+                <span class="n">m</span><span class="p">[</span><span class="n">inv</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+                <span class="n">m</span><span class="p">[</span><span class="n">j</span><span class="p">][</span><span class="n">inv</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+
+        <span class="c">#Draw inner white box</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">6</span><span class="p">):</span>
+            <span class="n">inv</span> <span class="o">=</span> <span class="o">-</span><span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">6</span><span class="p">]:</span>
+                <span class="n">m</span><span class="p">[</span><span class="n">j</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+                <span class="n">m</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+                <span class="n">m</span><span class="p">[</span><span class="n">inv</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+                <span class="n">m</span><span class="p">[</span><span class="n">j</span><span class="p">][</span><span class="n">inv</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="c">#Draw inner black box</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">5</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">5</span><span class="p">):</span>
+                <span class="n">inv</span> <span class="o">=</span> <span class="o">-</span><span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+                <span class="n">m</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+                <span class="n">m</span><span class="p">[</span><span class="n">inv</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+                <span class="n">m</span><span class="p">[</span><span class="n">j</span><span class="p">][</span><span class="n">inv</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+
+        <span class="c">#Draw white border</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">8</span><span class="p">):</span>
+            <span class="n">inv</span> <span class="o">=</span> <span class="o">-</span><span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">7</span><span class="p">,</span> <span class="o">-</span><span class="mi">8</span><span class="p">]:</span>
+                <span class="n">m</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+                <span class="n">m</span><span class="p">[</span><span class="n">j</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+                <span class="n">m</span><span class="p">[</span><span class="n">inv</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+                <span class="n">m</span><span class="p">[</span><span class="n">j</span><span class="p">][</span><span class="n">inv</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="c">#To keep the code short, it draws an extra box</span>
+        <span class="c">#in the lower right corner, this removes it.</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="o">-</span><span class="mi">8</span><span class="p">,</span> <span class="mi">0</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="o">-</span><span class="mi">8</span><span class="p">,</span> <span class="mi">0</span><span class="p">):</span>
+                <span class="n">m</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39; &#39;</span>
+
+        <span class="c">#Add the timing pattern</span>
+        <span class="n">bit</span> <span class="o">=</span> <span class="n">itertools</span><span class="o">.</span><span class="n">cycle</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">])</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">m</span><span class="p">)</span><span class="o">-</span><span class="mi">8</span><span class="p">)):</span>
+            <span class="n">b</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">bit</span><span class="p">)</span>
+            <span class="n">m</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">6</span><span class="p">]</span> <span class="o">=</span> <span class="n">b</span>
+            <span class="n">m</span><span class="p">[</span><span class="mi">6</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">b</span>
+
+        <span class="c">#Add the extra black pixel</span>
+        <span class="n">m</span><span class="p">[</span><span class="o">-</span><span class="mi">8</span><span class="p">][</span><span class="mi">8</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+</div>
+<div class="viewcode-block" id="QRCodeBuilder.add_position_pattern"><a class="viewcode-back" href="../../builder.html#pyqrcode.builder.QRCodeBuilder.add_position_pattern">[docs]</a>    <span class="k">def</span> <span class="nf">add_position_pattern</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">m</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;This method draws the position adjustment patterns onto the QR</span>
+<span class="sd">        Code. All QR code versions larger than one require these special boxes</span>
+<span class="sd">        called position adjustment patterns.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c">#Version 1 does not have a position adjustment pattern</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">version</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">return</span>
+
+        <span class="c">#Get the coordinates for where to place the boxes</span>
+        <span class="n">coordinates</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">position_adjustment</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">version</span><span class="p">]</span>
+
+        <span class="c">#Get the max and min coordinates to handle special cases</span>
+        <span class="n">min_coord</span> <span class="o">=</span> <span class="n">coordinates</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">max_coord</span> <span class="o">=</span> <span class="n">coordinates</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+        <span class="c">#Draw a box at each intersection of the coordinates</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">coordinates</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">coordinates</span><span class="p">:</span>
+                <span class="c">#Do not draw these boxes because they would</span>
+                <span class="c">#interfere with the detection pattern</span>
+                <span class="k">if</span> <span class="p">(</span><span class="n">i</span> <span class="o">==</span> <span class="n">min_coord</span> <span class="ow">and</span> <span class="n">j</span> <span class="o">==</span> <span class="n">min_coord</span><span class="p">)</span> <span class="ow">or</span> \
+                   <span class="p">(</span><span class="n">i</span> <span class="o">==</span> <span class="n">min_coord</span> <span class="ow">and</span> <span class="n">j</span> <span class="o">==</span> <span class="n">max_coord</span><span class="p">)</span> <span class="ow">or</span> \
+                   <span class="p">(</span><span class="n">i</span> <span class="o">==</span> <span class="n">max_coord</span> <span class="ow">and</span> <span class="n">j</span> <span class="o">==</span> <span class="n">min_coord</span><span class="p">):</span>
+                    <span class="k">continue</span>
+
+                <span class="c">#Center black pixel</span>
+                <span class="n">m</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+
+                <span class="c">#Surround the pixel with a white box</span>
+                <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">]:</span>
+                    <span class="n">m</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="n">x</span><span class="p">][</span><span class="n">j</span><span class="o">+</span><span class="n">x</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+                    <span class="n">m</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="n">x</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+                    <span class="n">m</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="o">+</span><span class="n">x</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+                    <span class="n">m</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="n">x</span><span class="p">][</span><span class="n">j</span><span class="o">+</span><span class="n">x</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+                    <span class="n">m</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="n">x</span><span class="p">][</span><span class="n">j</span><span class="o">-</span><span class="n">x</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+
+                <span class="c">#Surround the white box with a black box</span>
+                <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">]:</span>
+                    <span class="k">for</span> <span class="n">y</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">]:</span>
+                        <span class="n">m</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="n">x</span><span class="p">][</span><span class="n">j</span><span class="o">+</span><span class="n">x</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+                        <span class="n">m</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="n">x</span><span class="p">][</span><span class="n">j</span><span class="o">+</span><span class="n">y</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+                        <span class="n">m</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="n">y</span><span class="p">][</span><span class="n">j</span><span class="o">+</span><span class="n">x</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+                        <span class="n">m</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="n">x</span><span class="p">][</span><span class="n">j</span><span class="o">+</span><span class="n">x</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+                        <span class="n">m</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="n">x</span><span class="p">][</span><span class="n">j</span><span class="o">-</span><span class="n">x</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+</div>
+<div class="viewcode-block" id="QRCodeBuilder.add_version_pattern"><a class="viewcode-back" href="../../builder.html#pyqrcode.builder.QRCodeBuilder.add_version_pattern">[docs]</a>    <span class="k">def</span> <span class="nf">add_version_pattern</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">m</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;For QR codes with a version 7 or higher, a special pattern</span>
+<span class="sd">        specifying the code&#39;s version is required.</span>
+
+<span class="sd">        For further information see:</span>
+<span class="sd">        http://www.thonky.com/qr-code-tutorial/format-version-information/#example-of-version-7-information-string</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">version</span> <span class="o">&lt;</span> <span class="mi">7</span><span class="p">:</span>
+            <span class="k">return</span>
+
+        <span class="c">#Get the bit fields for this code&#39;s version</span>
+        <span class="c">#We will iterate across the string, the bit string</span>
+        <span class="c">#needs the least significant digit in the zero-th position</span>
+        <span class="n">field</span> <span class="o">=</span> <span class="nb">iter</span><span class="p">(</span><span class="n">tables</span><span class="o">.</span><span class="n">version_pattern</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">version</span><span class="p">][::</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+
+        <span class="c">#Where to start placing the pattern</span>
+        <span class="n">start</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">m</span><span class="p">)</span><span class="o">-</span><span class="mi">11</span>
+
+        <span class="c">#The version pattern is pretty odd looking</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">6</span><span class="p">):</span>
+            <span class="c">#The pattern is three modules wide</span>
+            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">start</span><span class="o">+</span><span class="mi">3</span><span class="p">):</span>
+                <span class="n">bit</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">next</span><span class="p">(</span><span class="n">field</span><span class="p">))</span>
+
+                <span class="c">#Bottom Left</span>
+                <span class="n">m</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">bit</span>
+
+                <span class="c">#Upper right</span>
+                <span class="n">m</span><span class="p">[</span><span class="n">j</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">bit</span>
+</div>
+<div class="viewcode-block" id="QRCodeBuilder.make_masks"><a class="viewcode-back" href="../../builder.html#pyqrcode.builder.QRCodeBuilder.make_masks">[docs]</a>    <span class="k">def</span> <span class="nf">make_masks</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">template</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;This method generates all seven masks so that the best mask can</span>
+<span class="sd">        be determined. The template parameter is a code matrix that will</span>
+<span class="sd">        server as the base for all the generated masks.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="kn">from</span> <span class="nn">copy</span> <span class="kn">import</span> <span class="n">deepcopy</span>
+
+        <span class="n">nmasks</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">tables</span><span class="o">.</span><span class="n">mask_patterns</span><span class="p">)</span>
+        <span class="n">masks</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="n">nmasks</span>
+        <span class="n">count</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nmasks</span><span class="p">):</span>
+            <span class="n">cur_mask</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">template</span><span class="p">)</span>
+            <span class="n">masks</span><span class="p">[</span><span class="n">n</span><span class="p">]</span> <span class="o">=</span> <span class="n">cur_mask</span>
+
+            <span class="c">#Add the type pattern bits to the code</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">add_type_pattern</span><span class="p">(</span><span class="n">cur_mask</span><span class="p">,</span> <span class="n">tables</span><span class="o">.</span><span class="n">type_bits</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">error</span><span class="p">][</span><span class="n">n</span><span class="p">])</span>
+
+            <span class="c">#Get the mask pattern</span>
+            <span class="n">pattern</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">mask_patterns</span><span class="p">[</span><span class="n">n</span><span class="p">]</span>
+
+            <span class="c">#This will read the 1&#39;s and 0&#39;s one at a time</span>
+            <span class="n">bits</span> <span class="o">=</span> <span class="nb">iter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">buffer</span><span class="o">.</span><span class="n">getvalue</span><span class="p">())</span>
+
+            <span class="c">#These will help us do the up, down, up, down pattern</span>
+            <span class="n">row_start</span> <span class="o">=</span> <span class="n">itertools</span><span class="o">.</span><span class="n">cycle</span><span class="p">([</span><span class="nb">len</span><span class="p">(</span><span class="n">cur_mask</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+            <span class="n">row_stop</span> <span class="o">=</span> <span class="n">itertools</span><span class="o">.</span><span class="n">cycle</span><span class="p">([</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="nb">len</span><span class="p">(</span><span class="n">cur_mask</span><span class="p">)])</span>
+            <span class="n">direction</span> <span class="o">=</span> <span class="n">itertools</span><span class="o">.</span><span class="n">cycle</span><span class="p">([</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
+
+            <span class="c">#The data pattern is added using pairs of columns</span>
+            <span class="k">for</span> <span class="n">column</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">cur_mask</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="p">):</span>
+
+                <span class="c">#The vertical timing pattern is an exception to the rules,</span>
+                <span class="c">#move the column counter over by one</span>
+                <span class="k">if</span> <span class="n">column</span> <span class="o">&lt;=</span> <span class="mi">6</span><span class="p">:</span>
+                    <span class="n">column</span> <span class="o">=</span> <span class="n">column</span> <span class="o">-</span> <span class="mi">1</span>
+
+                <span class="c">#This will let us fill in the pattern</span>
+                <span class="c">#right-left, right-left, etc.</span>
+                <span class="n">column_pair</span> <span class="o">=</span> <span class="n">itertools</span><span class="o">.</span><span class="n">cycle</span><span class="p">([</span><span class="n">column</span><span class="p">,</span> <span class="n">column</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+
+                <span class="c">#Go through each row in the pattern moving up, then down</span>
+                <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">next</span><span class="p">(</span><span class="n">row_start</span><span class="p">),</span> <span class="nb">next</span><span class="p">(</span><span class="n">row_stop</span><span class="p">),</span>
+                                 <span class="nb">next</span><span class="p">(</span><span class="n">direction</span><span class="p">)):</span>
+
+                    <span class="c">#Fill in the right then left column</span>
+                    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">):</span>
+                        <span class="n">col</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">column_pair</span><span class="p">)</span>
+
+                        <span class="c">#Go to the next column if we encounter a</span>
+                        <span class="c">#preexisting pattern (usually an alignment pattern)</span>
+                        <span class="k">if</span> <span class="n">cur_mask</span><span class="p">[</span><span class="n">row</span><span class="p">][</span><span class="n">col</span><span class="p">]</span> <span class="o">!=</span> <span class="s">&#39; &#39;</span><span class="p">:</span>
+                            <span class="k">continue</span>
+
+                        <span class="c">#Some versions don&#39;t have enough bits. You then fill</span>
+                        <span class="c">#in the rest of the pattern with 0&#39;s. These are</span>
+                        <span class="c">#called &quot;remainder bits.&quot;</span>
+                        <span class="k">try</span><span class="p">:</span>
+                            <span class="n">bit</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">next</span><span class="p">(</span><span class="n">bits</span><span class="p">))</span>
+                        <span class="k">except</span><span class="p">:</span>
+                            <span class="n">bit</span> <span class="o">=</span> <span class="mi">0</span>
+
+
+                        <span class="c">#If the pattern is True then flip the bit</span>
+                        <span class="k">if</span> <span class="n">pattern</span><span class="p">(</span><span class="n">row</span><span class="p">,</span> <span class="n">col</span><span class="p">):</span>
+                            <span class="n">cur_mask</span><span class="p">[</span><span class="n">row</span><span class="p">][</span><span class="n">col</span><span class="p">]</span> <span class="o">=</span> <span class="n">bit</span> <span class="o">^</span> <span class="mi">1</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="n">cur_mask</span><span class="p">[</span><span class="n">row</span><span class="p">][</span><span class="n">col</span><span class="p">]</span> <span class="o">=</span> <span class="n">bit</span>
+
+        <span class="c">#DEBUG CODE!!!</span>
+        <span class="c">#Save all of the masks as png files</span>
+        <span class="c">#for i, m in enumerate(masks):</span>
+        <span class="c">#    _png(m, self.version, &#39;mask-{}.png&#39;.format(i), 5)</span>
+
+        <span class="k">return</span> <span class="n">masks</span>
+</div>
+<div class="viewcode-block" id="QRCodeBuilder.choose_best_mask"><a class="viewcode-back" href="../../builder.html#pyqrcode.builder.QRCodeBuilder.choose_best_mask">[docs]</a>    <span class="k">def</span> <span class="nf">choose_best_mask</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;This method returns the index of the &quot;best&quot; mask as defined by</span>
+<span class="sd">        having the lowest total penalty score. The penalty rules are defined</span>
+<span class="sd">        by the standard. The mask with the lowest total score should be the</span>
+<span class="sd">        easiest to read by optical scanners.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scores</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">masks</span><span class="p">)):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">scores</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">])</span>
+
+        <span class="c">#Score penalty rule number 1</span>
+        <span class="c">#Look for five consecutive squares with the same color.</span>
+        <span class="c">#Each one found gets a penalty of 3 + 1 for every</span>
+        <span class="c">#same color square after the first five in the row.</span>
+        <span class="k">for</span> <span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">mask</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">masks</span><span class="p">):</span>
+            <span class="n">current</span> <span class="o">=</span> <span class="n">mask</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">counter</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="n">total</span> <span class="o">=</span> <span class="mi">0</span>
+
+            <span class="c">#Examine the mask row wise</span>
+            <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="nb">len</span><span class="p">(</span><span class="n">mask</span><span class="p">)):</span>
+                <span class="n">counter</span> <span class="o">=</span> <span class="mi">0</span>
+                <span class="k">for</span> <span class="n">col</span>  <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="nb">len</span><span class="p">(</span><span class="n">mask</span><span class="p">)):</span>
+                    <span class="n">bit</span> <span class="o">=</span> <span class="n">mask</span><span class="p">[</span><span class="n">row</span><span class="p">][</span><span class="n">col</span><span class="p">]</span>
+
+                    <span class="k">if</span> <span class="n">bit</span> <span class="o">==</span> <span class="n">current</span><span class="p">:</span>
+                        <span class="n">counter</span> <span class="o">+=</span> <span class="mi">1</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="n">counter</span> <span class="o">&gt;=</span> <span class="mi">5</span><span class="p">:</span>
+                            <span class="n">total</span> <span class="o">+=</span> <span class="p">(</span><span class="n">counter</span> <span class="o">-</span> <span class="mi">5</span><span class="p">)</span> <span class="o">+</span> <span class="mi">3</span>
+                        <span class="n">counter</span> <span class="o">=</span> <span class="mi">1</span>
+                        <span class="n">current</span> <span class="o">=</span> <span class="n">bit</span>
+                <span class="k">if</span> <span class="n">counter</span> <span class="o">&gt;=</span> <span class="mi">5</span><span class="p">:</span>
+                    <span class="n">total</span> <span class="o">+=</span> <span class="p">(</span><span class="n">counter</span> <span class="o">-</span> <span class="mi">5</span><span class="p">)</span> <span class="o">+</span> <span class="mi">3</span>
+
+            <span class="c">#Examine the mask column wise</span>
+            <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="nb">len</span><span class="p">(</span><span class="n">mask</span><span class="p">)):</span>
+                <span class="n">counter</span> <span class="o">=</span> <span class="mi">0</span>
+                <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="nb">len</span><span class="p">(</span><span class="n">mask</span><span class="p">)):</span>
+                    <span class="n">bit</span> <span class="o">=</span> <span class="n">mask</span><span class="p">[</span><span class="n">row</span><span class="p">][</span><span class="n">col</span><span class="p">]</span>
+
+                    <span class="k">if</span> <span class="n">bit</span> <span class="o">==</span> <span class="n">current</span><span class="p">:</span>
+                        <span class="n">counter</span> <span class="o">+=</span> <span class="mi">1</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="n">counter</span> <span class="o">&gt;=</span> <span class="mi">5</span><span class="p">:</span>
+                            <span class="n">total</span> <span class="o">+=</span> <span class="p">(</span><span class="n">counter</span> <span class="o">-</span> <span class="mi">5</span><span class="p">)</span> <span class="o">+</span> <span class="mi">3</span>
+                        <span class="n">counter</span> <span class="o">=</span> <span class="mi">1</span>
+                        <span class="n">current</span> <span class="o">=</span> <span class="n">bit</span>
+                <span class="k">if</span> <span class="n">counter</span> <span class="o">&gt;=</span> <span class="mi">5</span><span class="p">:</span>
+                    <span class="n">total</span> <span class="o">+=</span> <span class="p">(</span><span class="n">counter</span> <span class="o">-</span> <span class="mi">5</span><span class="p">)</span> <span class="o">+</span> <span class="mi">3</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">scores</span><span class="p">[</span><span class="n">n</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">total</span>
+
+        <span class="c">#Score penalty rule 2</span>
+        <span class="c">#This rule will add 3 to the score for each 2x2 block of the same</span>
+        <span class="c">#colored pixels there are.</span>
+        <span class="k">for</span> <span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">mask</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">masks</span><span class="p">):</span>
+            <span class="n">count</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="c">#Don&#39;t examine the 0th and Nth row/column</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">mask</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span><span class="p">):</span>
+                <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">mask</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="n">mask</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="o">==</span> <span class="n">mask</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">][</span><span class="n">j</span><span class="p">]</span>   <span class="ow">and</span> \
+                       <span class="n">mask</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="o">==</span> <span class="n">mask</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span>   <span class="ow">and</span> \
+                       <span class="n">mask</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="o">==</span> <span class="n">mask</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">][</span><span class="n">j</span><span class="o">+</span><span class="mi">1</span><span class="p">]:</span>
+                        <span class="n">count</span> <span class="o">+=</span> <span class="mi">1</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">scores</span><span class="p">[</span><span class="n">n</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">count</span> <span class="o">*</span> <span class="mi">3</span>
+
+        <span class="c">#Score penalty rule 3</span>
+        <span class="c">#This rule looks for 1011101 within the mask prefixed</span>
+        <span class="c">#and/or suffixed by four zeros.</span>
+        <span class="n">patterns</span> <span class="o">=</span> <span class="p">[[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">],</span>
+                    <span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">],]</span>
+                    <span class="c">#[0,0,0,0,1,0,1,1,1,0,1,0,0,0,0]]</span>
+
+        <span class="k">for</span> <span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">mask</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">masks</span><span class="p">):</span>
+            <span class="n">nmatches</span> <span class="o">=</span> <span class="mi">0</span>
+
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">mask</span><span class="p">)):</span>
+                <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">mask</span><span class="p">)):</span>
+                    <span class="k">for</span> <span class="n">pattern</span> <span class="ow">in</span> <span class="n">patterns</span><span class="p">:</span>
+                        <span class="n">match</span> <span class="o">=</span> <span class="bp">True</span>
+                        <span class="n">k</span> <span class="o">=</span> <span class="n">j</span>
+                        <span class="c">#Look for row matches</span>
+                        <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">pattern</span><span class="p">:</span>
+                            <span class="k">if</span> <span class="n">k</span> <span class="o">&gt;=</span> <span class="nb">len</span><span class="p">(</span><span class="n">mask</span><span class="p">)</span> <span class="ow">or</span> <span class="n">mask</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">k</span><span class="p">]</span> <span class="o">!=</span> <span class="n">p</span><span class="p">:</span>
+                                <span class="n">match</span> <span class="o">=</span> <span class="bp">False</span>
+                                <span class="k">break</span>
+                            <span class="n">k</span> <span class="o">+=</span> <span class="mi">1</span>
+                        <span class="k">if</span> <span class="n">match</span><span class="p">:</span>
+                            <span class="n">nmatches</span> <span class="o">+=</span> <span class="mi">1</span>
+
+                        <span class="n">match</span> <span class="o">=</span> <span class="bp">True</span>
+                        <span class="n">k</span> <span class="o">=</span> <span class="n">j</span>
+                        <span class="c">#Look for column matches</span>
+                        <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">pattern</span><span class="p">:</span>
+                            <span class="k">if</span> <span class="n">k</span> <span class="o">&gt;=</span> <span class="nb">len</span><span class="p">(</span><span class="n">mask</span><span class="p">)</span> <span class="ow">or</span> <span class="n">mask</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">!=</span> <span class="n">p</span><span class="p">:</span>
+                                <span class="n">match</span> <span class="o">=</span> <span class="bp">False</span>
+                                <span class="k">break</span>
+                            <span class="n">k</span> <span class="o">+=</span> <span class="mi">1</span>
+                        <span class="k">if</span> <span class="n">match</span><span class="p">:</span>
+                            <span class="n">nmatches</span> <span class="o">+=</span> <span class="mi">1</span>
+
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">scores</span><span class="p">[</span><span class="n">n</span><span class="p">][</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">nmatches</span> <span class="o">*</span> <span class="mi">40</span>
+
+        <span class="c">#Score the last rule, penalty rule 4. This rule measures how close</span>
+        <span class="c">#the pattern is to being 50% black. The further it deviates from</span>
+        <span class="c">#this this ideal the higher the penalty.</span>
+        <span class="k">for</span> <span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">mask</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">masks</span><span class="p">):</span>
+            <span class="n">nblack</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">mask</span><span class="p">:</span>
+                <span class="n">nblack</span> <span class="o">+=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">row</span><span class="p">)</span>
+
+            <span class="n">total_pixels</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">mask</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span>
+            <span class="n">ratio</span> <span class="o">=</span> <span class="n">nblack</span> <span class="o">/</span> <span class="n">total_pixels</span>
+            <span class="n">percent</span> <span class="o">=</span> <span class="p">(</span><span class="n">ratio</span> <span class="o">*</span> <span class="mi">100</span><span class="p">)</span> <span class="o">-</span> <span class="mi">50</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">scores</span><span class="p">[</span><span class="n">n</span><span class="p">][</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">((</span><span class="nb">abs</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">percent</span><span class="p">))</span> <span class="o">/</span> <span class="mi">5</span><span class="p">)</span> <span class="o">*</span> <span class="mi">10</span><span class="p">)</span>
+
+
+        <span class="c">#Calculate the total for each score</span>
+        <span class="n">totals</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scores</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scores</span><span class="p">)):</span>
+            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scores</span><span class="p">[</span><span class="n">i</span><span class="p">])):</span>
+                <span class="n">totals</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+=</span>  <span class="bp">self</span><span class="o">.</span><span class="n">scores</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span>
+
+        <span class="c">#DEBUG CODE!!!</span>
+        <span class="c">#Prints out a table of scores</span>
+        <span class="c">#print(&#39;Rule Scores\n      1     2     3     4    Total&#39;)</span>
+        <span class="c">#for i in range(len(self.scores)):</span>
+        <span class="c">#    print(i, end=&#39;&#39;)</span>
+        <span class="c">#    for s in self.scores[i]:</span>
+        <span class="c">#        print(&#39;{: &gt;6}&#39;.format(s), end=&#39;&#39;)</span>
+        <span class="c">#    print(&#39;{: &gt;7}&#39;.format(totals[i]))</span>
+        <span class="c">#print(&#39;Mask Chosen: {}&#39;.format(totals.index(min(totals))))</span>
+
+        <span class="c">#The lowest total wins</span>
+        <span class="k">return</span> <span class="n">totals</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="n">totals</span><span class="p">))</span>
+</div>
+<div class="viewcode-block" id="QRCodeBuilder.add_type_pattern"><a class="viewcode-back" href="../../builder.html#pyqrcode.builder.QRCodeBuilder.add_type_pattern">[docs]</a>    <span class="k">def</span> <span class="nf">add_type_pattern</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">m</span><span class="p">,</span> <span class="n">type_bits</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;This will add the pattern to the QR code that represents the error</span>
+<span class="sd">        level and the type of mask used to make the code.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">field</span> <span class="o">=</span> <span class="nb">iter</span><span class="p">(</span><span class="n">type_bits</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">7</span><span class="p">):</span>
+            <span class="n">bit</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">next</span><span class="p">(</span><span class="n">field</span><span class="p">))</span>
+
+            <span class="c">#Skip the timing bits</span>
+            <span class="k">if</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="mi">6</span><span class="p">:</span>
+                <span class="n">m</span><span class="p">[</span><span class="mi">8</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">bit</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">m</span><span class="p">[</span><span class="mi">8</span><span class="p">][</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">bit</span>
+
+            <span class="k">if</span> <span class="o">-</span><span class="mi">8</span> <span class="o">&lt;</span> <span class="o">-</span><span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">):</span>
+                <span class="n">m</span><span class="p">[</span><span class="o">-</span><span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">)][</span><span class="mi">8</span><span class="p">]</span> <span class="o">=</span> <span class="n">bit</span>
+
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="o">-</span><span class="mi">8</span><span class="p">,</span><span class="mi">0</span><span class="p">):</span>
+            <span class="n">bit</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">next</span><span class="p">(</span><span class="n">field</span><span class="p">))</span>
+
+            <span class="n">m</span><span class="p">[</span><span class="mi">8</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">bit</span>
+
+            <span class="n">i</span> <span class="o">=</span> <span class="o">-</span><span class="n">i</span>
+            <span class="c">#Skip timing column</span>
+            <span class="k">if</span> <span class="n">i</span> <span class="o">&gt;</span> <span class="mi">6</span><span class="p">:</span>
+                <span class="n">m</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">8</span><span class="p">]</span> <span class="o">=</span> <span class="n">bit</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">m</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="mi">8</span><span class="p">]</span> <span class="o">=</span> <span class="n">bit</span>
+
+<span class="c">##############################################################################</span>
+<span class="c">##############################################################################</span>
+<span class="c">#</span>
+<span class="c"># Output Functions</span>
+<span class="c">#</span>
+<span class="c">##############################################################################</span>
+<span class="c">##############################################################################</span>
+</div></div>
+<span class="k">def</span> <span class="nf">_get_file</span><span class="p">(</span><span class="nb">file</span><span class="p">,</span> <span class="n">mode</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;This method returns the file parameter if it is an open writable</span>
+<span class="sd">    stream. Otherwise it treats the file parameter as a file path and</span>
+<span class="sd">    opens it with the given mode. It is used by the svg and png methods</span>
+<span class="sd">    to interpret the file parameter.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">import</span> <span class="nn">os.path</span>
+    <span class="c">#See if the file parameter is a stream</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="nb">file</span><span class="p">,</span> <span class="n">io</span><span class="o">.</span><span class="n">IOBase</span><span class="p">):</span>
+        <span class="c">#If it is not a stream open a the file path</span>
+        <span class="k">return</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="nb">file</span><span class="p">),</span> <span class="n">mode</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="ow">not</span> <span class="nb">file</span><span class="o">.</span><span class="n">writable</span><span class="p">():</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&#39;Stream is not writable.&#39;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">file</span>
+
+<span class="k">def</span> <span class="nf">_get_png_size</span><span class="p">(</span><span class="n">version</span><span class="p">,</span> <span class="n">scale</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;See: QRCode.get_png_size</span>
+
+<span class="sd">    This function was abstracted away from QRCode to allow for the output of</span>
+<span class="sd">    QR codes during the build process, i.e. for debugging. It works</span>
+<span class="sd">    just the same except you must specify the code&#39;s version. This is needed</span>
+<span class="sd">    to calculate the PNG&#39;s size.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c">#Formula: scale times number of modules plus the border on each side</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">scale</span> <span class="o">*</span> <span class="n">tables</span><span class="o">.</span><span class="n">version_size</span><span class="p">[</span><span class="n">version</span><span class="p">])</span> <span class="o">+</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">scale</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">_terminal</span><span class="p">(</span><span class="n">code</span><span class="p">,</span> <span class="n">module_color</span><span class="o">=</span><span class="s">&#39;default&#39;</span><span class="p">,</span> <span class="n">background</span><span class="o">=</span><span class="s">&#39;reverse&#39;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;This method returns a string containing ASCII escape codes,</span>
+<span class="sd">    such that if printed to a terminal, it will display a vaild</span>
+<span class="sd">    QR code. The module_color and the background color should be keys</span>
+<span class="sd">    in the tables.term_colors table for printing using the 8/16</span>
+<span class="sd">    color scheme. Alternatively, they can be a number between 0 and</span>
+<span class="sd">    256 in order to use the 88/256 color scheme. Otherwise, a</span>
+<span class="sd">    ValueError will be raised.</span>
+
+<span class="sd">    Note, the code is ouputted by changing the background color. Then</span>
+<span class="sd">    two spaces are written to the terminal. Finally, the terminal is</span>
+<span class="sd">    reset back to how it was.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">module_color</span> <span class="ow">in</span> <span class="n">tables</span><span class="o">.</span><span class="n">term_colors</span><span class="p">:</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="s">&#39;</span><span class="se">\033</span><span class="s">[{}m  </span><span class="se">\033</span><span class="s">[0m&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="n">tables</span><span class="o">.</span><span class="n">term_colors</span><span class="p">[</span><span class="n">module_color</span><span class="p">])</span>
+    <span class="k">elif</span> <span class="mi">0</span> <span class="o">&lt;=</span> <span class="n">module_color</span> <span class="o">&lt;=</span> <span class="mi">256</span><span class="p">:</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="s">&#39;</span><span class="se">\033</span><span class="s">[48;5;{}m  </span><span class="se">\033</span><span class="s">[0m&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">module_color</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&#39;The module color, {}, must a key in &#39;</span>
+                         <span class="s">&#39;pyqrcode.tables.term_colors or a number &#39;</span>
+                         <span class="s">&#39;between 0 and 256.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                         <span class="n">module_color</span><span class="p">))</span>
+
+    <span class="k">if</span> <span class="n">background</span> <span class="ow">in</span> <span class="n">tables</span><span class="o">.</span><span class="n">term_colors</span><span class="p">:</span>
+        <span class="n">background</span> <span class="o">=</span> <span class="s">&#39;</span><span class="se">\033</span><span class="s">[{}m  </span><span class="se">\033</span><span class="s">[0m&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="n">tables</span><span class="o">.</span><span class="n">term_colors</span><span class="p">[</span><span class="n">background</span><span class="p">])</span>
+    <span class="k">elif</span> <span class="mi">0</span> <span class="o">&lt;=</span> <span class="n">background</span> <span class="o">&lt;=</span> <span class="mi">256</span><span class="p">:</span>
+        <span class="n">background</span> <span class="o">=</span> <span class="s">&#39;</span><span class="se">\033</span><span class="s">[48;5;{}m  </span><span class="se">\033</span><span class="s">[0m&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">background</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&#39;The background color, {}, must a key in &#39;</span>
+                         <span class="s">&#39;pyqrcode.tables.term_colors or a number &#39;</span>
+                         <span class="s">&#39;between 0 and 256.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                         <span class="n">background</span><span class="p">))</span>
+
+    <span class="n">buf</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">StringIO</span><span class="p">()</span>
+
+    <span class="c">#This will be the begining and ending row for the code.</span>
+    <span class="n">border_row</span> <span class="o">=</span> <span class="n">background</span> <span class="o">*</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">code</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">+</span> <span class="mi">2</span><span class="p">)</span>
+
+
+    <span class="c">#Make sure we begin on a new line, and force the terminal back</span>
+    <span class="c">#to normal</span>
+    <span class="n">buf</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
+
+    <span class="c">#QRCodes have a background border one module tall, before the</span>
+    <span class="c">#code actually starts</span>
+    <span class="n">buf</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">border_row</span><span class="p">)</span>
+    <span class="n">buf</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">code</span><span class="p">:</span>
+        <span class="c">#Each code has a border on the left side, this is the left</span>
+        <span class="c">#border for this code</span>
+        <span class="n">buf</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">background</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">bit</span> <span class="ow">in</span> <span class="n">row</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">bit</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">buf</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">bit</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">buf</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">background</span><span class="p">)</span>
+        
+        <span class="c">#Each row ends with a border on the right side, this is the</span>
+        <span class="c">#right hand border background module</span>
+        <span class="n">buf</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">background</span><span class="p">)</span>
+        <span class="n">buf</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
+
+    <span class="c">#QRCodes have a background border one module tall, before the</span>
+    <span class="c">#code actually starts</span>
+    <span class="n">buf</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">border_row</span><span class="p">)</span>
+    <span class="n">buf</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">buf</span><span class="o">.</span><span class="n">getvalue</span><span class="p">()</span>
+
+<span class="k">def</span> <span class="nf">_text</span><span class="p">(</span><span class="n">code</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;This method returns a text based representation of the QR code.</span>
+<span class="sd">    This is useful for debugging purposes.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">buf</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">StringIO</span><span class="p">()</span>
+
+    <span class="n">border_row</span> <span class="o">=</span> <span class="s">&#39;0&#39;</span> <span class="o">*</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">code</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">+</span> <span class="mi">2</span><span class="p">)</span>
+
+    <span class="n">buf</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">border_row</span><span class="p">)</span>
+    <span class="n">buf</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">code</span><span class="p">:</span>
+        <span class="n">buf</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;0&#39;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">bit</span> <span class="ow">in</span> <span class="n">row</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">bit</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">buf</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;1&#39;</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">bit</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">buf</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;0&#39;</span><span class="p">)</span>
+            <span class="c">#This is for debugging unfinished QR codes,</span>
+            <span class="c">#unset pixels will be spaces.</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">buf</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39; &#39;</span><span class="p">)</span>
+        <span class="n">buf</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;0</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
+
+    <span class="n">buf</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">border_row</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">buf</span><span class="o">.</span><span class="n">getvalue</span><span class="p">()</span>
+
+<span class="k">def</span> <span class="nf">_svg</span><span class="p">(</span><span class="n">code</span><span class="p">,</span> <span class="n">version</span><span class="p">,</span> <span class="nb">file</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">module_color</span><span class="o">=</span><span class="s">&#39;black&#39;</span><span class="p">,</span> <span class="n">background</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;This method writes the QR code out as an SVG document. The</span>
+<span class="sd">    code is drawn by drawing only the modules corresponding to a 1. They</span>
+<span class="sd">    are drawn using a line, such that contiguous modules in a row</span>
+<span class="sd">    are drawn with a single line. The file parameter is used to</span>
+<span class="sd">    specify where to write the document to. It can either be an writable</span>
+<span class="sd">    stream or a file path. The scale parameter is sets how large to draw</span>
+<span class="sd">    a single module. By default one pixel is used to draw a single</span>
+<span class="sd">    module. This may make the code to small to be read efficiently.</span>
+<span class="sd">    Increasing the scale will make the code larger. This method will accept</span>
+<span class="sd">    fractional scales (e.g. 2.5).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c">#This is the template for the svg line. It is placed here so it</span>
+    <span class="c">#does not need to be recreated for each call to line().</span>
+    <span class="n">line_template</span> <span class="o">=</span> <span class="s">&#39;&#39;&#39;</span>
+<span class="s">        &lt;line class=&quot;pyqrline&quot; x1=&quot;{}&quot; y1=&quot;{}&quot; x2=&quot;{}&quot; y2=&quot;{}&quot;</span>
+<span class="s">              stroke=&quot;{}&quot; stroke-width=&quot;{}&quot;/&gt;&#39;&#39;&#39;</span>
+
+    <span class="k">def</span> <span class="nf">line</span><span class="p">(</span><span class="n">x1</span><span class="p">,</span> <span class="n">y1</span><span class="p">,</span> <span class="n">x2</span><span class="p">,</span> <span class="n">y2</span><span class="p">,</span> <span class="n">color</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;This sub-function draws the modules. It attempts to draw them</span>
+<span class="sd">        as a single line per row, rather than as individual rectangles.</span>
+<span class="sd">        It uses the l variable as a template t</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">line_template</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">x1</span><span class="o">+</span><span class="n">scale</span><span class="p">,</span> <span class="n">y1</span><span class="o">+</span><span class="n">scale</span><span class="p">,</span> <span class="n">x2</span><span class="o">+</span><span class="n">scale</span><span class="p">,</span> <span class="n">y2</span><span class="o">+</span><span class="n">scale</span><span class="p">,</span>
+                                    <span class="n">color</span><span class="p">,</span> <span class="n">scale</span><span class="p">)</span>
+
+    <span class="nb">file</span> <span class="o">=</span> <span class="n">_get_file</span><span class="p">(</span><span class="nb">file</span><span class="p">,</span> <span class="s">&#39;w&#39;</span><span class="p">)</span>
+
+    <span class="c">#Write the document header</span>
+    <span class="nb">file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot;&quot;&quot;&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;</span>
+<span class="s">        &lt;!DOCTYPE svg PUBLIC &quot;-//W3C//DTD SVG 1.1//EN&quot;</span>
+<span class="s">           &quot;http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd&quot;&gt;</span>
+
+<span class="s">        &lt;svg xmlns=&quot;http://www.w3.org/2000/svg&quot; class=&quot;pyqrcode&quot;</span>
+<span class="s">             width=&quot;{0}&quot; height=&quot;{0}&quot;&gt;</span>
+<span class="s">        &lt;title&gt;QR code&lt;/title&gt;</span>
+<span class="s">        &quot;&quot;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">((</span><span class="n">tables</span><span class="o">.</span><span class="n">version_size</span><span class="p">[</span><span class="n">version</span><span class="p">]</span><span class="o">*</span><span class="n">scale</span><span class="p">)</span><span class="o">+</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">scale</span><span class="p">)))</span>
+
+    <span class="c">#Draw a background rectangle if necessary</span>
+    <span class="k">if</span> <span class="n">background</span><span class="p">:</span>
+        <span class="nb">file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot;&quot;&quot;</span>
+<span class="s">            &lt;rect width=&quot;{0}&quot; height=&quot;{0}&quot; style=&quot;fill:{1};stroke-width:0&quot; /&gt;</span>
+<span class="s">            &quot;&quot;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">((</span><span class="n">tables</span><span class="o">.</span><span class="n">version_size</span><span class="p">[</span><span class="n">version</span><span class="p">]</span><span class="o">*</span><span class="n">scale</span><span class="p">)</span><span class="o">+</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">scale</span><span class="p">),</span>
+                       <span class="n">background</span><span class="p">))</span>
+
+    <span class="c">#This will hold the current row number</span>
+    <span class="n">rnumber</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="c">#The current &quot;color,&quot; used to define starting a line and ending a line.</span>
+    <span class="n">color</span> <span class="o">=</span> <span class="s">&#39;black&#39;</span>
+
+    <span class="c">#Loop through each row of the code</span>
+    <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">code</span><span class="p">:</span>
+        <span class="n">colnumber</span> <span class="o">=</span> <span class="mi">0</span>       <span class="c">#Reset column number</span>
+        <span class="n">start_column</span> <span class="o">=</span> <span class="mi">0</span>    <span class="c">#Reset the starting_column number</span>
+
+        <span class="c">#Examine every bit in the row</span>
+        <span class="k">for</span> <span class="n">bit</span> <span class="ow">in</span> <span class="n">row</span><span class="p">:</span>
+            <span class="c">#Set the color of the bit</span>
+            <span class="k">if</span> <span class="n">bit</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">new_color</span> <span class="o">=</span> <span class="s">&#39;black&#39;</span>
+            <span class="k">elif</span> <span class="n">bit</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">new_color</span> <span class="o">=</span> <span class="s">&#39;white&#39;</span>
+
+            <span class="c">#DEBUG CODE!!</span>
+            <span class="c">#In unfinished QR codes, unset pixels will be red</span>
+            <span class="c">#else:</span>
+                <span class="c">#new_color = &#39;red&#39;</span>
+
+            <span class="c">#When the color changes then draw a line</span>
+            <span class="k">if</span> <span class="n">new_color</span> <span class="o">!=</span> <span class="n">color</span><span class="p">:</span>
+                <span class="c">#Don&#39;t draw the white background</span>
+                <span class="k">if</span> <span class="n">color</span> <span class="o">!=</span> <span class="s">&#39;white&#39;</span><span class="p">:</span>
+                    <span class="nb">file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">line</span><span class="p">(</span><span class="n">start_column</span><span class="p">,</span> <span class="n">rnumber</span><span class="p">,</span>
+                                    <span class="n">colnumber</span><span class="p">,</span> <span class="n">rnumber</span><span class="p">,</span> <span class="n">color</span><span class="p">))</span>
+
+                <span class="c">#Move the next line&#39;s starting color and number</span>
+                <span class="n">start_column</span> <span class="o">=</span> <span class="n">colnumber</span>
+                <span class="n">color</span> <span class="o">=</span> <span class="n">new_color</span>
+
+            <span class="c">#Accumulate the column</span>
+            <span class="n">colnumber</span> <span class="o">+=</span> <span class="n">scale</span>
+
+        <span class="c">#End the row by drawing out the accumulated line</span>
+        <span class="c">#if it is not the background</span>
+        <span class="k">if</span> <span class="n">color</span> <span class="o">!=</span> <span class="s">&#39;white&#39;</span><span class="p">:</span>
+            <span class="nb">file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">line</span><span class="p">(</span><span class="n">start_column</span><span class="p">,</span> <span class="n">rnumber</span><span class="p">,</span>
+                            <span class="n">colnumber</span><span class="p">,</span> <span class="n">rnumber</span><span class="p">,</span> <span class="n">color</span><span class="p">))</span>
+
+        <span class="c">#Set row number</span>
+        <span class="n">rnumber</span> <span class="o">+=</span> <span class="n">scale</span>
+
+
+    <span class="c">#Close the document</span>
+    <span class="nb">file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot;&lt;/svg&gt;</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">_png</span><span class="p">(</span><span class="n">code</span><span class="p">,</span> <span class="n">version</span><span class="p">,</span> <span class="nb">file</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">module_color</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">background</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;See: pyqrcode.QRCode.png()</span>
+
+<span class="sd">    This function was abstracted away from QRCode to allow for the output of</span>
+<span class="sd">    QR codes during the build process, i.e. for debugging. It works</span>
+<span class="sd">    just the same except you must specify the code&#39;s version. This is needed</span>
+<span class="sd">    to calculate the PNG&#39;s size.</span>
+
+<span class="sd">    This method will write the given file out as a PNG file. Note, it</span>
+<span class="sd">    depends on the PyPNG module to do this.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">import</span> <span class="nn">png</span>
+
+    <span class="c">#Coerce scale parameter into an integer</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">scale</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">scale</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&#39;The scale parameter must be an integer&#39;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">scale_code</span><span class="p">(</span><span class="n">code</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;To perform the scaling we need to inflate the number of bits.</span>
+<span class="sd">        The PNG library expects all of the bits when it draws the PNG.</span>
+<span class="sd">        Effectively, we double, tripple, etc. the number of columns and</span>
+<span class="sd">        the number of rows.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c">#This is the row to show up at the top and bottom border</span>
+        <span class="n">border_module</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">scale</span>
+        <span class="n">border_row</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">_get_png_size</span><span class="p">(</span><span class="n">version</span><span class="p">,</span> <span class="n">scale</span><span class="p">)</span>
+        <span class="n">border</span> <span class="o">=</span> <span class="p">[</span><span class="n">border_row</span><span class="p">]</span> <span class="o">*</span> <span class="n">scale</span>
+
+
+        <span class="c">#This is one row&#39;s worth of each possible module</span>
+        <span class="c">#PNG&#39;s use 0 for black and 1 for white, this is the</span>
+        <span class="c">#reverse of the QR standard</span>
+        <span class="n">black</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">scale</span>
+        <span class="n">white</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">scale</span>
+
+        <span class="c">#This will hold the final PNG&#39;s bits</span>
+        <span class="n">bits</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="c">#Add scale rows before the code as a border,</span>
+        <span class="c">#as per the standard</span>
+        <span class="n">bits</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">border</span><span class="p">)</span>
+
+        <span class="c">#Add each row of the to the final PNG bits</span>
+        <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">code</span><span class="p">:</span>
+            <span class="n">tmp_row</span> <span class="o">=</span> <span class="p">[]</span>
+
+            <span class="c">#Add one all white module to the beginning</span>
+            <span class="c">#to create the vertical border</span>
+            <span class="n">tmp_row</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">border_module</span><span class="p">)</span>
+
+            <span class="c">#Go through each bit in the code</span>
+            <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">row</span><span class="p">:</span>
+                <span class="c">#Add one scaled module</span>
+                <span class="k">if</span> <span class="n">item</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">tmp_row</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">white</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">tmp_row</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">black</span><span class="p">)</span>
+
+            <span class="c">#Add one all white module to the end</span>
+            <span class="c">#to create the vertical border</span>
+            <span class="n">tmp_row</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">border_module</span><span class="p">)</span>
+
+            <span class="c">#Copy each row scale times</span>
+            <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">scale</span><span class="p">):</span>
+                <span class="n">bits</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">tmp_row</span><span class="p">)</span>
+
+        <span class="c">#Add the bottom border</span>
+        <span class="n">bits</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">border</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">bits</span>
+
+    <span class="k">def</span> <span class="nf">png_pallete_color</span><span class="p">(</span><span class="n">color</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;This creates a palette color from a list or tuple. The list or</span>
+<span class="sd">        tuple must be of length 3 (for rgb) or 4 (for rgba). The values</span>
+<span class="sd">        must be between 0 and 255. Note rgb colors will be given an added</span>
+<span class="sd">        alpha component set to 255.</span>
+
+<span class="sd">        The pallete color is represented as a list, this is what is returned.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">color</span><span class="p">:</span>
+            <span class="n">rgba</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="mi">3</span> <span class="o">&lt;=</span> <span class="nb">len</span><span class="p">(</span><span class="n">color</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="mi">4</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&#39;Colors must be a list or tuple of length &#39;</span>
+                                 <span class="s">&#39; 3 or 4. You passed in &#39;</span>
+                                 <span class="s">&#39;&quot;{}&quot;.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">color</span><span class="p">))</span>
+
+            <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">color</span><span class="p">:</span>
+                <span class="n">c</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
+                <span class="k">if</span> <span class="mi">0</span> <span class="o">&lt;=</span> <span class="n">c</span> <span class="o">&lt;=</span> <span class="mi">255</span><span class="p">:</span>
+                    <span class="n">rgba</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">c</span><span class="p">))</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&#39;Color components must be between &#39;</span>
+                                     <span class="s">&#39; 0 and 255&#39;</span><span class="p">)</span>
+
+            <span class="c">#Make all all colors have an alpha channel</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">rgba</span><span class="p">)</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+                <span class="n">rgba</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mi">255</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">rgba</span>
+
+    <span class="c">#If the user passes in one parameter, then they must pass in both or neither</span>
+    <span class="c">#Note, this is a logical xor</span>
+    <span class="k">if</span> <span class="p">(</span><span class="ow">not</span> <span class="n">module_color</span><span class="p">)</span> <span class="o">!=</span> <span class="p">(</span><span class="ow">not</span> <span class="n">background</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&#39;If you specify either the black or white parameter, &#39;</span>
+                         <span class="s">&#39;then you must specify both.&#39;</span><span class="p">)</span>
+
+    <span class="c">#Create the pallete, or set greyscale to True</span>
+    <span class="k">if</span> <span class="n">module_color</span><span class="p">:</span>
+        <span class="n">palette</span> <span class="o">=</span> <span class="p">[</span><span class="n">png_pallete_color</span><span class="p">(</span><span class="n">module_color</span><span class="p">),</span>
+                   <span class="n">png_pallete_color</span><span class="p">(</span><span class="n">background</span><span class="p">)]</span>
+        <span class="n">greyscale</span> <span class="o">=</span> <span class="bp">False</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">palette</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="n">greyscale</span> <span class="o">=</span> <span class="bp">True</span>
+
+    <span class="c">#The size of the PNG</span>
+    <span class="n">size</span> <span class="o">=</span> <span class="n">_get_png_size</span><span class="p">(</span><span class="n">version</span><span class="p">,</span> <span class="n">scale</span><span class="p">)</span>
+
+    <span class="c">#We need to increase the size of the code to match up to the</span>
+    <span class="c">#scale parameter.</span>
+    <span class="n">code</span> <span class="o">=</span> <span class="n">scale_code</span><span class="p">(</span><span class="n">code</span><span class="p">)</span>
+
+    <span class="c">#Write out the PNG</span>
+    <span class="k">with</span> <span class="n">_get_file</span><span class="p">(</span><span class="nb">file</span><span class="p">,</span> <span class="s">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">w</span> <span class="o">=</span> <span class="n">png</span><span class="o">.</span><span class="n">Writer</span><span class="p">(</span><span class="n">width</span><span class="o">=</span><span class="n">size</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="n">size</span><span class="p">,</span> <span class="n">greyscale</span><span class="o">=</span><span class="n">greyscale</span><span class="p">,</span>
+                       <span class="n">palette</span><span class="o">=</span><span class="n">palette</span><span class="p">,</span> <span class="n">bitdepth</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="n">w</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">code</span><span class="p">)</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../index.html">pyqrcode 0.11 documentation</a> &raquo;</li>
+          <li><a href="../index.html" >Module code</a> &raquo;</li>
+          <li><a href="../pyqrcode.html" >pyqrcode</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013-2014, Michael Nooner.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>

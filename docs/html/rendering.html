@@ -1,0 +1,254 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Rendering QR Codes &mdash; pyqrcode 0.11 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.11',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="pyqrcode 0.11 documentation" href="index.html" />
+    <link rel="next" title="PyQRCode Module Documentation" href="moddoc.html" />
+    <link rel="prev" title="Encoding Data" href="encoding.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="moddoc.html" title="PyQRCode Module Documentation"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="encoding.html" title="Encoding Data"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">pyqrcode 0.11 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="rendering-qr-codes">
+<h1>Rendering QR Codes<a class="headerlink" href="#rendering-qr-codes" title="Permalink to this headline">¶</a></h1>
+<p>There are three possible formats for rendering the QR Code. The first is
+to render it as a string of 1&#8217;s and 0&#8217;s. There are also two image based
+renderers. Both allow you to set the colors used. They also take a scaling
+factor, that way each module is not rendered as 1 pixel.</p>
+<div class="section" id="text-rendering">
+<h2>Text Rendering<a class="headerlink" href="#text-rendering" title="Permalink to this headline">¶</a></h2>
+<p>The pyqrcode module includes a text renderer. This will return a string
+containing the QR code as a string of 1&#8217;s and 0&#8217;s, with each row of the code on
+a new line. A <a class="reference internal" href="glossary.html#term-data-module"><em class="xref std std-term">data module</em></a> in the QR Code is represented by a 1.
+Likewise, 0 is used to represent the background of the code.</p>
+<p>The purpose of this renderer is to allow users to create their own renderer if
+neither the svg or png renderers are satisfactory.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">number</span> <span class="o">=</span> <span class="n">pyqrcode</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="mi">123</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">number</span><span class="o">.</span><span class="n">text</span><span class="p">())</span>
+<span class="go">00000000000000000000000</span>
+<span class="go">01111111001101011111110</span>
+<span class="go">01000001000111010000010</span>
+<span class="go">01011101001011010111010</span>
+<span class="go">01011101000110010111010</span>
+<span class="go">01011101010100010111010</span>
+<span class="go">01000001001111010000010</span>
+<span class="go">01111111010101011111110</span>
+<span class="go">00000000010110000000000</span>
+<span class="go">00011001111000110100000</span>
+<span class="go">01100100110001110001110</span>
+<span class="go">01001111001110110010100</span>
+<span class="go">00111010111010001111110</span>
+<span class="go">00000001111010101001000</span>
+<span class="go">00000000010010100010010</span>
+<span class="go">01111111010110001000110</span>
+<span class="go">01000001000100011101100</span>
+<span class="go">01011101001110111110010</span>
+<span class="go">01011101010100001111100</span>
+<span class="go">01011101011110011000000</span>
+<span class="go">01000001000110101001000</span>
+<span class="go">01111111000001010100100</span>
+<span class="go">00000000000000000000000</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="terminal-rendering">
+<h2>Terminal Rendering<a class="headerlink" href="#terminal-rendering" title="Permalink to this headline">¶</a></h2>
+<p>QR codes can be directly rendered to a compatible terminal in a
+manner readable by QR code scanners. Most Linux terminals are supported. This
+is done using ASCII escape codes. The QR code&#8217;s colors can even be set.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">text</span> <span class="o">=</span> <span class="n">pyqrcode</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="s">&#39;Example&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">text</span><span class="o">.</span><span class="n">terminal</span><span class="p">())</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">text</span><span class="o">.</span><span class="n">terminal</span><span class="p">(</span><span class="n">module_color</span><span class="o">=</span><span class="s">&#39;red&#39;</span><span class="p">,</span> <span class="n">background</span><span class="o">=</span><span class="s">&#39;yellow&#39;</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span><span class="p">(</span><span class="n">text</span><span class="o">.</span><span class="n">terminal</span><span class="p">(</span><span class="n">module_color</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">background</span><span class="o">=</span><span class="mi">123</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>Rendering colors in a terminal is a tricky business. Beyond the eight named
+colors, compatability becomes problematic. With this in mind it is best to
+stick to the eight well known colors: black, red, green, yellow, blue, magenta,
+and cyan. Although, these colors are also supported on almost every color
+terminal: light gray, dark gray, light red, light green, light blue, light
+yellow, light magenta, light cyan, and white.</p>
+<p>The terminal method also support the 256 color scheme. This is the least
+transportable of the color schemes. To use this color scheme simply supply a
+number between 0 and 256. This number will act as an index to the terminal&#8217;s
+color pallete. What color that index actually corresponds to is system
+dependent. In other words, while most terminal emulators support 256 colors,
+the there is no way to tell what color will be actually displayed.</p>
+</div>
+<div class="section" id="image-rendering">
+<h2>Image Rendering<a class="headerlink" href="#image-rendering" title="Permalink to this headline">¶</a></h2>
+<p>There are two ways to get an image of the generated QR code. Both renderers
+have a few things in common.</p>
+<p>Both renderers take a file path or writable file stream and draw the QR
+code there. The methods should auto-detect which is which.</p>
+<p>Each renderer takes a scale parameter. This parameter sets the size of a single
+<a class="reference internal" href="glossary.html#term-data-module"><em class="xref std std-term">data module</em></a> in pixels. Setting this parameter to one, will
+result in each <a class="reference internal" href="glossary.html#term-data-module"><em class="xref std std-term">data module</em></a> taking up 1 pixel. In other words, the QR
+code would be too small to scan. What scale to use depends on how you plan to
+use the QR code. Generally, three, four, or five will result in small but
+scanable QR codes.</p>
+<p>Both renderers, also, allow you to set the <a class="reference internal" href="glossary.html#term-module"><em class="xref std std-term">module</em></a> and background colors.
+Although, how the colors are represented are renderer specific.</p>
+<div class="section" id="scalable-vector-graphic">
+<h3>Scalable Vector Graphic<a class="headerlink" href="#scalable-vector-graphic" title="Permalink to this headline">¶</a></h3>
+<p>The SVG renderer outputs the QR code as a scalable vector graphic using
+the <a class="reference internal" href="moddoc.html#pyqrcode.QRCode.svg" title="pyqrcode.QRCode.svg"><tt class="xref py py-meth docutils literal"><span class="pre">pyqrcode.QRCode.svg()</span></tt></a> method. <em>This
+renderer does not require any external modules.</em></p>
+<p>The method draws the QR code using a set of horizontal lines. By default, no
+background is drawn, i.e. the resulting code has a transparent background. The
+default foreground color is black.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">url</span> <span class="o">=</span> <span class="n">pyqrcode</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="s">&#39;http://uca.edu&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">url</span><span class="o">.</span><span class="n">svg</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">url</span><span class="o">.</span><span class="n">svg</span><span class="p">(</span><span class="s">&#39;uca.svg&#39;</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>You can change the colors of the data-modules using the <em>module_color</em>
+parameter. Likewise, you can specify a background using the <em>background</em>
+parameter. Each of these parameters take a HTML style color.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">url</span><span class="o">.</span><span class="n">svg</span><span class="p">(</span><span class="s">&#39;uca.svg&#39;</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">background</span><span class="o">=</span><span class="s">&quot;white&quot;</span><span class="p">,</span> <span class="n">module_color</span><span class="o">=</span><span class="s">&quot;#7D007D&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="portable-network-graphic">
+<h3>Portable Network Graphic<a class="headerlink" href="#portable-network-graphic" title="Permalink to this headline">¶</a></h3>
+<p>The PNG renderer ouputs the QR code as a portable network graphic file using
+the <a class="reference internal" href="moddoc.html#pyqrcode.QRCode.png" title="pyqrcode.QRCode.png"><tt class="xref py py-meth docutils literal"><span class="pre">pyqrcode.QRCode.png()</span></tt></a> method.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">This renderer requires the <a class="reference external" href="https://pypi.python.org/pypi/pypng/">pypng</a>
+module.</p>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">url</span> <span class="o">=</span> <span class="n">pyqrcode</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="s">&#39;http://uca.edu&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s">&#39;code.png&#39;</span><span class="p">,</span> <span class="s">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fstream</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="n">url</span><span class="o">.</span><span class="n">png</span><span class="p">(</span><span class="n">fstream</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Colors should be a list or tuple containing numbers between zero an 255. The
+lists should be of length three (for RGB) or four (for RGBA). The color (0,0,0)
+represents black and the color (255,255,255) represents white. A value of zero
+for the fourth element, represents full transparency. Likewise, a value of 255
+for the fourth element represents full opacity.</p>
+<p>By default, the renderer creates a QR code with the data modules colored
+black, and the background modules colored white.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">url</span><span class="o">.</span><span class="n">png</span><span class="p">(</span><span class="s">&#39;uca-colors.png&#39;</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span> <span class="n">module_color</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">128</span><span class="p">],</span> <span class="n">background</span><span class="o">=</span><span class="p">[</span><span class="mh">0xff</span><span class="p">,</span> <span class="mh">0xff</span><span class="p">,</span> <span class="mh">0xcc</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Rendering QR Codes</a><ul>
+<li><a class="reference internal" href="#text-rendering">Text Rendering</a></li>
+<li><a class="reference internal" href="#terminal-rendering">Terminal Rendering</a></li>
+<li><a class="reference internal" href="#image-rendering">Image Rendering</a><ul>
+<li><a class="reference internal" href="#scalable-vector-graphic">Scalable Vector Graphic</a></li>
+<li><a class="reference internal" href="#portable-network-graphic">Portable Network Graphic</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="encoding.html"
+                        title="previous chapter">Encoding Data</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="moddoc.html"
+                        title="next chapter">PyQRCode Module Documentation</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/rendering.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="moddoc.html" title="PyQRCode Module Documentation"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="encoding.html" title="Encoding Data"
+             >previous</a> |</li>
+        <li><a href="index.html">pyqrcode 0.11 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013-2014, Michael Nooner.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>
