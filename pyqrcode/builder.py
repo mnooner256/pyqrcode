@@ -130,10 +130,6 @@ class QRCodeBuilder:
         else:
             raise ValueError('This mode is not yet implemented.')
 
-        bits = self.terminate_bits(encoded)
-        if bits is not None:
-            encoded += bits
-
         return encoded
 
     def encode_alphanumeric(self):
@@ -147,7 +143,7 @@ class QRCodeBuilder:
         ascii = []
         for char in self.data:
             ascii.append(tables.ascii_codes[char])
-
+        
         #Now perform the algorithm that will make the ascii into bit fields
         with io.StringIO() as buf:
             for (a,b) in self.grouper(2, ascii):
@@ -212,16 +208,26 @@ class QRCodeBuilder:
         self.buffer.write(self.binary_string(self.mode, 4))
         self.buffer.write(self.get_data_length())
         self.buffer.write(self.encode())
+        
+        #Fix for issue #3: https://github.com/mnooner256/pyqrcode/issues/3#
+        #I was performing the terminate_bits() part in the encoding.
+        #As per the standard, terminating bits are only supposed to
+        #be added after the bit stream is complete. I took that to
+        #mean after the encoding, but actually it is after the entire
+        #bit stream has been constructed.
+        bits = self.terminate_bits(self.buffer.getvalue())
+        if bits is not None:
+            self.buffer.write(bits)
 
         #delimit_words and add_words can return None
         add_bits = self.delimit_words()
         if add_bits:
             self.buffer.write(add_bits)
-
+        
         fill_bytes = self.add_words()
         if fill_bytes:
             self.buffer.write(fill_bytes)
-
+        
         #Get a numeric representation of the data
         data = [int(''.join(x),2)
                     for x in self.grouper(8, self.buffer.getvalue())]
@@ -248,7 +254,12 @@ class QRCodeBuilder:
         for n_data_blocks in data_block_sizes:
             data_blocks.append(data[current_byte:current_byte+n_data_blocks])
             current_byte += n_data_blocks
-
+        
+        #I am not sure about the test after the "and". This was added to
+        #fix a bug where after delimit_words padded the bit stream, a zero
+        #byte ends up being added. After checking around, it seems this extra
+        #byte is supposed to be chopped off, but I cannot find that in the
+        #standard! I am adding it to solve the bug, I believe it is correct.
         if current_byte < len(data):
             raise ValueError('Too much data for this code version.')
 
@@ -312,9 +323,9 @@ class QRCodeBuilder:
         the encoded string contains only full bytes.
         """
         bits_short = 8 - (len(self.buffer.getvalue()) % 8)
-
+        
         #The string already falls on an byte boundary do nothing
-        if bits_short == 8:
+        if bits_short == 0 or bits_short == 8:
             return None
         else:
             return self.binary_string(0, bits_short)
