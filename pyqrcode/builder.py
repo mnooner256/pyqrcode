@@ -854,38 +854,104 @@ def _get_png_size(version, scale):
     #Formula: scale times number of modules plus the border on each side
     return (scale * tables.version_size[version]) + (2 * scale)
 
-def _text(code, ansi_color):
-    """This method returns a text based representation of the QR code.
-    This is useful for debugging purposes.
+
+def _terminal(code, module_color='default', background='reverse'):
+    """This method returns a string containing ASCII escape codes,
+    such that if printed to a terminal, it will display a vaild
+    QR code. The module_color and the background color should be keys
+    in the tables.term_colors table for printing using the 8/16
+    color scheme. Alternatively, they can be a number between 0 and
+    256 in order to use the 88/256 color scheme. Otherwise, a
+    ValueError will be raised.
+
+    Note, the code is ouputted by changing the background color. Then
+    two spaces are written to the terminal. Finally, the terminal is
+    reset back to how it was.
     """
-    if ansi_color:
-        data = '\033[0;30;40m  \033[0m'
-        background = '\033[0;37;47m  \033[0m'
+    if module_color in tables.term_colors:
+        data = '\033[{}m  \033[0m'.format(
+            tables.term_colors[module_color])
+    elif 0 <= module_color <= 256:
+        data = '\033[48;5;{}m  \033[0m'.format(module_color)
     else:
-        data = '1'
-        background = '0'
+        raise ValueError('The module color, {}, must a key in '
+                         'pyqrcode.tables.term_colors or a number '
+                         'between 0 and 256.'.format(
+                         module_color))
+
+    if background in tables.term_colors:
+        background = '\033[{}m  \033[0m'.format(
+            tables.term_colors[background])
+    elif 0 <= background <= 256:
+        background = '\033[48;5;{}m  \033[0m'.format(background)
+    else:
+        raise ValueError('The background color, {}, must a key in '
+                         'pyqrcode.tables.term_colors or a number '
+                         'between 0 and 256.'.format(
+                         background))
 
     buf = io.StringIO()
 
-    buf.write('\n')
+    #This will be the begining and ending row for the code.
     border_row = background * (len(code[0]) + 2)
 
+
+    #Make sure we begin on a new line, and force the terminal back
+    #to normal
+    buf.write('\n')
+
+    #QRCodes have a background border one module tall, before the
+    #code actually starts
     buf.write(border_row)
     buf.write('\n')
+
     for row in code:
+        #Each code has a border on the left side, this is the left
+        #border for this code
         buf.write(background)
+
         for bit in row:
             if bit == 1:
                 buf.write(data)
             elif bit == 0:
                 buf.write(background)
+        
+        #Each row ends with a border on the right side, this is the
+        #right hand border background module
+        buf.write(background)
+        buf.write('\n')
+
+    #QRCodes have a background border one module tall, before the
+    #code actually starts
+    buf.write(border_row)
+    buf.write('\n')
+
+    return buf.getvalue()
+
+def _text(code):
+    """This method returns a text based representation of the QR code.
+    This is useful for debugging purposes.
+    """
+    buf = io.StringIO()
+
+    border_row = '0' * (len(code[0]) + 2)
+
+    buf.write(border_row)
+    buf.write('\n')
+    for row in code:
+        buf.write('0')
+        for bit in row:
+            if bit == 1:
+                buf.write('1')
+            elif bit == 0:
+                buf.write('0')
             #This is for debugging unfinished QR codes,
             #unset pixels will be spaces.
             else:
                 buf.write(' ')
-        buf.write(background + '\n')
+        buf.write('0\n')
 
-    buf.write(border_row + '\n')
+    buf.write(border_row)
 
     return buf.getvalue()
 
