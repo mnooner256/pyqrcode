@@ -312,7 +312,43 @@ class QRCode:
         builder._svg(self.code, self.version, file, scale,
                      module_color, background)
 
-    def text(self, ansi_color=False):
+    def terminal(self, module_color='default', background='reverse'):
+        """This method returns a string containing ASCII escape codes,
+        such that if printed to a compatible terminal, it will display
+        a vaild QR code. The code is printed using ASCII escape
+        codes that alter the coloring of the background.
+
+        The *module_color* parameter sets what color to
+        use for the data modules (the black part on most QR codes).
+        Likewise, the *background* parameter sets what color to use
+        for the background (the white part on most QR codes).  
+
+        There are two options for colors. The first, and most widely
+        supported, is to use the 8 or 16 color scheme. This scheme uses
+        eight to sixteen named colors. The following colors are
+        supported the most widely supported: black, red, green,
+        yellow, blue, magenta, and cyan. There are an some additional
+        named colors that are supported by most termials: light gray,
+        dark gray, light red, light green, light blue, light yellow,
+        light magenta, light cyan, and white. 
+
+        There are two special named colors. The first is the
+        "default" color. This color is the color the background of
+        the terminal is set to. The next color is the "reverse"
+        color. This is not really a color at all but a special
+        property that will reverse the current color. These two colors
+        are the default values for *module_color* and *background*
+        respectively. These values should work on most terminals.
+
+        Finally, there is one more way to specify the color. Some
+        terminals support 256 colors. The actual colors displayed in the
+        terminal is system dependent. This is the least transportable option.
+        To use the 256 color scheme set *module_color* and/or
+        *background* to a number between 0 and 256.
+        """
+        return builder._terminal(self.code, module_color, background)
+
+    def text(self):
         """This method returns a string based representation of the QR code.
         The data modules are represented by 1's and the background modules are
         represented by 0's. The main purpose of this method is to allow a user
@@ -323,4 +359,4 @@ class QRCode:
             >>> text = code.text()
             >>> print(text)
         """
-        return builder._text(self.code, ansi_color)
+        return builder._text(self.code)
