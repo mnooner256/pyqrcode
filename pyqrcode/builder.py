@@ -46,13 +46,13 @@ class QRCodeBuilder:
         if mode in tables.modes.keys():
             self.mode = tables.modes[mode]
         else:
-            raise LookupError('{} is not a valid mode.'.format(mode))
+            raise LookupError('{0} is not a valid mode.'.format(mode))
 
         #Check that the user passed in a valid error level
         if error in tables.error_level.keys():
             self.error = tables.error_level[error]
         else:
-            raise LookupError('{} is not a valid error '
+            raise LookupError('{0} is not a valid error '
                                 'level.'.format(error))
 
         if 1 <= version <= 40:
@@ -91,7 +91,7 @@ class QRCodeBuilder:
         representation of the given data. This function is used to
         basically create bit fields of a given size.
         """
-        return '{{:0{}b}}'.format(length).format(int(data))
+        return '{{0:0{0}b}}'.format(length).format(int(data))
 
     def get_data_length(self):
         """QR codes contain a "data length" field. This method creates this
@@ -194,9 +194,9 @@ class QRCodeBuilder:
         with io.StringIO() as buf:
             for char in self.data.encode('ascii'):
                 if isinstance(char, int):
-                    buf.write('{{:0{}b}}'.format(8).format(char))
+                    buf.write('{{0:0{0}b}}'.format(8).format(char))
                 if isinstance(char, str):
-                    buf.write('{{:0{}b}}'.format(8).format(ord(char)))
+                    buf.write('{{0:0{0}b}}'.format(8).format(ord(char)))
             return buf.getvalue()
 
 
@@ -265,7 +265,7 @@ class QRCodeBuilder:
 
         #DEBUG CODE!!!!
         #Print out the data blocks
-        #print('Data Blocks:\n{}'.format(data_blocks))
+        #print('Data Blocks:\n{0}'.format(data_blocks))
 
         #Calculate the error blocks
         for n, block in enumerate(data_blocks):
@@ -273,7 +273,7 @@ class QRCodeBuilder:
 
         #DEBUG CODE!!!!
         #Print out the error blocks
-        #print('Error Blocks:\n{}'.format(error_blocks))
+        #print('Error Blocks:\n{0}'.format(error_blocks))
 
         #Buffer we will write our data blocks into
         data_buffer = io.StringIO()
@@ -647,7 +647,7 @@ class QRCodeBuilder:
         #DEBUG CODE!!!
         #Save all of the masks as png files
         #for i, m in enumerate(masks):
-        #    _png(m, self.version, 'mask-{}.png'.format(i), 5)
+        #    _png(m, self.version, 'mask-{0}.png'.format(i), 5)
 
         return masks
 
@@ -783,9 +783,9 @@ class QRCodeBuilder:
         #for i in range(len(self.scores)):
         #    print(i, end='')
         #    for s in self.scores[i]:
-        #        print('{: >6}'.format(s), end='')
-        #    print('{: >7}'.format(totals[i]))
-        #print('Mask Chosen: {}'.format(totals.index(min(totals))))
+        #        print('{0: >6}'.format(s), end='')
+        #    print('{0: >7}'.format(totals[i]))
+        #print('Mask Chosen: {0}'.format(totals.index(min(totals))))
 
         #The lowest total wins
         return totals.index(min(totals))
@@ -869,23 +869,23 @@ def _terminal(code, module_color='default', background='reverse'):
     reset back to how it was.
     """
     if module_color in tables.term_colors:
-        data = '\033[{}m  \033[0m'.format(
+        data = '\033[{0}m  \033[0m'.format(
             tables.term_colors[module_color])
     elif 0 <= module_color <= 256:
-        data = '\033[48;5;{}m  \033[0m'.format(module_color)
+        data = '\033[48;5;{0}m  \033[0m'.format(module_color)
     else:
-        raise ValueError('The module color, {}, must a key in '
+        raise ValueError('The module color, {0}, must a key in '
                          'pyqrcode.tables.term_colors or a number '
                          'between 0 and 256.'.format(
                          module_color))
 
     if background in tables.term_colors:
-        background = '\033[{}m  \033[0m'.format(
+        background = '\033[{0}m  \033[0m'.format(
             tables.term_colors[background])
     elif 0 <= background <= 256:
-        background = '\033[48;5;{}m  \033[0m'.format(background)
+        background = '\033[48;5;{0}m  \033[0m'.format(background)
     else:
-        raise ValueError('The background color, {}, must a key in '
+        raise ValueError('The background color, {0}, must a key in '
                          'pyqrcode.tables.term_colors or a number '
                          'between 0 and 256.'.format(
                          background))
@@ -970,8 +970,8 @@ def _svg(code, version, file, scale=1, module_color='black', background=None):
     #This is the template for the svg line. It is placed here so it
     #does not need to be recreated for each call to line().
     line_template = '''
-        <line class="pyqrline" x1="{}" y1="{}" x2="{}" y2="{}"
-              stroke="{}" stroke-width="{}"/>'''
+        <line class="pyqrline" x1="{0}" y1="{1}" x2="{2}" y2="{3}"
+              stroke="{4}" stroke-width="{5}"/>'''
 
     def line(x1, y1, x2, y2, color):
         """This sub-function draws the modules. It attempts to draw them
@@ -1137,7 +1137,7 @@ def _png(code, version, file, scale=1, module_color=None, background=None):
             if not (3 <= len(color) <= 4):
                 raise ValueError('Colors must be a list or tuple of length '
                                  ' 3 or 4. You passed in '
-                                 '"{}".'.format(color))
+                                 '"{0}".'.format(color))
 
             for c in color:
                 c = int(c)

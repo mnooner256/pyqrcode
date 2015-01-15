@@ -3,8 +3,8 @@ import sys, os.path, shutil
 
 version = '0.11'
 
-if sys.version_info < (2, 7, 0) and sys.version_info < (3, 0, 0):
-    sys.stderr.write("pyqrcode requires Python 2.7 or 3.\n")
+if sys.version_info < (2, 6, 0) and sys.version_info < (3, 0, 0):
+    sys.stderr.write("pyqrcode requires Python 2.6+ or 3.\n")
     sys.exit(1)
 
 
@@ -41,6 +41,7 @@ setup(name='PyQRCode',
         'Operating System :: POSIX',
         'Operating System :: Microsoft :: Windows',
         'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: 2.6',
         'Programming Language :: Python :: 2.7',
         ],
       long_description=longdesc,

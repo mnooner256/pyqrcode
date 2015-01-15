@@ -21,7 +21,7 @@ standard.
 Requirements
 -------------------------
 
-The pyqrcode module only requires Python 2.7 or Python 3. You may want to
+The pyqrcode module only requires Python 2.6, Python 2.7 or Python 3. You may want to
 install pypng in order to render PNG files, but it is optional.
 
 Installation
