@@ -85,7 +85,7 @@ Image Rendering
 There are two ways to get an image of the generated QR code. Both renderers 
 have a few things in common.
 
-Both renderers take a file path or writable file stream and draw the QR
+Both renderers take a file path or writable stream and draw the QR
 code there. The methods should auto-detect which is which.
 
 Each renderer takes a scale parameter. This parameter sets the size of a single
@@ -114,6 +114,11 @@ default foreground color is black.
   >>> url = pyqrcode.create('http://uca.edu')
   >>> url.svg(sys.stdout, scale=1)
   >>> url.svg('uca.svg', scale=4)
+  >>> # in-memory stream is also supported
+  >>> buffer = io.StringIO()
+  >>> url.svg(buffer)
+  >>> # do whatever you want with buffer.getvalue()
+  >>> print(list(buffer.getvalue()))
   
 You can change the colors of the data-modules using the *module_color*
 parameter. Likewise, you can specify a background using the *background*
@@ -139,6 +144,13 @@ the :py:meth:`pyqrcode.QRCode.png` method.
   >>> url = pyqrcode.create('http://uca.edu')
   >>> with open('code.png', 'w') as fstream:
   ...     url.png(fstream, scale=5)
+  >>> # same as above
+  >>> url.png('code.png', scale=5)
+  >>> # in-memory stream is also supported
+  >>> buffer = io.BytesIO()
+  >>> url.png(buffer)
+  >>> # do whatever you want with buffer.getvalue()
+  >>> print(list(buffer.getvalue()))
 
 
 Colors should be a list or tuple containing numbers between zero an 255. The
