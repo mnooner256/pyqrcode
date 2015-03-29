@@ -955,7 +955,9 @@ def _text(code):
 
     return buf.getvalue()
 
-def _svg(code, version, file, scale=1, module_color='black', background=None):
+def _svg(code, version, file, scale=1, module_color='#000', background=None,
+         xmldecl=True, title=None, svgclass='pyqrcode', lineclass='pyqrline',
+         debug=False):
     """This method writes the QR code out as an SVG document. The
     code is drawn by drawing only the modules corresponding to a 1. They
     are drawn using a line, such that contiguous modules in a row
@@ -966,90 +968,94 @@ def _svg(code, version, file, scale=1, module_color='black', background=None):
     module. This may make the code to small to be read efficiently.
     Increasing the scale will make the code larger. This method will accept
     fractional scales (e.g. 2.5).
+
+    :param module_color: Color of the QR Code (default: ``#000`` (black))
+    :param background: Optional background color.
+    :param xmldecl: Inidcates if the XML declaration header should be written
+            (default: ``True``)
+    :param title: Optional title of the generated SVG document.
+    :param svgclass: The CSS class of the SVG document
+            (if set to ``None``, the SVG element won't have a class).
+    :param lineclass: The CSS class of the path element
+            (if set to ``None``, the path won't have a class).
+    :param debug: Inidicates if errors in the QR Code should be added to the
+            output (default: ``False``).
     """
-    #This is the template for the svg line. It is placed here so it
-    #does not need to be recreated for each call to line().
-    line_template = '''
-        <line class="pyqrline" x1="{}" y1="{}" x2="{}" y2="{}"
-              stroke="{}" stroke-width="{}"/>'''
 
-    def line(x1, y1, x2, y2, color):
-        """This sub-function draws the modules. It attempts to draw them
-        as a single line per row, rather than as individual rectangles.
-        It uses the l variable as a template t
+    def line(x, y, width):
+        """Returns coordinates to draw a line with the provided width.
         """
-        return line_template.format(x1+scale, y1+scale, x2+scale, y2+scale,
-                                    color, scale)
+        if not width:
+            return ''
+        return 'M{0} {1}h{2}'.format(x + scale, y + scale, width)
 
-    file = _get_file(file, 'w')
+    f = _get_file(file, 'w')
 
-    #Write the document header
-    file.write("""<?xml version="1.0" encoding="UTF-8"?>
-        <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
-           "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+    # Write the document header
+    if xmldecl:
+        f.write('<?xml version="1.0" encoding="UTF-8"?>\n')
+    f.write('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {0} {0}"'
+            .format((tables.version_size[version]*scale)+(2*scale)))
+    if svgclass is not None:
+        f.write(' class="{}"'.format(svgclass))
+    f.write('>')
+    if title is not None:
+        f.write('<title>{}</title>'.format(title.encode('utf-8')))
 
-        <svg xmlns="http://www.w3.org/2000/svg" class="pyqrcode"
-             width="{0}" height="{0}">
-        <title>QR code</title>
-        """.format((tables.version_size[version]*scale)+(2*scale)))
+    # Draw a background rectangle if necessary
+    if background is not None:
+        f.write('<rect width="{0}" height="{0}" fill="{1}" stroke-width="0"/>'
+                .format((tables.version_size[version]*scale)+(2*scale),
+                        background))
 
-    #Draw a background rectangle if necessary
-    if background:
-        file.write("""
-            <rect width="{0}" height="{0}" style="fill:{1};stroke-width:0" />
-            """.format((tables.version_size[version]*scale)+(2*scale),
-                       background))
+    f.write('<path')
+    if scale != 1:  # SVG default value: stroke-width = 1
+        f.write(' stroke-width="{}"'.format(scale))
+    if module_color is not None:
+        f.write(' stroke="{}"'.format(module_color))
+    if lineclass is not None:
+        f.write(' class="{}"'.format(lineclass))
+    f.write(' d="')
 
-    #This will hold the current row number
+    # Used to keep track of unknown/error coordinates.
+    debug_path = ''
+
+    # This will hold the current row number
     rnumber = 0
 
-    #The current "color," used to define starting a line and ending a line.
-    color = 'black'
+    # Keeps track of the last read bit
+    last_bit = 1
 
-    #Loop through each row of the code
+    # Loop through each row of the code
     for row in code:
-        colnumber = 0       #Reset column number
-        start_column = 0    #Reset the starting_column number
-
-        #Examine every bit in the row
+        colnumber = 0  # Reset column number
+        start_column = 0  # Reset the starting_column number
+        coord = ''  # Reset row coordinates
+        # Examine every bit in the row
         for bit in row:
-            #Set the color of the bit
-            if bit == 1:
-                new_color = 'black'
-            elif bit == 0:
-                new_color = 'white'
-
-            #DEBUG CODE!!
-            #In unfinished QR codes, unset pixels will be red
-            #else:
-                #new_color = 'red'
-
-            #When the color changes then draw a line
-            if new_color != color:
-                #Don't draw the white background
-                if color != 'white':
-                    file.write(line(start_column, rnumber,
-                                    colnumber, rnumber, color))
-
-                #Move the next line's starting color and number
+            if bit != last_bit:
+                if last_bit == 1:
+                    coord += line(start_column, rnumber, colnumber - start_column)
+                last_bit = bit
                 start_column = colnumber
-                color = new_color
-
-            #Accumulate the column
+                if debug and last_bit not in (0, 1):
+                    debug_path += line(start_column, rnumber, scale)
             colnumber += scale
-
-        #End the row by drawing out the accumulated line
-        #if it is not the background
-        if color != 'white':
-            file.write(line(start_column, rnumber,
-                            colnumber, rnumber, color))
-
-        #Set row number
+        # Add trailing bit iff it's not the background
+        if last_bit == 1:
+            coord += line(start_column, rnumber, colnumber - start_column)
+        f.write(coord)
+        # Set row number
         rnumber += scale
 
+    # Close path
+    f.write('"/>')
+    if debug and debug_path:
+        f.write('<path class="pyqrerr" stroke-width="{0}" stroke="red" d="{1}"/>'
+                .format(scale, debug_path))
 
-    #Close the document
-    file.write("</svg>\n")
+    # Close document
+    f.write('</svg>\n')
 
 def _png(code, version, file, scale=1, module_color=None, background=None):
     """See: pyqrcode.QRCode.png()

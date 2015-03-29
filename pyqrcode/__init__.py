@@ -273,7 +273,9 @@ class QRCode:
         builder._png(self.code, self.version, file, scale,
                      module_color, background)
 
-    def svg(self, file, scale=1, module_color='#000000', background=None):
+    def svg(self, file, scale=1, module_color='#000', background=None,
+            xmldecl=True, title='QR Code', svgclass='pyqrcode',
+            lineclass='pyqrline', debug=False):
         """This method writes the QR code out as an SVG document. The
         code is drawn by drawing only the modules corresponding to a 1. They
         are drawn using a line, such that contiguous modules in a row
@@ -303,6 +305,18 @@ class QRCode:
         will be drawn, i.e. the background will be transparent. Note, many color
         combinations are unreadable by scanners, so be careful.
 
+        :param module_color: Color of the QR Code (default: ``#000`` (black))
+        :param background: Optional background color.
+        :param xmldecl: Inidcates if the XML declaration header should be
+                written (default: ``True``)
+        :param title: Optional title of the generated SVG document.
+        :param svgclass: The CSS class of the SVG document
+                (if set to ``None``, the SVG element won't have a class).
+        :param lineclass: The CSS class of the path element
+                (if set to ``None``, the path won't have a class).
+        :param debug: Inidicates if errors in the QR Code should be added to the
+                output (default: ``False``).
+
         Example:
             >>> code = pyqrcode.create('Hello. Uhh, can we have your liver?')
             >>> code.svg('live-organ-transplants.svg', 3.6)
@@ -310,7 +324,8 @@ class QRCode:
                          module_color='brown', background='0xFFFFFF')
         """
         builder._svg(self.code, self.version, file, scale,
-                     module_color, background)
+                     module_color, background, xmldecl, title, svgclass,
+                     lineclass, debug)
 
     def terminal(self, module_color='default', background='reverse'):
         """This method returns a string containing ASCII escape codes,
