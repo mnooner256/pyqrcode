@@ -329,7 +329,6 @@ class QRCode:
                      module_color, background, xmldecl, svgns, title, svgclass,
                      lineclass, debug)
 
-
     def html5(self, file, scale=1, module_color='#000', background=None,
             title='QR Code', svgclass='pyqrcode', lineclass='pyqrline',
             debug=False):
@@ -378,9 +377,8 @@ class QRCode:
             >>> code.svg('live-organ-transplants.svg', scale=4,
                          module_color='brown', background='0xFFFFFF')
         """
-        builder._svg(self.code, self.version, file, scale,
-                     module_color, background, False, False, title, svgclass,
-                     lineclass, debug)
+        self.svg(file, scale, module_color, background, False, False, title,
+                 svgclass, lineclass, debug)
 
 
     def terminal(self, module_color='default', background='reverse'):
