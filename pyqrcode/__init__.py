@@ -373,9 +373,9 @@ class QRCode:
 
         Example:
             >>> code = pyqrcode.create('Hello. Uhh, can we have your liver?')
-            >>> code.svg('live-organ-transplants.svg', 3.6)
-            >>> code.svg('live-organ-transplants.svg', scale=4,
-                         module_color='brown', background='0xFFFFFF')
+            >>> code.html5('live-organ-transplants.svg', 3.6)
+            >>> code.html5('live-organ-transplants.svg', scale=4,
+                            module_color='brown', background='0xFFFFFF')
         """
         self.svg(file, scale, module_color, background, False, False, title,
                  svgclass, lineclass, debug)
