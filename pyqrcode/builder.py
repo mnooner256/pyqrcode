@@ -982,12 +982,12 @@ def _svg(code, version, file, scale=1, module_color='#000', background=None,
             output (default: ``False``).
     """
 
-    def line(x, y, width):
-        """Returns coordinates to draw a line with the provided width.
+    def line(x, y, length):
+        """Returns coordinates to draw a line with the provided length.
         """
-        if not width:
+        if not length:
             return ''
-        return 'M{0} {1}h{2}'.format(x + scale, y + scale, width)
+        return 'M{0} {1}h{2}'.format(x + scale, y + scale, length)
 
     f = _get_file(file, 'w')
 
