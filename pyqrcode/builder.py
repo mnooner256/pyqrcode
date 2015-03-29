@@ -1038,9 +1038,9 @@ def _svg(code, version, file, scale=1, module_color='#000', background=None,
                     coord += line(start_column, rnumber, colnumber - start_column)
                 last_bit = bit
                 start_column = colnumber
-                if debug and last_bit not in (0, 1):
-                    debug_path += line(start_column, rnumber, scale)
             colnumber += scale
+            if debug and last_bit not in (0, 1):
+                debug_path += line(colnumber - scale, rnumber, scale)
         # Add trailing bit iff it's not the background
         if last_bit == 1:
             coord += line(start_column, rnumber, colnumber - start_column)
