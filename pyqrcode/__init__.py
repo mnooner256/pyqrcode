@@ -309,6 +309,8 @@ class QRCode:
         :param background: Optional background color.
         :param xmldecl: Inidcates if the XML declaration header should be
                 written (default: ``True``)
+        :param svgns: Indicates if the SVG namespace should be written
+                (default: ``True``)
         :param title: Optional title of the generated SVG document.
         :param svgclass: The CSS class of the SVG document
                 (if set to ``None``, the SVG element won't have a class).
@@ -324,7 +326,7 @@ class QRCode:
                          module_color='brown', background='0xFFFFFF')
         """
         builder._svg(self.code, self.version, file, scale,
-                     module_color, background, xmldecl, title, svgclass,
+                     module_color, background, xmldecl, svgns, title, svgclass,
                      lineclass, debug)
 
     def terminal(self, module_color='default', background='reverse'):

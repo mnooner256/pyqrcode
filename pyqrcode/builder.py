@@ -955,8 +955,10 @@ def _text(code):
 
     return buf.getvalue()
 
+
 def _svg(code, version, file, scale=1, module_color='#000', background=None,
-         xmldecl=True, title=None, svgclass='pyqrcode', lineclass='pyqrline',
+         xmldecl=True, svgns=True, title=None, svgclass='pyqrcode',
+         lineclass='pyqrline',
          debug=False):
     """This method writes the QR code out as an SVG document. The
     code is drawn by drawing only the modules corresponding to a 1. They
@@ -972,6 +974,8 @@ def _svg(code, version, file, scale=1, module_color='#000', background=None,
     :param module_color: Color of the QR Code (default: ``#000`` (black))
     :param background: Optional background color.
     :param xmldecl: Inidcates if the XML declaration header should be written
+            (default: ``True``)
+    :param svgns: Indicates if the SVG namespace should be written
             (default: ``True``)
     :param title: Optional title of the generated SVG document.
     :param svgclass: The CSS class of the SVG document
@@ -990,12 +994,12 @@ def _svg(code, version, file, scale=1, module_color='#000', background=None,
         return 'M{0} {1}h{2}'.format(x + scale, y + scale, length)
 
     f = _get_file(file, 'w')
-
     # Write the document header
     if xmldecl:
         f.write('<?xml version="1.0" encoding="UTF-8"?>\n')
-    f.write('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {0} {0}"'
-            .format((tables.version_size[version]*scale)+(2*scale)))
+    f.write('<svg {0}viewBox="0 0 {1} {1}"'
+            .format(('xmlns="http://www.w3.org/2000/svg" ' if svgns else ''),
+                    (tables.version_size[version]*scale)+(2*scale)))
     if svgclass is not None:
         f.write(' class="{}"'.format(svgclass))
     f.write('>')
@@ -1007,7 +1011,6 @@ def _svg(code, version, file, scale=1, module_color='#000', background=None,
         f.write('<rect width="{0}" height="{0}" fill="{1}" stroke-width="0"/>'
                 .format((tables.version_size[version]*scale)+(2*scale),
                         background))
-
     f.write('<path')
     if scale != 1:  # SVG default value: stroke-width = 1
         f.write(' stroke-width="{}"'.format(scale))
@@ -1016,16 +1019,12 @@ def _svg(code, version, file, scale=1, module_color='#000', background=None,
     if lineclass is not None:
         f.write(' class="{}"'.format(lineclass))
     f.write(' d="')
-
     # Used to keep track of unknown/error coordinates.
     debug_path = ''
-
     # This will hold the current row number
     rnumber = 0
-
     # Keeps track of the last read bit
     last_bit = 1
-
     # Loop through each row of the code
     for row in code:
         colnumber = 0  # Reset column number
@@ -1047,15 +1046,14 @@ def _svg(code, version, file, scale=1, module_color='#000', background=None,
         f.write(coord)
         # Set row number
         rnumber += scale
-
     # Close path
     f.write('"/>')
     if debug and debug_path:
         f.write('<path class="pyqrerr" stroke-width="{0}" stroke="red" d="{1}"/>'
                 .format(scale, debug_path))
-
     # Close document
     f.write('</svg>\n')
+
 
 def _png(code, version, file, scale=1, module_color=None, background=None):
     """See: pyqrcode.QRCode.png()
