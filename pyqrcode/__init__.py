@@ -332,50 +332,10 @@ class QRCode:
     def html5(self, file, scale=1, module_color='#000', background=None,
             title='QR Code', svgclass='pyqrcode', lineclass='pyqrline',
             debug=False):
-        """This method writes the QR code out as an SVG document. The
-        code is drawn by drawing only the modules corresponding to a 1. They
-        are drawn using a line, such that contiguous modules in a row
-        are drawn with a single line.
+        """This method writes the QR code out as an SVG document without
+        an XML declaration and without the SVG namespace.
 
-        The *file* parameter is used to specify where to write the document
-        to. It can either be a writable stream or a file path.
-
-        The *scale* parameter sets how large to draw
-        a single module. By default one pixel is used to draw a single
-        module. This may make the code too small to be read efficiently.
-        Increasing the scale will make the code larger. Unlike the png() method,
-        this method will accept fractional scales (e.g. 2.5).
-
-        Note, three things are done to make the code more appropriate for
-        embedding in a HTML document. The "white" part of the code is actually
-        transparent. The code itself has a class of "pyqrcode". The lines
-        making up the QR code have a class "pyqrline". These should make the
-        code easier to style using CSS.
-
-        You can also set the colors directly using the *module_color* and
-        *background* parameters. The *module_color* parameter sets what color to
-        use for the data modules (the black part on most QR codes). The
-        *background* parameter sets what color to use for the background (the
-        white part on most QR codes). The parameters can be set to any valid
-        SVG or HTML color. If the background is set to None, then no background
-        will be drawn, i.e. the background will be transparent. Note, many color
-        combinations are unreadable by scanners, so be careful.
-
-        :param module_color: Color of the QR Code (default: ``#000`` (black))
-        :param background: Optional background color.
-        :param title: Optional title of the generated SVG document.
-        :param svgclass: The CSS class of the SVG document
-                (if set to ``None``, the SVG element won't have a class).
-        :param lineclass: The CSS class of the path element
-                (if set to ``None``, the path won't have a class).
-        :param debug: Inidicates if errors in the QR Code should be added to the
-                output (default: ``False``).
-
-        Example:
-            >>> code = pyqrcode.create('Hello. Uhh, can we have your liver?')
-            >>> code.html5('live-organ-transplants.svg', 3.6)
-            >>> code.html5('live-organ-transplants.svg', scale=4,
-                            module_color='brown', background='0xFFFFFF')
+        See `svg` for details.
         """
         self.svg(file, scale, module_color, background, False, False, title,
                  svgclass, lineclass, debug)
