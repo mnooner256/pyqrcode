@@ -994,10 +994,12 @@ def _svg(code, version, file, scale=1, module_color='#000', background=None,
             """
             return '{0}{1} {2}h{3}'.format(('m' if relative else 'M'), x, y, length)
 
-        def errline(x, y):
+        def errline(col_number, row_number):
             """Returns the coordinates to draw an error bit.
             """
-            return line(x, y, 1, relative=False)
+            # Debug path uses always absolute coordinates
+            return line(col_number + border, row_number + border + .5, 1,
+                        relative=False)
 
         f = _get_file(file, 'w')
         # Write the document header
