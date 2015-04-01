@@ -1035,13 +1035,13 @@ def _svg(code, version, file, scale=1, module_color='#000', background=None,
         x, y = -border, border - .5  # .5 == stroke-width / 2
         wrote_bit = False
         # Loop through each row of the code
-        for rnumber, row in enumerate(code, start=0):
+        for rnumber, row in enumerate(code):
             start_column = 0  # Reset the starting column number
             coord = ''  # Reset row coordinates
             y += 1  # Set y-axis of the pen
             length = 0  # Reset line length
             # Examine every bit in the row
-            for colnumber, bit in enumerate(row, start=0):
+            for colnumber, bit in enumerate(row):
                 if bit == 1:
                     length += 1
                 else:
