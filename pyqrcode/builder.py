@@ -1030,38 +1030,32 @@ def _svg(code, version, file, scale=1, module_color='#000', background=None,
         f.write(' d="')
         # Used to keep track of unknown/error coordinates.
         debug_path = ''
-        # Keeps track of the last read bit
-        last_bit = 1
         # Current pen pointer position
         x, y = 0, 0
         # Loop through each row of the code
         for rnumber, row in enumerate(code, start=1):
-            colnumber = 1  # Reset column number
             start_column = 1  # Reset the starting column number
             coord = ''  # Reset row coordinates
             y += 1  # Set y-axis of the pen
+            length = 0  # Reset line length
             # Examine every bit in the row
-            for bit in row:
-                if bit != last_bit:
-                    if last_bit == 1:
-                        length = colnumber - start_column
-                        if length:
-                            x = start_column - x
-                            coord += line(x, y, length, relative=(x, y) != (1, 1))
-                            x = start_column + length
-                            y = 0  # y-axis won't change unless the row changes
-                    last_bit = bit
-                    start_column = colnumber
-                if debug and last_bit not in (0, 1):
-                    debug_path += errline(colnumber, rnumber)
-                colnumber += 1
-            # Add trailing bit iff it's not the background
-            if last_bit == 1:
-                length = colnumber - start_column
-                if length:
-                    x = start_column - x
-                    coord += line(x, y, length, relative=(x, y) != (1, 1))
-                    x = start_column + length
+            for colnumber, bit in enumerate(row, start=1):
+                if bit == 1:
+                    length += 1
+                else:
+                    if length:
+                        x = start_column - x
+                        coord += line(x, y, length, relative=(x, y) != (1, 1))
+                        x = start_column + length
+                        y = 0  # y-axis won't change unless the row changes
+                        length = 0
+                    start_column = colnumber + 1
+                    if debug and bit != 0:
+                        debug_path += errline(colnumber, rnumber)
+            if length:
+                x = start_column - x
+                coord += line(x, y, length, relative=(x, y) != (1, 1))
+                x = start_column + length
             f.write(coord)
         # Close path
         f.write('"/>')
