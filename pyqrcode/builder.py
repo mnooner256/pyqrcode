@@ -1054,8 +1054,7 @@ def _svg(code, version, file, scale=1, module_color='#000', background=None,
                         wrote_bit = True
                     start_column = colnumber + 1
                     if debug and bit != 0:
-                        # debug path uses absolute coord, .5 == stroke width/2
-                        debug_path += errline(colnumber+1, rnumber+1.5)
+                        debug_path += errline(colnumber, rnumber)
             if length:
                 x = start_column - x
                 coord += line(x, y, length, relative=wrote_bit)
