@@ -988,8 +988,7 @@ def _svg(code, version, file, scale=1, module_color='#000', background=None,
         """
 
         def line(x, y, length, relative):
-            """Returns coordinates to draw a line with the provided length and
-            the new position of the pointer.
+            """Returns coordinates to draw a line with the provided length.
             """
             return '{0}{1} {2}h{3}'.format(('m' if relative else 'M'), x, y, length)
 
