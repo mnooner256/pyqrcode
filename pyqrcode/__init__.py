@@ -305,7 +305,7 @@ class QRCode:
         will be drawn, i.e. the background will be transparent. Note, many color
         combinations are unreadable by scanners, so be careful.
 
-        :param module_color: Color of the QR Code (default: ``#000`` (black))
+        :param module_color: Color of the QR code (default: ``#000`` (black))
         :param background: Optional background color.
         :param xmldecl: Inidcates if the XML declaration header should be
                 written (default: ``True``)
@@ -322,7 +322,7 @@ class QRCode:
         :param omithw: Indicates if width and height attributes should be
                 omitted (default: ``False``). If these attributes are omitted,
                 a ``viewBox`` attribute will be added to the document.
-        :param debug: Inidicates if errors in the QR Code should be added to the
+        :param debug: Inidicates if errors in the QR code should be added to the
                 output (default: ``False``).
 
         Example:

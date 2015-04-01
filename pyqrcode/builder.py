@@ -969,7 +969,7 @@ def _svg(code, version, file, scale=1, module_color='#000', background=None,
         Increasing the scale will make the code larger. This method will accept
         fractional scales (e.g. 2.5).
 
-        :param module_color: Color of the QR Code (default: ``#000`` (black))
+        :param module_color: Color of the QR code (default: ``#000`` (black))
         :param background: Optional background color.
         :param xmldecl: Inidcates if the XML declaration header should be written
                 (default: ``True``)
@@ -986,7 +986,7 @@ def _svg(code, version, file, scale=1, module_color='#000', background=None,
         :param omithw: Indicates if width and height attributes should be
                 omitted (default: ``False``). If these attributes are omitted,
                 a ``viewBox`` attribute will be added to the document.
-        :param debug: Inidicates if errors in the QR Code should be added to the
+        :param debug: Inidicates if errors in the QR code should be added to the
                 output (default: ``False``).
         """
 
