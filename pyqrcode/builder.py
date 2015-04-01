@@ -957,7 +957,7 @@ def _text(code):
 
 def _svg(code, version, file, scale=1, module_color='#000', background=None,
          xmldecl=True, svgns=True, title=None, svgclass='pyqrcode',
-         lineclass='pyqrline', omithw=False, debug=False):
+         lineclass='pyqrline', border=1, omithw=False, debug=False):
         """This method writes the QR code out as an SVG document. The
         code is drawn by drawing only the modules corresponding to a 1. They
         are drawn using a line, such that contiguous modules in a row
@@ -980,6 +980,8 @@ def _svg(code, version, file, scale=1, module_color='#000', background=None,
                 (if set to ``None``, the SVG element won't have a class).
         :param lineclass: The CSS class of the path element
                 (if set to ``None``, the path won't have a class).
+        :param border: Border around the QR code. (default: ``1``)
+                Set to zero (``0``) if the code shouldn't have a border.
         :param omithw: Indicates if width and height attributes should be
                 omitted (default: ``False``). If these attributes are omitted,
                 a ``viewBox`` attribute will be added to the document.
@@ -1004,7 +1006,7 @@ def _svg(code, version, file, scale=1, module_color='#000', background=None,
         f.write('<svg')
         if svgns:
             f.write(' xmlns="http://www.w3.org/2000/svg"')
-        size = tables.version_size[version] * scale + (2 * scale)
+        size = tables.version_size[version] * scale + (2 * border * scale)
         if not omithw:
             f.write(' height="{0}" width="{0}"'.format(size))
         else:
@@ -1030,31 +1032,34 @@ def _svg(code, version, file, scale=1, module_color='#000', background=None,
         # Used to keep track of unknown/error coordinates.
         debug_path = ''
         # Current pen pointer position
-        x, y = 0, 0
+        x, y = -border, border - .5  # .5 == stroke-width / 2
+        wrote_bit = False
         # Loop through each row of the code
-        for rnumber, row in enumerate(code, start=1):
-            start_column = 1  # Reset the starting column number
+        for rnumber, row in enumerate(code, start=0):
+            start_column = 0  # Reset the starting column number
             coord = ''  # Reset row coordinates
             y += 1  # Set y-axis of the pen
             length = 0  # Reset line length
             # Examine every bit in the row
-            for colnumber, bit in enumerate(row, start=1):
+            for colnumber, bit in enumerate(row, start=0):
                 if bit == 1:
                     length += 1
                 else:
                     if length:
                         x = start_column - x
-                        coord += line(x, y, length, relative=(x, y) != (1, 1))
+                        coord += line(x, y, length, relative=wrote_bit)
                         x = start_column + length
                         y = 0  # y-axis won't change unless the row changes
                         length = 0
+                        wrote_bit = True
                     start_column = colnumber + 1
                     if debug and bit != 0:
                         debug_path += errline(colnumber, rnumber)
             if length:
                 x = start_column - x
-                coord += line(x, y, length, relative=(x, y) != (1, 1))
+                coord += line(x, y, length, relative=wrote_bit)
                 x = start_column + length
+                wrote_bit = True
             f.write(coord)
         # Close path
         f.write('"/>')
