@@ -956,8 +956,8 @@ def _text(code):
 
 
 def _svg(code, version, file, scale=1, module_color='#000', background=None,
-         xmldecl=True, svgns=True, title=None, svgclass='pyqrcode',
-         lineclass='pyqrline', border=4, omithw=False, debug=False):
+         border=4, xmldecl=True, svgns=True, title=None, svgclass='pyqrcode',
+         lineclass='pyqrline', omithw=False, debug=False):
         """This method writes the QR code out as an SVG document. The
         code is drawn by drawing only the modules corresponding to a 1. They
         are drawn using a line, such that contiguous modules in a row
@@ -971,6 +971,10 @@ def _svg(code, version, file, scale=1, module_color='#000', background=None,
 
         :param module_color: Color of the QR code (default: ``#000`` (black))
         :param background: Optional background color.
+                (default: ``None`` (no background))
+        :param border: Border around the QR code (also known as  quiet zone)
+                (default: ``4``). Set to zero (``0``) if the code shouldn't
+                have a border.
         :param xmldecl: Inidcates if the XML declaration header should be written
                 (default: ``True``)
         :param svgns: Indicates if the SVG namespace should be written
@@ -980,9 +984,6 @@ def _svg(code, version, file, scale=1, module_color='#000', background=None,
                 (if set to ``None``, the SVG element won't have a class).
         :param lineclass: The CSS class of the path element
                 (if set to ``None``, the path won't have a class).
-        :param border: Border around the QR code (also known as  quiet zone)
-                (default: ``4``). Set to zero (``0``) if the code shouldn't
-                have a border.
         :param omithw: Indicates if width and height attributes should be
                 omitted (default: ``False``). If these attributes are omitted,
                 a ``viewBox`` attribute will be added to the document.
