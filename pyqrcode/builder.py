@@ -929,30 +929,35 @@ def _terminal(code, module_color='default', background='reverse'):
     return buf.getvalue()
 
 
-def _text(code, border=4):
+def _text(code, module_color='1', background='0', border=4, debug=True):
     """This method returns a text based representation of the QR code.
     This is useful for debugging purposes.
 
+    :param module_color: The character to use for the QR code modules
+            (default: "1")
+    :param background: The character to use for the QR code background
+            (default: "0").
     :param border: Border around the QR code (also known as quiet zone)
             (default: ``4``). Set to zero (``0``) if the code shouldn't
             have a border.
+    :param debug: Inidicates if errors in the QR code should be added (as
+            empty space modules) to the output (default: ``True``).
+            Note, that errors will be invisible if background is set to ``' '``.
     """
     buf = io.StringIO()
 
-    border_row = '\n'.join(['0' * (len(code[0]) + border * 2)] * border)
-    border_module = '0' * border
+    border_row = '\n'.join([background * (len(code[0]) + border * 2)] * border)
+    border_module = background * border
+
+    # Lookup table for the "colors"
+    colors = (background, module_color, ' ' if debug else module_color)
 
     buf.write(border_row)
     buf.write('\n')
     for row in code:
         buf.write(border_module)
         for bit in row:
-            if bit in (0, 1):
-                buf.write('{0}'.format(bit))
-            else:
-                # This is for debugging unfinished QR codes,
-                # unset pixels will be spaces.
-                buf.write(' ')
+            buf.write(colors[bit if bit in (0, 1) else 2])
         buf.write('{0}\n'.format(border_module))
     buf.write(border_row)
     return buf.getvalue()
