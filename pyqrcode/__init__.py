@@ -353,15 +353,19 @@ class QRCode:
         """
         return builder._terminal(self.code, module_color, background)
 
-    def text(self):
+    def text(self, border=4):
         """This method returns a string based representation of the QR code.
         The data modules are represented by 1's and the background modules are
         represented by 0's. The main purpose of this method is to allow a user
         to write their own renderer.
+
+        :param border: Border around the QR code (also known as quiet zone)
+                (default: ``4``). Set to zero (``0``) if the code shouldn't
+                have a border.
 
         Example:
             >>> code = pyqrcode.create('Example')
             >>> text = code.text()
             >>> print(text)
         """
-        return builder._text(self.code)
+        return builder._text(self.code, border)

@@ -928,32 +928,35 @@ def _terminal(code, module_color='default', background='reverse'):
 
     return buf.getvalue()
 
-def _text(code):
+
+def _text(code, border=4):
     """This method returns a text based representation of the QR code.
     This is useful for debugging purposes.
+
+    :param border: Border around the QR code (also known as quiet zone)
+            (default: ``4``). Set to zero (``0``) if the code shouldn't
+            have a border.
     """
     buf = io.StringIO()
 
-    border_row = '0' * (len(code[0]) + 2)
+    border_row = '\n'.join(['0' * (len(code[0]) + border * 2)] * border)
+    border_module = '0' * border
 
     buf.write(border_row)
     buf.write('\n')
     for row in code:
-        buf.write('0')
+        buf.write(border_module)
         for bit in row:
-            if bit == 1:
-                buf.write('1')
-            elif bit == 0:
-                buf.write('0')
-            #This is for debugging unfinished QR codes,
-            #unset pixels will be spaces.
+            if bit in (0, 1):
+                buf.write('{0}'.format(bit))
             else:
+                # This is for debugging unfinished QR codes,
+                # unset pixels will be spaces.
                 buf.write(' ')
-        buf.write('0\n')
-
+        buf.write('{0}\n'.format(border_module))
     buf.write(border_row)
-
     return buf.getvalue()
+
 
 def _svg(code, version, file, scale=1, module_color='black', background=None):
     """This method writes the QR code out as an SVG document. The
