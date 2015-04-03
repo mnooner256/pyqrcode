@@ -7,8 +7,13 @@ from __future__ import absolute_import, division, print_function, with_statement
 
 import pyqrcode.tables as tables
 import io
-import sys
 import itertools
+try:
+    str = unicode  # Python 2.x
+except NameError:
+    pass
+
+
 
 class QRCodeBuilder:
     """This class generates a QR code based on the standard. It is meant to
@@ -37,10 +42,9 @@ class QRCodeBuilder:
 
         #Set what data we are going to use to generate
         #the QR code
-        if isinstance(data, bytes):
-            self.data = data.decode('utf-8')
-        else:
-            self.data = data
+        if not isinstance(data, bytes):
+            data = str(data).encode('utf-8')
+        self.data = data
 
         #Check that the user passed in a valid mode
         if mode in tables.modes.keys():
