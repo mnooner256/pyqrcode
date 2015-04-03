@@ -179,7 +179,7 @@ class QRCode:
         """
         #See if the data is an integer
         try:
-            test = int(self.data)
+            int(self.data)
             return 'numeric'
         except:
             #Data is not numeric, this is not an error
@@ -188,7 +188,7 @@ class QRCode:
         #See if that data is alphanumeric based on the standards
         #special ASCII table
         valid_characters = tables.ascii_codes.keys()
-        if all(map(lambda x: x in valid_characters, self.data.upper())):
+        if all(map(lambda x: x in valid_characters, self.data)):
             return 'alphanumeric'
 
         #All of the tests failed. The content can only be binary.
