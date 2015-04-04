@@ -29,7 +29,7 @@ if len(sys.argv) > 2:
 #    print('Generating version {}'.format(i))
 #    try:
 code = pyqrcode.QRCode(data, error=error, version=version, mode=mode)
-print code.terminal()
+print(code.terminal())
 code.png('{}/v{}.png'.format(code_dir, code.version), scale)
 #code.svg('{}/v{}.svg'.format(code_dir, code.version), scale, background="white")
 
