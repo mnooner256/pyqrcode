@@ -221,6 +221,9 @@ class QRCode:
         the QR code in pixels, as if it was drawn using the given *scale*.
         Because QR codes are square, the number represents both dimensions.
 
+        :param scale: The scale to use (default: 1).
+        :param border: The border around the actual QR code (default: 4)
+
         Example:
             >>> code = pyqrcode.QRCode("I don't like spam!")
             >>> print(code.get_png_size(1))
