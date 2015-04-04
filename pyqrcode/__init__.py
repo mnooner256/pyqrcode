@@ -211,7 +211,7 @@ class QRCode:
         raise ValueError('The data will not fit in any QR code version '
                          'with the given encoding and error level.')
 
-    def get_png_size(self, scale):
+    def get_png_size(self, scale=1, border=4):
         """This is method helps users determine what *scale* to use when
         creating a PNG of this QR code. It is meant mostly to be used in the
         console to help the user determine the pixel size of the code
@@ -228,7 +228,7 @@ class QRCode:
             >>> print(code.get_png_size(5))
             155
         """
-        return builder._get_png_size(self.version, scale)
+        return builder._get_png_size(self.version, scale, border)
 
     def png(self, file, scale=1, module_color=(0, 0, 0, 255),
             background=(255, 255, 255, 255), border=4, debug=False):
