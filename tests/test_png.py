@@ -2,7 +2,7 @@
 """\
 PNG related tests.
 """
-from nose.tools import eq_, ok_
+from nose.tools import eq_
 import pyqrcode
 
 
