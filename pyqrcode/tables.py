@@ -2,8 +2,7 @@
 If you are viewing this in the HTML documentation, I recommend reading the
 actual file instead. The formating for the tables is much more readable.
 '''
-
-from __future__ import absolute_import, division, print_function, with_statement, unicode_literals
+from __future__ import division, unicode_literals
 
 #: This defines the QR Code's 'mode' which sets what
 #: type of code it is along with its size.

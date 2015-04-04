@@ -1,8 +1,6 @@
 """This module does the actual generation of the QR codes. The QRCodeBuilder
 builds the code. While the various output methods draw the code into a file.
 """
-
-#Imports required for 2.7 support
 from __future__ import absolute_import, division, print_function, with_statement, unicode_literals
 
 import pyqrcode.tables as tables
@@ -12,7 +10,6 @@ try:
     str = unicode  # Python 2.x
 except NameError:
     pass
-
 
 
 class QRCodeBuilder:
@@ -42,8 +39,8 @@ class QRCodeBuilder:
 
         #Set what data we are going to use to generate
         #the QR code
-        if not isinstance(data, bytes):
-            data = str(data).encode('utf-8')
+        if isinstance(data, bytes):
+            data = data.decode('utf-8')
         self.data = data
 
         #Check that the user passed in a valid mode

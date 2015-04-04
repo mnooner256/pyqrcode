@@ -14,12 +14,15 @@ Examples:
         >>> number = pyqrcode.create(123456789012345)
         >>> number.png('big-number.png')
 """
-
-#Imports required for 2.7 support
 from __future__ import absolute_import, division, print_function, with_statement, unicode_literals
-
 import pyqrcode.tables
 import pyqrcode.builder as builder
+
+try:
+    str = unicode
+except NameError:
+    pass
+
 
 def create(content, error='H', version=None, mode=None):
     """When creating a QR code only the content to be encoded is required,
@@ -150,7 +153,7 @@ class QRCode:
                                  'version {}).'.format(version, self.version))
 
         #Build the QR code
-        self.builder = builder.QRCodeBuilder(data=content,
+        self.builder = builder.QRCodeBuilder(data=self.data,
                                              version=self.version,
                                              mode=self.mode,
                                              error=self.error)
