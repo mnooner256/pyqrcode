@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """This module is used to create QR Codes. It is designed to be as simple and
 as possible. It does this by using sane defaults and autodetection to make
 creating a QR Code very simple.
@@ -14,14 +15,16 @@ Examples:
         >>> number = pyqrcode.create(123456789012345)
         >>> number.png('big-number.png')
 """
-
-#Imports required for 2.7 support
 from __future__ import absolute_import, division, print_function, with_statement, unicode_literals
+from . import builder, tables
+import sys
+_PY2 = sys.version_info[0] == 2
+if _PY2:
+    str = unicode
+del sys
 
-import pyqrcode.tables
-import pyqrcode.builder as builder
 
-def create(content, error='H', version=None, mode=None):
+def create(content, error='H', version=None, mode=None, encoding='ISO-8859-1'):
     """When creating a QR code only the content to be encoded is required,
     all the other properties of the code will be guessed based on the
     contents given. This function will return a :class:`QRCode` object.
@@ -70,8 +73,14 @@ def create(content, error='H', version=None, mode=None):
     which just encodes the bytes directly into the QR code (this encoding
     is the least efficient). Finally, there is 'kanji'  encoding (i.e.
     Japanese characters), this encoding is unimplemented at this time.
+
+    The *encoding* parameter specifies how the content will be encoded if
+    the mode is ``'binary'``. Valid values are ``ISO-8859-1`` (default and
+    standard-conform) or ``UTF-8`` (not standard-conform but supported by
+    most QR code readers.
     """
-    return QRCode(content, error, version, mode)
+    return QRCode(content, error, version, mode, encoding)
+
 
 class QRCode:
     """This class represents a QR code. To use this class simply give the
@@ -93,10 +102,16 @@ class QRCode:
         For what all of the parameters do, see the :func:`pyqrcode.create`
         function.
     """
-    def __init__(self, content, error='H', version=None, mode=None):
+    def __init__(self, content, error='H', version=None, mode=None, encoding='ISO-8859-1'):
+        encoding = encoding.lower()
+        if encoding not in ('utf-8', 'iso-8859-1', 'latin1', 'latin'):
+            raise ValueError('Unsupported encoding "{0}". '
+                             'Supported: "UTF-8" and "ISO-8859-1".'
+                             .format(encoding))
 
-        #Coerce the content into a string
-        self.data = str(content)
+        if not isinstance(content, bytes):
+            content = str(content).encode('utf-8')
+        self.data = content
 
         #Check that the passed in error level is valid
         try:
@@ -107,7 +122,7 @@ class QRCode:
 
         #Guess the mode of the code, this will also be used for
         #error checking
-        guessed_content_type = self._detect_content_type()
+        guessed_content_type = self._detect_content_type(encoding)
 
         #Force a passed in mode to be lowercase
         if mode:
@@ -149,8 +164,12 @@ class QRCode:
                                  'level (the code must be at least a '
                                  'version {}).'.format(version, self.version))
 
+        # Change data encoding?
+        if self.mode == 'binary' and encoding != 'utf-8':
+            self.data = self.data.decode('utf-8').encode(encoding)
+
         #Build the QR code
-        self.builder = builder.QRCodeBuilder(data=content,
+        self.builder = builder.QRCodeBuilder(data=self.data,
                                              version=self.version,
                                              mode=self.mode,
                                              error=self.error)
@@ -165,8 +184,7 @@ class QRCode:
         return 'QRCode(content=\'{}\', error=\'{}\', version={}, mode=\'{}\')'.format(
                        self.data, self.error, self.version, self.mode)
 
-
-    def _detect_content_type(self):
+    def _detect_content_type(self, encoding):
         """This method tries to auto-detect the type of the data. It first
         tries to see if the data is a valid integer, in which case it returns
         numeric. Next, it tests the data to see if it is 'alphanumeric.' QR
@@ -177,35 +195,30 @@ class QRCode:
 
         Note, encoding 'kanji' is not yet implemented.
         """
-        #See if the data is an integer
-        try:
-            test = int(self.data)
+        # See if data represents a number
+        if self.data.isdigit():
             return 'numeric'
-        except:
-            #Data is not numeric, this is not an error
-            pass
-
-        #See if that data is alphanumeric based on the standards
-        #special ASCII table
+        # See if that data is alphanumeric based on the standards
+         #special ASCII table
         valid_characters = tables.ascii_codes.keys()
-        if all(map(lambda x: x in valid_characters, self.data.upper())):
-            return 'alphanumeric'
-
-        #All of the tests failed. The content can only be binary.
+        try:
+            if all(map(lambda x: x in valid_characters, self.data.decode(encoding).encode('ascii').upper())):
+                return 'alphanumeric'
+        except UnicodeError:
+            pass
+        # All of the tests failed. The content can only be binary.
         return 'binary'
 
     def _pick_best_fit(self):
         """This method return the smallest possible QR code version number
         that will fit the specified data with the given error level.
         """
-        for version in range(1,41):
-            #Get the maximum possible capacity
+        data_len = len(self.data)
+        for version in range(1, 41):
+            # Get the maximum possible capacity
             capacity = tables.data_capacity[version][self.error][self.mode_num]
-
-            #Check the capacity
-            if (self.mode_num == tables.modes['binary'] and \
-               capacity >= len(self.data.encode('ascii'))) or \
-               capacity >= len(self.data):
+            # Check the capacity
+            if capacity >= data_len:
                 return version
 
         raise ValueError('The data will not fit in any QR code version '
