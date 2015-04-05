@@ -199,10 +199,10 @@ class QRCode:
         if self.data.isdigit():
             return 'numeric'
         # See if that data is alphanumeric based on the standards
-         #special ASCII table
+        # special ASCII table
         valid_characters = tables.ascii_codes.keys()
         try:
-            if all(map(lambda x: x in valid_characters, self.data.decode(encoding).encode('ascii').upper())):
+            if all(map(lambda x: x in valid_characters, self.data.decode(encoding).encode('ascii'))):
                 return 'alphanumeric'
         except UnicodeError:
             pass

@@ -3,14 +3,13 @@
 builds the code. While the various output methods draw the code into a file.
 """
 from __future__ import absolute_import, division, print_function, with_statement, unicode_literals
-
 import io
 import itertools
+from . import tables
 try:
     import png
 except ImportError:
     from . import png
-from . import tables
 _PY2 = False
 try:
     str = unicode
@@ -1017,7 +1016,7 @@ def _svg(code, version, file, scale=1, module_color='#000', background=None,
             return line(col_number + border, row_number + border + .5, 1,
                         relative=False)
 
-        f = _get_file(file, 'w')
+        f, autoclose = _get_writable(file, 'w')
         # Write the document header
         if xmldecl:
             f.write('<?xml version="1.0" encoding="UTF-8"?>\n')
@@ -1088,7 +1087,8 @@ def _svg(code, version, file, scale=1, module_color='#000', background=None,
             f.write(' class="pyqrerr" stroke="red" d="{}"/>'.format(debug_path))
         # Close document
         f.write('</svg>\n')
-
+        if autoclose:
+            f.close()
 
 
 def _png(code, version, file, scale=1, module_color=(0, 0, 0, 255),
@@ -1236,8 +1236,12 @@ def _png(code, version, file, scale=1, module_color=(0, 0, 0, 255),
     code_rows = scale_code(size)
 
     # Write out the PNG
-    with _get_file(file, 'wb') as f:
-        w = png.Writer(width=size, height=size, greyscale=greyscale,
-                       transparent=transparent_color, palette=palette,
-                       bitdepth=bitdepth)
+    f, autoclose = _get_writable(file, 'wb')
+    w = png.Writer(width=size, height=size, greyscale=greyscale,
+                   transparent=transparent_color, palette=palette,
+                   bitdepth=bitdepth)
+    try:
         w.write(f, code_rows)
+    finally:
+        if autoclose:
+            f.close()
