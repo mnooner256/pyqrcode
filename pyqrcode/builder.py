@@ -2,17 +2,21 @@
 """This module does the actual generation of the QR codes. The QRCodeBuilder
 builds the code. While the various output methods draw the code into a file.
 """
-
-#Imports required for 2.7 support
 from __future__ import absolute_import, division, print_function, with_statement, unicode_literals
 
-import pyqrcode.tables as tables
 import io
 import itertools
 try:
     import png
 except ImportError:
     from . import png
+from . import tables
+_PY2 = False
+try:
+    str = unicode
+    _PY2 = True
+except NameError:
+    pass
 
 
 class QRCodeBuilder:
@@ -40,12 +44,10 @@ class QRCodeBuilder:
     def __init__(self, data, version, mode, error):
         """See :py:class:`pyqrcode.QRCode` for information on the parameters."""
 
-        #Set what data we are going to use to generate
-        #the QR code
-        if isinstance(data, bytes):
-            self.data = data.decode('utf-8')
-        else:
-            self.data = data
+        # Set what data we are going to use to generate the QR code
+        # The data is treated opaque: The builder assumes that it is encoded in
+        # ISO-8859-1 (default) or UTF-8
+        self.data = data
 
         #Check that the user passed in a valid mode
         if mode in tables.modes.keys():
@@ -77,7 +79,8 @@ class QRCodeBuilder:
         #Create the actual QR code
         self.make_code()
 
-    def grouper(self, n, iterable, fillvalue=None):
+    @staticmethod
+    def grouper(n, iterable, fillvalue=None):
         """This generator yields a set of tuples, where the
         iterable is broken into n sized chunks. If the
         iterable is not evenly sized then fillvalue will
@@ -91,7 +94,8 @@ class QRCodeBuilder:
             return itertools.zip_longest(*args, fillvalue=fillvalue)
         return itertools.izip_longest(*args, fillvalue=fillvalue)
 
-    def binary_string(self, data, length):
+    @staticmethod
+    def binary_string(data, length):
         """This method returns a string of length n that is the binary
         representation of the given data. This function is used to
         basically create bit fields of a given size.
@@ -103,7 +107,6 @@ class QRCodeBuilder:
         field. A binary string representing the appropriate length is
         returned.
         """
-
         #The "data length" field varies by the type of code and its mode.
         #discover how long the "data length" field should be.
         if 1 <= self.version <= 9:
@@ -196,14 +199,12 @@ class QRCodeBuilder:
         """This method encodes the QR code's data if its mode is
         8 bit mode. It returns the data encoded as a binary string.
         """
+        # ord(character) isn't necessary for Python 3.x
+        data_iter = self.data if not _PY2 else (ord(c) for c in self.data)
         with io.StringIO() as buf:
-            for char in self.data.encode('ascii'):
-                if isinstance(char, int):
-                    buf.write('{{:0{}b}}'.format(8).format(char))
-                if isinstance(char, str):
-                    buf.write('{{:0{}b}}'.format(8).format(ord(char)))
+            for char in data_iter:
+                buf.write('{{:0{}b}}'.format(8).format(char))
             return buf.getvalue()
-
 
     def add_data(self):
         """This function properly constructs a QR code's data string. It takes
