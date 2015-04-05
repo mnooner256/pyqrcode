@@ -211,7 +211,7 @@ class QRCode:
         raise ValueError('The data will not fit in any QR code version '
                          'with the given encoding and error level.')
 
-    def get_png_size(self, scale):
+    def get_png_size(self, scale=1, border=4):
         """This is method helps users determine what *scale* to use when
         creating a PNG of this QR code. It is meant mostly to be used in the
         console to help the user determine the pixel size of the code
@@ -221,6 +221,9 @@ class QRCode:
         the QR code in pixels, as if it was drawn using the given *scale*.
         Because QR codes are square, the number represents both dimensions.
 
+        :param scale: The scale to use (default: 1).
+        :param border: The border around the actual QR code (default: 4)
+
         Example:
             >>> code = pyqrcode.QRCode("I don't like spam!")
             >>> print(code.get_png_size(1))
@@ -228,11 +231,13 @@ class QRCode:
             >>> print(code.get_png_size(5))
             155
         """
-        return builder._get_png_size(self.version, scale)
+        return builder._get_png_size(self.version, scale, border)
 
-    def png(self, file, scale=1, module_color=None, background=None):
+    def png(self, file, scale=1, module_color=(0, 0, 0, 255),
+            background=(255, 255, 255, 255), border=4, debug=False):
         """This method writes the QR code out as an PNG image. The resulting
-        PNG has a bit depth of 1. The file parameter is used to specify where
+        PNG has a bit depth of 1 (or 2 if in debug is enabled).
+        The file parameter is used to specify where
         to write the image to. It can either be an writable stream or a
         file path.
 
@@ -253,15 +258,24 @@ class QRCode:
         The *module_color* parameter sets what color to use for the encoded
         modules (the black part on most QR codes). The *background* parameter
         sets what color to use for the background (the white part on most
-        QR codes). If either parameter is set, then both must be
-        set or a ValueError is raised. Colors should be specified as either
-        a list or a tuple of length 3 or 4. The components of the list must
-        be integers between 0 and 255. The first three member give the RGB
-        color. The fourth member gives the alpha component, where 0 is
-        transparent and 255 is opaque. Note, many color
-        combinations are unreadable by scanners, so be careful.
+        QR codes). Colors should be specified as either
+        a list or a tuple of length 3 or 4 or as string representing a
+        hexadecimal color. If the color is a tuple or a list, the components of
+        the list must be integers between 0 and 255. The first three member
+        give the RGB color. The fourth member gives the alpha component, where
+        0 is transparent and 255 is opaque.
+        Note, many color combinations are unreadable by scanners, so be careful.
 
-
+        :param module_color: Color of the QR code
+                (default: ``(0, 0, 0, 255)`` (black))
+        :param background: Optional background color. If set to ``None`` the PNG
+                will have a transparent background.
+                (default: ``(255, 255, 255, 255)`` (white))
+        :param border: Border around the QR code (also known as quiet zone)
+                (default: ``4``). Set to zero (``0``) if the code shouldn't
+                have a border.
+        :param debug: Inidicates if errors in the QR code should be added (as
+                red modules) to the output (default: ``False``).
 
         Example:
             >>> code = pyqrcode.create('Are you suggesting coconuts migrate?')
@@ -269,9 +283,11 @@ class QRCode:
             >>> code.png('swallow.png', scale=5,
                          module_color=(0x66, 0x33, 0x0),      #Dark brown
                          background=(0xff, 0xff, 0xff, 0x88)) #50% transparent white
+            >>> code.png('swallow.png', scale=5, module_color='#06c', # A kind of blue
+                         background=None)
         """
         builder._png(self.code, self.version, file, scale,
-                     module_color, background)
+                     module_color, background, border, debug)
 
     def svg(self, file, scale=1, module_color='#000', background=None,
             border=4, xmldecl=True, svgns=True, title=None, svgclass='pyqrcode',

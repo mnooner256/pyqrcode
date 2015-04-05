@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """This module does the actual generation of the QR codes. The QRCodeBuilder
 builds the code. While the various output methods draw the code into a file.
 """
@@ -8,6 +9,11 @@ from __future__ import absolute_import, division, print_function, with_statement
 import pyqrcode.tables as tables
 import io
 import itertools
+try:
+    import png
+except ImportError:
+    from . import png
+
 
 class QRCodeBuilder:
     """This class generates a QR code based on the standard. It is meant to
@@ -842,7 +848,8 @@ def _get_file(file, mode):
     else:
         return file
 
-def _get_png_size(version, scale):
+
+def _get_png_size(version, scale, border):
     """See: QRCode.get_png_size
 
     This function was abstracted away from QRCode to allow for the output of
@@ -851,7 +858,7 @@ def _get_png_size(version, scale):
     to calculate the PNG's size.
     """
     #Formula: scale times number of modules plus the border on each side
-    return (scale * tables.version_size[version]) + (2 * scale)
+    return (scale * tables.version_size[version]) + (2 * border * scale)
 
 
 def _terminal(code, module_color='default', background='reverse'):
@@ -1076,7 +1083,9 @@ def _svg(code, version, file, scale=1, module_color='#000', background=None,
         f.write('</svg>\n')
 
 
-def _png(code, version, file, scale=1, module_color=None, background=None):
+
+def _png(code, version, file, scale=1, module_color=(0, 0, 0, 255),
+         background=(255, 255, 255, 255), border=4, debug=False):
     """See: pyqrcode.QRCode.png()
 
     This function was abstracted away from QRCode to allow for the output of
@@ -1086,66 +1095,74 @@ def _png(code, version, file, scale=1, module_color=None, background=None):
 
     This method will write the given file out as a PNG file. Note, it
     depends on the PyPNG module to do this.
-    """
-    import png
 
-    #Coerce scale parameter into an integer
+    :param module_color: Color of the QR code (default: ``(0, 0, 0, 255)`` (black))
+    :param background: Optional background color. If set to ``None`` the PNG
+            will have a transparent background.
+            (default: ``(255, 255, 255, 255)`` (white))
+    :param border: Border around the QR code (also known as quiet zone)
+            (default: ``4``). Set to zero (``0``) if the code shouldn't
+            have a border.
+    :param debug: Inidicates if errors in the QR code should be added (as red
+            modules) to the output (default: ``False``).
+    """
+    # Coerce scale parameter into an integer
     try:
         scale = int(scale)
     except ValueError:
         raise ValueError('The scale parameter must be an integer')
 
-    def scale_code(code):
+    def scale_code(size):
         """To perform the scaling we need to inflate the number of bits.
         The PNG library expects all of the bits when it draws the PNG.
         Effectively, we double, tripple, etc. the number of columns and
         the number of rows.
         """
-        #This is the row to show up at the top and bottom border
-        border_module = [1] * scale
-        border_row = [1] * _get_png_size(version, scale)
-        border = [border_row] * scale
-
-
-        #This is one row's worth of each possible module
-        #PNG's use 0 for black and 1 for white, this is the
-        #reverse of the QR standard
+        # This is one row's worth of each possible module
+        # PNG's use 0 for black and 1 for white, this is the
+        # reverse of the QR standard
         black = [0] * scale
         white = [1] * scale
 
-        #This will hold the final PNG's bits
+        # Tuple to lookup colors
+        # The 3rd color is the module_color unless "debug" is enabled
+        colors = (white, black, (([2] * scale) if debug else black))
+
+        # Whitespace added on the left and right side
+        border_module = white * border
+        # This is the row to show up at the top and bottom border
+        border_row = [[1] * size] * scale * border
+
+        # This will hold the final PNG's bits
         bits = []
 
-        #Add scale rows before the code as a border,
-        #as per the standard
-        bits.extend(border)
+        # Add scale rows before the code as a border,
+        # as per the standard
+        bits.extend(border_row)
 
-        #Add each row of the to the final PNG bits
+        # Add each row of the to the final PNG bits
         for row in code:
             tmp_row = []
 
-            #Add one all white module to the beginning
-            #to create the vertical border
+            # Add one all white module to the beginning
+            # to create the vertical border
             tmp_row.extend(border_module)
 
-            #Go through each bit in the code
-            for item in row:
-                #Add one scaled module
-                if item == 0:
-                    tmp_row.extend(white)
-                else:
-                    tmp_row.extend(black)
+            # Go through each bit in the code
+            for bit in row:
+                # Use the standard color or the "debug" color
+                tmp_row.extend(colors[(bit if bit in (0, 1) else 2)])
 
-            #Add one all white module to the end
-            #to create the vertical border
+            # Add one all white module to the end
+            # to create the vertical border
             tmp_row.extend(border_module)
 
-            #Copy each row scale times
+            # Copy each row scale times
             for n in range(scale):
                 bits.append(tmp_row)
 
-        #Add the bottom border
-        bits.extend(border)
+        # Add the bottom border
+        bits.extend(border_row)
 
         return bits
 
@@ -1157,52 +1174,63 @@ def _png(code, version, file, scale=1, module_color=None, background=None):
 
         The pallete color is represented as a list, this is what is returned.
         """
-        if color:
-            rgba = []
-            if not (3 <= len(color) <= 4):
-                raise ValueError('Colors must be a list or tuple of length '
-                                 ' 3 or 4. You passed in '
-                                 '"{}".'.format(color))
+        if color is None:
+            return ()
+        if not isinstance(color, (tuple, list)):
+            if color[0] == '#':
+                color = color[1:]
+            if len(color) == 3:
+                color = color[0] * 2 + color[1] * 2 + color[2] * 2
+            if len(color) != 6:
+                raise ValueError('Input #{} is not in #RRGGBB format'
+                                 .format(color))
+            r, g, b = color[:2], color[2:4], color[4:]
+            r, g, b = [int(n, 16) for n in (r, g, b)]
+            return r, g, b, 255
+        rgba = []
+        if not (3 <= len(color) <= 4):
+            raise ValueError('Colors must be a list or tuple of length '
+                             ' 3 or 4. You passed in "{}".'.format(color))
+        for c in color:
+            c = int(c)
+            if 0 <= c <= 255:
+                rgba.append(int(c))
+            else:
+                raise ValueError('Color components must be between 0 and 255')
+        # Make all colors have an alpha channel
+        if len(rgba) == 3:
+            rgba.append(255)
+        return tuple(rgba)
 
-            for c in color:
-                c = int(c)
-                if 0 <= c <= 255:
-                    rgba.append(int(c))
-                else:
-                    raise ValueError('Color components must be between '
-                                     ' 0 and 255')
+    if module_color is None:
+        raise ValueError('The module_color must not be None')
 
-            #Make all all colors have an alpha channel
-            if len(rgba) == 3:
-                rgba.append(255)
+    bitdepth = 1
+    # foreground aka module color
+    fg_col = png_pallete_color(module_color)
+    transparent = background is None
+    # If background color is set to None, the inverse color of the
+    # foreground color is calculated
+    bg_col = png_pallete_color(background) if background is not None else tuple([255 - c for c in fg_col])
+    # Assume greyscale if module color is black and background color is white
+    greyscale = fg_col[:3] == (0, 0, 0) and (not debug and transparent or bg_col == (255, 255, 255, 255))
+    transparent_color = 1 if transparent and greyscale else None
+    palette = [fg_col, bg_col] if not greyscale else None
+    if debug:
+        # Add "red" as color for error modules
+        palette.append((255, 0, 0, 255))
+        bitdepth = 2
 
-        return rgba
+    # The size of the PNG
+    size = _get_png_size(version, scale, border)
 
-    #If the user passes in one parameter, then they must pass in both or neither
-    #Note, this is a logical xor
-    if (not module_color) != (not background):
-        raise ValueError('If you specify either the black or white parameter, '
-                         'then you must specify both.')
+    # We need to increase the size of the code to match up to the
+    # scale parameter.
+    code_rows = scale_code(size)
 
-    #Create the pallete, or set greyscale to True
-    if module_color:
-        palette = [png_pallete_color(module_color),
-                   png_pallete_color(background)]
-        greyscale = False
-    else:
-        palette = None
-        greyscale = True
-
-    #The size of the PNG
-    size = _get_png_size(version, scale)
-
-    #We need to increase the size of the code to match up to the
-    #scale parameter.
-    code = scale_code(code)
-
-    #Write out the PNG
+    # Write out the PNG
     with _get_file(file, 'wb') as f:
         w = png.Writer(width=size, height=size, greyscale=greyscale,
-                       palette=palette, bitdepth=1)
-
-        w.write(f, code)
+                       transparent=transparent_color, palette=palette,
+                       bitdepth=bitdepth)
+        w.write(f, code_rows)
