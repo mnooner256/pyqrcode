@@ -833,21 +833,20 @@ class QRCodeBuilder:
 ##############################################################################
 ##############################################################################
 
-def _get_file(file, mode):
-    """This method returns the file parameter if it is an open writable
-    stream. Otherwise it treats the file parameter as a file path and
-    opens it with the given mode. It is used by the svg and png methods
-    to interpret the file parameter.
+
+def _get_writable(stream_or_path, mode):
+    """This method returns the `stream_or_path` parameter if it is an open
+    writable stream. Otherwise it treats the `stream_or_path` parameter as
+    file path and opens it with the given mode.
+    It is used by the svg and png methods to interpret the file parameter.
     """
     import os.path
-    #See if the file parameter is a stream
-    if not isinstance(file, io.IOBase):
-        #If it is not a stream open a the file path
-        return open(os.path.abspath(file), mode)
-    elif not file.writable():
-        raise ValueError('Stream is not writable.')
-    else:
-        return file
+    is_stream = hasattr(stream_or_path, 'write')
+    if not is_stream:
+        # No stream provided, treat "file" as path
+        stream_or_path = open(os.path.abspath(stream_or_path), mode)
+    return stream_or_path, not is_stream
+
 
 
 def _get_png_size(version, scale, border):
