@@ -17,11 +17,10 @@ Examples:
 """
 from __future__ import absolute_import, division, print_function, with_statement, unicode_literals
 from . import builder, tables
-import sys
-_PY2 = sys.version_info[0] == 2
-if _PY2:
+try:
     str = unicode
-del sys
+except NameError:
+    pass
 
 
 def create(content, error='H', version=None, mode=None, encoding='ISO-8859-1'):
