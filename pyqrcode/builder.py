@@ -140,9 +140,6 @@ class QRCodeBuilder:
         """This method encodes the QR code's data if its mode is
         alphanumeric. It returns the data encoded as a binary string.
         """
-        #Convert the string to upper case
-        self.data = self.data.upper()
-
         #Change the data such that it uses a QR code ascii table
         ascii = []
         for char in self.data:

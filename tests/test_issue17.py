@@ -21,6 +21,20 @@ def test_umlaut_utf8():
     eq_(s.encode('utf-8'), code.data)
 
 
+def test_ascii():
+    s = 'MAERCHENBUCH'
+    code = pyqrcode.create(s, error='M', encoding='utf-8')
+    eq_('alphanumeric', code.mode)
+    eq_(s, code.data)
+
+
+def test_ascii2():
+    s = 'MAERCHENBUCH'
+    code = pyqrcode.create(s, error='M', encoding=None)
+    eq_('alphanumeric', code.mode)
+    eq_(s, code.data)
+
+
 if __name__ == '__main__':
     import nose
     nose.core.runmodule()
