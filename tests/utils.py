@@ -2,6 +2,7 @@
 """\
 Test utilities.
 """
+import os
 try:
     import png
 except ImportError:
@@ -33,6 +34,13 @@ def _make_pixel_array(pixels, greyscale):
             it = [iter(row)] * 3
             res.append([bw_color(r, g, b) for r, g, b in zip(*it)])
     return res
+
+
+def get_reference_filename(filename):
+    """\
+    Returns an absolute path to the "reference" filename.
+    """
+    return os.path.join(os.path.dirname(__file__), 'ref/{}'.format(filename))
 
 
 def get_png_info(**kw):
