@@ -51,7 +51,7 @@ def test_invalid_mode_provided():
 
 
 def test_unicode_utf8():
-    s = '\u263A'
+    s = '\u263A'  # ☺ (WHITE SMILING FACE)
     try:
         pyqrcode.create(s, encoding='latin1')
         raise Exception('Expected an error for \u263A and ISO-8859-1')
