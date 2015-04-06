@@ -7,10 +7,7 @@ import os
 import io
 from nose.tools import eq_
 import pyqrcode
-try:
-    import png
-except ImportError:
-    from pyqrcode import png
+from . import utils
 
 
 def test_size():
@@ -69,10 +66,8 @@ def test_write_png():
     def check(qr, error_level, reference):
         eq_(error_level, qr.error)
         scale, border = 6, 4
-        reader = png.Reader(filename=os.path.join(os.path.dirname(__file__), 'ref/{}'.format(reference)))
         # Read reference image
-        ref_width, ref_height, ref_pixels, meta = reader.asDirect()
-        ref_pixels = _make_pixel_array(ref_pixels, meta['greyscale'])
+        ref_width, ref_height, ref_pixels = utils.get_png_info(filename=os.path.join(os.path.dirname(__file__), 'ref/{}'.format(reference)))
         # Create our image
         out = io.BytesIO()
         qr.png(out, scale=scale, border=border)
@@ -80,13 +75,11 @@ def test_write_png():
         # Excpected width/height
         expected_width = qr.get_png_size(scale, border)
         # Read created image
-        reader = png.Reader(file=out)
-        width, height, pixels, meta = reader.asDirect()
-        pixels = _make_pixel_array(pixels, meta['greyscale'])
+        width, height, pixels = utils.get_png_info(fileobj=out)
         eq_(expected_width, ref_width)
         eq_(expected_width, ref_height)
         eq_(ref_width, width)
-        eq_(ref_height, width)
+        eq_(ref_height, height)
         eq_(len(ref_pixels), len(pixels))
         eq_(ref_pixels, pixels)
 
