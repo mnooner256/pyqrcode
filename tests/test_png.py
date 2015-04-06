@@ -2,12 +2,15 @@
 """\
 PNG related tests.
 """
-from __future__ import unicode_literals
+from __future__ import unicode_literals, absolute_import
 import os
 import io
 from nose.tools import eq_
 import pyqrcode
-from . import utils
+try:
+    from . import utils
+except ValueError:
+    import utils
 
 
 def test_size():
@@ -75,7 +78,7 @@ def test_write_png():
         # Excpected width/height
         expected_width = qr.get_png_size(scale, border)
         # Read created image
-        width, height, pixels = utils.get_png_info(fileobj=out)
+        width, height, pixels = utils.get_png_info(file=out)
         eq_(expected_width, ref_width)
         eq_(expected_width, ref_height)
         eq_(ref_width, width)
