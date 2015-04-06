@@ -41,8 +41,8 @@ class QRCodeBuilder:
         """See :py:class:`pyqrcode.QRCode` for information on the parameters."""
 
         # Set what data we are going to use to generate the QR code
-        # The data is treated opaque: The builder assumes that it is encoded in
-        # ISO-8859-1 (default) or UTF-8
+        # The data is treated transparent: The builder assumes that it is
+        # encoded in ISO-8859-1 or UTF-8
         self.data = data
 
         #Check that the user passed in a valid mode
