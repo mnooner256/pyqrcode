@@ -64,12 +64,6 @@ def test_unicode_utf8():
     eq_('binary', qr.mode)
 
 
-def test_zxing1():
-    qr = pyqrcode.create('ABCDEF', error='H')#, mode='binary', encoding='utf-8')
-    eq_('alphanumeric', qr.mode)
-    qr.png('/Users/lars/projects/pyqrcode/tests/abcdef.png', scale=2)
-
-
 
 if __name__ == '__main__':
     import nose
