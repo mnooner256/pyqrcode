@@ -32,6 +32,9 @@ _REF_DATA = (
     # Input string, error level, encoding, reference file
     ('Märchenbuch', 'M', 'iso-8859-1', 'mb_latin1_m.png'),
     ('Märchenbuch', 'M', 'utf-8', 'mb_utf8_m.png'),
+    ('Märchenbuch', 'L', 'utf-8', 'mb_utf8_l.png'),
+    ('Märchenbuch', 'H', 'utf-8', 'mb_utf8_h.png'),
+    ('Märchenbuch', 'Q', 'utf-8', 'mb_utf8_q.png'),
 )
 
 
