@@ -53,7 +53,7 @@ def _make_pixel_array(pixels, greyscale):
         elif rgb == (255, 255, 255):
             return 1
         else:
-            raise ValueError('Unexpected RGB tuple %r' % rgb)
+            raise ValueError('Unexpected RGB tuple: {0})'.format(rgb))
     res = []
     if greyscale:
         for row in pixels:
@@ -66,7 +66,8 @@ def _make_pixel_array(pixels, greyscale):
 
 
 def test_write_png():
-    def check(qr, reference):
+    def check(qr, error_level, reference):
+        eq_(error_level, qr.error)
         scale, border = 6, 4
         reader = png.Reader(filename=os.path.join(os.path.dirname(__file__), 'ref/{}'.format(reference)))
         # Read reference image
@@ -75,9 +76,9 @@ def test_write_png():
         # Create our image
         out = io.BytesIO()
         qr.png(out, scale=scale, border=border)
+        out.seek(0)
         # Excpected width/height
         expected_width = qr.get_png_size(scale, border)
-        out.seek(0)
         # Read created image
         reader = png.Reader(file=out)
         width, height, pixels, meta = reader.asDirect()
@@ -91,7 +92,7 @@ def test_write_png():
 
     for s, err, encoding, ref in _REF_DATA:
         qr = pyqrcode.create(s, error=err, encoding=encoding)
-        yield check, qr, ref
+        yield check, qr, err, ref
 
 
 if __name__ == '__main__':
