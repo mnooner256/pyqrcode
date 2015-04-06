@@ -17,7 +17,9 @@ _DATA_AUTODETECT = (
     ('HELLO WORLD', 'alphanumeric'),
     ('HELLO\nWORLD', 'binary'),
     ('MÄRCHENBUCH', 'binary'),
-    ('®', 'binary')
+    ('®', 'binary'),
+    ('http://www.example.org/', 'binary'),
+    ('http://www.example.org/path/index.html', 'binary'),
 )
 
 
@@ -35,6 +37,7 @@ _DATA_INVALID_MODE = (
     ('a', 'numeric'),
     ('HELLO\nWORLD', 'alphanumeric'),
     ('MÄRCHENBUCH', 'alphanumeric'),
+    ('http://www.example.org/', 'alphanumeric'),
 )
 
 
@@ -59,6 +62,13 @@ def test_unicode_utf8():
         pass
     qr = pyqrcode.create(s, encoding='utf-8')
     eq_('binary', qr.mode)
+
+
+def test_zxing1():
+    qr = pyqrcode.create('ABCDEF', error='H')#, mode='binary', encoding='utf-8')
+    eq_('alphanumeric', qr.mode)
+    qr.png('/Users/lars/projects/pyqrcode/tests/abcdef.png', scale=2)
+
 
 
 if __name__ == '__main__':
