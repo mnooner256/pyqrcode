@@ -38,39 +38,12 @@ _REF_DATA = (
 )
 
 
-def _make_pixel_array(pixels, greyscale):
-    """\
-    Returns a list of lists. Each list contains 0 and/or 1.
-    0 == black, 1 == white.
-
-    `greyscale`
-        Indiciates if this function must convert RGB colors into black/white.
-    """
-    def bw_color(r, g, b):
-        rgb = r, g, b
-        if rgb == (0, 0, 0):
-            return 0
-        elif rgb == (255, 255, 255):
-            return 1
-        else:
-            raise ValueError('Unexpected RGB tuple: {0})'.format(rgb))
-    res = []
-    if greyscale:
-        for row in pixels:
-            res.append(list(row[:]))
-    else:
-        for row in pixels:
-            it = [iter(row)] * 3
-            res.append([bw_color(r, g, b) for r, g, b in zip(*it)])
-    return res
-
-
 def test_write_png():
     def check(qr, error_level, reference):
         eq_(error_level, qr.error)
         scale, border = 6, 4
         # Read reference image
-        ref_width, ref_height, ref_pixels = utils.get_png_info(filename=os.path.join(os.path.dirname(__file__), 'ref/{}'.format(reference)))
+        ref_width, ref_height, ref_pixels = utils.get_png_info(filename=utils.get_reference_filename(reference))
         # Create our image
         out = io.BytesIO()
         qr.png(out, scale=scale, border=border)
