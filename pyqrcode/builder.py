@@ -1083,7 +1083,7 @@ def _svg(code, version, file, scale=1, module_color='#000', background=None,
                 f.write(b' transform="scale({})"'.format(scale))
             f.write(b' class="pyqrerr" stroke="red" d="{}"/>'.format(debug_path))
         # Close document
-        f.write('</svg>\n')
+        f.write(b'</svg>\n')
         if autoclose:
             f.close()
 
