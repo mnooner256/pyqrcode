@@ -3,13 +3,12 @@
 PNG related tests.
 """
 from __future__ import unicode_literals, absolute_import
-import os
 import io
 from nose.tools import eq_
 import pyqrcode
 try:
     from . import utils
-except ValueError:
+except (ValueError, SystemError):
     import utils
 
 
