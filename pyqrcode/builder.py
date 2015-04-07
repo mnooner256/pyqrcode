@@ -994,54 +994,54 @@ def _svg(code, version, file, scale=1, module_color='#000', background=None,
         def line(x, y, length, relative):
             """Returns coordinates to draw a line with the provided length.
             """
-            return '{0}{1} {2}h{3}'.format(('m' if relative else 'M'), x, y, length)
+            return b'{0}{1} {2}h{3}'.format((b'm' if relative else b'M'), x, y, length)
 
         def errline(col_number, row_number):
             """Returns the coordinates to draw an error bit.
             """
             # Debug path uses always absolute coordinates
-            return line(col_number + border, row_number + border + .5, 1,
-                        relative=False)
+            # .5 == stroke / 2
+            return line(col_number + border, row_number + border + .5, 1, False)
 
-        f = _get_file(file, 'w')
+        f = _get_file(file, 'wb')
         # Write the document header
         if xmldecl:
-            f.write('<?xml version="1.0" encoding="UTF-8"?>\n')
-        f.write('<svg')
+            f.write(b'<?xml version="1.0" encoding="UTF-8"?>\n')
+        f.write(b'<svg')
         if svgns:
-            f.write(' xmlns="http://www.w3.org/2000/svg"')
+            f.write(b' xmlns="http://www.w3.org/2000/svg"')
         size = tables.version_size[version] * scale + (2 * border * scale)
         if not omithw:
-            f.write(' height="{0}" width="{0}"'.format(size))
+            f.write(b' height="{0}" width="{0}"'.format(size))
         else:
-            f.write(' viewBox="0 0 {0} {0}"'.format(size))
+            f.write(b' viewBox="0 0 {0} {0}"'.format(size))
         if svgclass is not None:
-            f.write(' class="{}"'.format(svgclass))
-        f.write('>')
+            f.write(b' class="{0}"'.format(svgclass.encode('utf-8')))
+        f.write(b'>')
         if title is not None:
-            f.write('<title>{}</title>'.format(title.encode('utf-8')))
+            f.write(b'<title>{0}</title>'.format(title.encode('utf-8')))
 
         # Draw a background rectangle if necessary
         if background is not None:
-            f.write('<path fill="{1}" d="M0 0h{0}v{0}h-{0}z"/>'
+            f.write(b'<path fill="{1}" d="M0 0h{0}v{0}h-{0}z"/>'
                     .format(size, background))
-        f.write('<path')
+        f.write(b'<path')
         if scale != 1:
-            f.write(' transform="scale({})"'.format(scale))
+            f.write(b' transform="scale({})"'.format(scale))
         if module_color is not None:
-            f.write(' stroke="{}"'.format(module_color))
+            f.write(b' stroke="{0}"'.format(module_color.encode('utf-8')))
         if lineclass is not None:
-            f.write(' class="{}"'.format(lineclass))
-        f.write(' d="')
+            f.write(b' class="{0}"'.format(lineclass.encode('utf-8')))
+        f.write(b' d="')
         # Used to keep track of unknown/error coordinates.
-        debug_path = ''
+        debug_path = b''
         # Current pen pointer position
         x, y = -border, border - .5  # .5 == stroke-width / 2
         wrote_bit = False
         # Loop through each row of the code
         for rnumber, row in enumerate(code):
             start_column = 0  # Reset the starting column number
-            coord = ''  # Reset row coordinates
+            coord = b''  # Reset row coordinates
             y += 1  # Set y-axis of the pen
             length = 0  # Reset line length
             # Examine every bit in the row
@@ -1066,14 +1066,14 @@ def _svg(code, version, file, scale=1, module_color='#000', background=None,
                 wrote_bit = True
             f.write(coord)
         # Close path
-        f.write('"/>')
+        f.write(b'"/>')
         if debug and debug_path:
-            f.write('<path')
+            f.write(b'<path')
             if scale != 1:
-                f.write(' transform="scale({})"'.format(scale))
-            f.write(' class="pyqrerr" stroke="red" d="{}"/>'.format(debug_path))
+                f.write(b' transform="scale({})"'.format(scale))
+            f.write(b' class="pyqrerr" stroke="red" d="{}"/>'.format(debug_path))
         # Close document
-        f.write('</svg>\n')
+        f.write(b'</svg>\n')
 
 
 def _png(code, version, file, scale=1, module_color=None, background=None):
