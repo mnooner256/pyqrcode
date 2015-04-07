@@ -9,10 +9,6 @@ from __future__ import absolute_import, division, print_function, with_statement
 import pyqrcode.tables as tables
 import io
 import itertools
-try:
-    import png
-except ImportError:
-    from . import png
 
 
 class QRCodeBuilder:
@@ -1080,6 +1076,13 @@ def _png(code, version, file, scale=1, module_color=(0, 0, 0, 255),
     :param debug: Inidicates if errors in the QR code should be added (as red
             modules) to the output (default: ``False``).
     """
+    try:
+        import png
+    except (ImportError) as ex:
+        try:
+            from . import png
+        except ValueError:
+            raise ex
     # Coerce scale parameter into an integer
     try:
         scale = int(scale)
