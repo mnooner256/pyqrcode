@@ -1013,7 +1013,7 @@ def _svg(code, version, file, scale=1, module_color='#000', background=None,
             # .5 == stroke / 2
             return line(col_number + border, row_number + border + .5, 1, False)
 
-        f, autoclose = _get_writable(file, 'w')
+        f, autoclose = _get_writable(file, 'wb')
         # Write the document header
         if xmldecl:
             f.write(b'<?xml version="1.0" encoding="UTF-8"?>\n')
