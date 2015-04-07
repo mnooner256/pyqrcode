@@ -32,7 +32,7 @@ def test_write_svg():
     qr = pyqrcode.create('test')
     out = io.BytesIO()
     qr.svg(out)
-    xml_str = out.getvalue()
+    xml_str = out.getvalue().decode('utf-8')
     ok_(xml_str.startswith('<?xml'))
     root = _parse_xml(out)
     ok_('viewBox' not in root.attrib)
@@ -55,7 +55,7 @@ def test_write_no_xmldecl():
     qr = pyqrcode.create('test')
     out = io.BytesIO()
     qr.svg(out, xmldecl=False)
-    xml_str = out.getvalue()
+    xml_str = out.getvalue().decode('utf-8')
     ok_(xml_str.startswith('<svg'))
 
 
