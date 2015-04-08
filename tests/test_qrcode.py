@@ -24,10 +24,11 @@ _DATA_AUTODETECT = (
 
 
 def test_valid_mode_autodetection():
-    def check(qr, expected_mode):
+    def check(data, expected_mode):
+        qr = pyqrcode.create(data)
         eq_(expected_mode, qr.mode)
     for data, mode in _DATA_AUTODETECT:
-        yield eq_, mode, pyqrcode.create(data).mode
+        yield check, data, mode
 
 
 
@@ -62,7 +63,6 @@ def test_unicode_utf8():
         pass
     qr = pyqrcode.create(s, encoding='utf-8')
     eq_('binary', qr.mode)
-
 
 
 if __name__ == '__main__':

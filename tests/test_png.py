@@ -33,12 +33,13 @@ _REF_DATA = (
     ('Märchenbuch', 'M', 'utf-8', 'mb_utf8_m.png'),
     ('Märchenbuch', 'L', 'utf-8', 'mb_utf8_l.png'),
     ('Märchenbuch', 'H', 'utf-8', 'mb_utf8_h.png'),
-    ('Märchenbuch', 'Q', 'utf-8', 'mb_utf8_q.png'),
+    ('Märchen',     'Q', 'utf-8', 'm_utf8_q.png'),
 )
 
 
 def test_write_png():
-    def check(qr, error_level, reference):
+    def check(s, error_level, encoding, reference):
+        qr = pyqrcode.create(s, error=err, encoding=encoding)
         eq_(error_level, qr.error)
         scale, border = 6, 4
         # Read reference image
@@ -59,8 +60,7 @@ def test_write_png():
         eq_(ref_pixels, pixels)
 
     for s, err, encoding, ref in _REF_DATA:
-        qr = pyqrcode.create(s, error=err, encoding=encoding)
-        yield check, qr, err, ref
+        yield check, s, err, encoding, ref
 
 
 if __name__ == '__main__':

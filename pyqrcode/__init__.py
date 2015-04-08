@@ -15,10 +15,10 @@ Examples:
         >>> number = pyqrcode.create(123456789012345)
         >>> number.png('big-number.png')
 """
-from __future__ import absolute_import, division, print_function, with_statement, unicode_literals
+from __future__ import absolute_import, unicode_literals
 from . import builder, tables
 try:
-    str = unicode
+    str = unicode  # Python 2
 except NameError:
     pass
 
@@ -110,9 +110,7 @@ class QRCode:
                              'Supported: "UTF-8" and "ISO-8859-1".'
                              .format(encoding))
 
-        if not isinstance(content, bytes):
-            content = str(content).encode('utf-8')
-        self.data = content
+        self.data = str(content)
 
         #Check that the passed in error level is valid
         try:
@@ -165,15 +163,12 @@ class QRCode:
                                  'level (the code must be at least a '
                                  'version {}).'.format(version, self.version))
 
-        # Change data encoding?
-        if self.mode == 'binary' and encoding != 'utf-8':
-            self.data = self.data.decode('utf-8').encode(encoding)
-
         #Build the QR code
         self.builder = builder.QRCodeBuilder(data=self.data,
                                              version=self.version,
                                              mode=self.mode,
-                                             error=self.error)
+                                             error=self.error,
+                                             encoding=encoding)
 
         #Save the code for easier reference
         self.code = self.builder.code
@@ -183,7 +178,7 @@ class QRCode:
 
     def __repr__(self):
         return 'QRCode(content=\'{}\', error=\'{}\', version={}, mode=\'{}\')'.format(
-                       self.data, self.error, self.version, self.mode)
+                       '', self.error, self.version, self.mode)
 
     def _detect_content_type(self, encoding):
         """This method tries to auto-detect the type of the data. It first
@@ -202,11 +197,8 @@ class QRCode:
         # See if that data is alphanumeric based on the standards
         # special ASCII table
         valid_characters = tables.ascii_codes.keys()
-        try:
-            if all(map(lambda x: x in valid_characters, self.data.decode(encoding).encode('ascii'))):
-                return 'alphanumeric'
-        except UnicodeError:
-            pass
+        if all(map(lambda x: x in valid_characters, self.data)):
+            return 'alphanumeric'
         # All of the tests failed. The content can only be binary.
         return 'binary'
 

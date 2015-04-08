@@ -7,13 +7,6 @@ import io
 import itertools
 from . import tables
 
-_PY2 = False
-try:
-    str = unicode
-    _PY2 = True
-except NameError:
-    pass
-
 
 class QRCodeBuilder:
     """This class generates a QR code based on the standard. It is meant to
@@ -37,13 +30,13 @@ class QRCodeBuilder:
     QR code Debugger:
         http://qrlogo.kaarposoft.dk/qrdecode.html
     """
-    def __init__(self, data, version, mode, error):
+    def __init__(self, data, version, mode, error, encoding):
         """See :py:class:`pyqrcode.QRCode` for information on the parameters."""
 
         # Set what data we are going to use to generate the QR code
-        # The data is treated transparent: The builder assumes that it is
-        # encoded in ISO-8859-1 or UTF-8
-        self.data = data
+        if isinstance(data, bytes):
+            data = data.decode('utf-8')
+        self.data = data.encode(encoding)
 
         #Check that the user passed in a valid mode
         if mode in tables.modes.keys():
@@ -133,7 +126,6 @@ class QRCodeBuilder:
             encoded = self.encode_bytes()
         else:
             raise ValueError('This mode is not yet implemented.')
-
         return encoded
 
     def encode_alphanumeric(self):
@@ -147,7 +139,7 @@ class QRCodeBuilder:
         
         #Now perform the algorithm that will make the ascii into bit fields
         with io.StringIO() as buf:
-            for (a,b) in self.grouper(2, ascii):
+            for a, b in self.grouper(2, ascii):
                 if b is not None:
                     buf.write(self.binary_string((45*a)+b, 11))
                 else:
@@ -192,11 +184,12 @@ class QRCodeBuilder:
         """This method encodes the QR code's data if its mode is
         8 bit mode. It returns the data encoded as a binary string.
         """
-        # ord(character) isn't necessary for Python 3.x
-        data_iter = self.data if not _PY2 else (ord(c) for c in self.data)
         with io.StringIO() as buf:
-            for char in data_iter:
-                buf.write('{{:0{}b}}'.format(8).format(char))
+            for char in self.data:
+                if isinstance(char, int):
+                    buf.write('{{:0{}b}}'.format(8).format(char))
+                elif isinstance(char, str):
+                    buf.write('{{:0{}b}}'.format(8).format(ord(char)))
             return buf.getvalue()
 
     def add_data(self):
