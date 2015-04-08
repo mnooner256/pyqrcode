@@ -65,6 +65,13 @@ def test_unicode_utf8():
     eq_('binary', qr.mode)
 
 
+def test_utf8_detection():
+    s = '㋡'
+    qr = pyqrcode.create(s)
+    eq_('binary', qr.mode)
+    eq_(s.encode('utf-8'), qr.builder.data)
+
+
 if __name__ == '__main__':
     import nose
     nose.core.runmodule()

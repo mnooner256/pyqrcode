@@ -36,7 +36,16 @@ class QRCodeBuilder:
         # Set what data we are going to use to generate the QR code
         if isinstance(data, bytes):
             data = data.decode('utf-8')
-        self.data = data.encode(encoding) if mode == 'binary' else data
+        if mode == 'binary':
+            if encoding is not None:
+                data = data.encode(encoding)
+            else:
+                # Try to use standard-conform encoding
+                try:
+                    data = data.encode('iso-8859-1')
+                except UnicodeError:
+                    data = data.encode('utf-8')
+        self.data = data
 
         #Check that the user passed in a valid mode
         if mode in tables.modes.keys():

@@ -23,8 +23,6 @@ except NameError:
     pass
 
 
-_DEFAULT_ENCODING = 'iso-8859-1'
-
 def create(content, error='H', version=None, mode=None, encoding=None):
     """When creating a QR code only the content to be encoded is required,
     all the other properties of the code will be guessed based on the
@@ -78,7 +76,8 @@ def create(content, error='H', version=None, mode=None, encoding=None):
     The *encoding* parameter specifies how the content will be encoded if
     the mode is ``'binary'``. Valid values are ``ISO-8859-1`` (default and
     standard-conform) or ``UTF-8`` (not standard-conform but supported by
-    most QR code readers.
+    most QR code readers. If encoding is set to ``None`` (default), the
+    implementation uses an appropriate encoding automatically.
     """
     return QRCode(content, error, version, mode, encoding)
 
@@ -104,8 +103,9 @@ class QRCode:
         function.
     """
     def __init__(self, content, error='H', version=None, mode=None, encoding=None):
-        encoding = encoding.lower() if encoding else _DEFAULT_ENCODING
-        if encoding not in ('utf-8', 'iso-8859-1', 'latin1', 'latin'):
+        if encoding is not None \
+                and encoding.lower() not in ('utf-8', 'iso-8859-1', 'latin1',
+                                             'latin'):
             raise ValueError('Unsupported encoding "{0}". '
                              'Supported: "UTF-8" and "ISO-8859-1".'
                              .format(encoding))
