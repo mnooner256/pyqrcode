@@ -72,6 +72,14 @@ def test_utf8_detection():
     eq_(s.encode('utf-8'), qr.builder.data)
 
 
+def test_invalid_encoding():
+    try:
+        pyqrcode.create('test', encoding='iso-8859-7')
+        raise Exception('encoding=ISO-8859-7 should raise an exception')
+    except ValueError:
+        pass
+
+
 if __name__ == '__main__':
     import nose
     nose.core.runmodule()

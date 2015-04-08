@@ -1037,7 +1037,8 @@ def _svg(code, version, file, scale=1, module_color='#000', background=None,
         else:
             write(' viewBox="0 0 {0} {0}"'.format(size))
         if svgclass is not None:
-            write(' class={0}'.format(quoteattr(svgclass)))
+            write_bytes(b' class=')
+            write(quoteattr(svgclass))
         write_bytes(b'>')
         if title is not None:
             write('<title>{0}</title>'.format(title))
@@ -1050,9 +1051,11 @@ def _svg(code, version, file, scale=1, module_color='#000', background=None,
         if scale != 1:
             write(' transform="scale({})"'.format(scale))
         if module_color is not None:
-            write(' stroke={0}'.format(quoteattr(module_color)))
+            write_bytes(b' stroke=')
+            write(quoteattr(module_color))
         if lineclass is not None:
-            write(' class={0}'.format(quoteattr(lineclass)))
+            write_bytes(b' class=')
+            write(quoteattr(lineclass))
         write_bytes(b' d="')
         # Used to keep track of unknown/error coordinates.
         debug_path = ''
@@ -1123,11 +1126,9 @@ def _png(code, version, file, scale=1, module_color=(0, 0, 0, 255),
     """
     try:
         import png
-    except (ImportError) as ex:
-        try:
-            from . import png
-        except ValueError:
-            raise ex
+    except ImportError:
+        from . import png
+
     # Coerce scale parameter into an integer
     try:
         scale = int(scale)
