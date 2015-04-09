@@ -176,9 +176,12 @@ class QRCode:
     def __str__(self):
         return repr(self)
 
+    def __unicode__(self):
+        return self.__str__()
+
     def __repr__(self):
         return 'QRCode(content=\'{}\', error=\'{}\', version={}, mode=\'{}\')'.format(
-                       '', self.error, self.version, self.mode)
+                       self.data, self.error, self.version, self.mode)
 
     def _detect_content_type(self, encoding):
         """This method tries to auto-detect the type of the data. It first
