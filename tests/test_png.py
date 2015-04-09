@@ -33,6 +33,7 @@ _REF_DATA = (
     ('Märchenbuch', 'M', 'utf-8', 'mb_utf8_m.png'),
     ('Märchenbuch', 'L', 'utf-8', 'mb_utf8_l.png'),
     ('Märchenbuch', 'H', 'utf-8', 'mb_utf8_h.png'),
+    ('Märchenbuch', 'Q', 'utf-8', 'mb_utf8_q.png'),
     ('Märchen',     'Q', 'utf-8', 'm_utf8_q.png'),
 )
 
