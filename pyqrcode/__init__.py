@@ -121,7 +121,7 @@ class QRCode:
 
         #Guess the mode of the code, this will also be used for
         #error checking
-        guessed_content_type = self._detect_content_type(encoding)
+        guessed_content_type = self._detect_content_type()
 
         #Force a passed in mode to be lowercase
         if mode:
@@ -149,8 +149,21 @@ class QRCode:
             self.mode = mode
             self.mode_num = tables.modes[self.mode]
 
+        encoded_data = self.data
+        if isinstance(encoded_data, bytes):
+            encoded_data = encoded_data.decode('utf-8')
+        if self.mode == 'binary':
+            if encoding is not None:
+                encoded_data = encoded_data.encode(encoding)
+            else:
+                # Try to use standard-conform encoding
+                try:
+                    encoded_data = encoded_data.encode('iso-8859-1')
+                except UnicodeError:
+                    encoded_data = encoded_data.encode('utf-8')
+
         #Guess the "best" version
-        self.version = self._pick_best_fit()
+        self.version = self._pick_best_fit(encoded_data)
 
         #If the user supplied a version, then check that it has
         #sufficient data capacity for the contents passed in
@@ -164,11 +177,10 @@ class QRCode:
                                  'version {}).'.format(version, self.version))
 
         #Build the QR code
-        self.builder = builder.QRCodeBuilder(data=self.data,
+        self.builder = builder.QRCodeBuilder(data=encoded_data,
                                              version=self.version,
                                              mode=self.mode,
-                                             error=self.error,
-                                             encoding=encoding)
+                                             error=self.error)
 
         #Save the code for easier reference
         self.code = self.builder.code
@@ -183,7 +195,7 @@ class QRCode:
         return 'QRCode(content=\'{}\', error=\'{}\', version={}, mode=\'{}\')'.format(
                        self.data, self.error, self.version, self.mode)
 
-    def _detect_content_type(self, encoding):
+    def _detect_content_type(self):
         """This method tries to auto-detect the type of the data. It first
         tries to see if the data is a valid integer, in which case it returns
         numeric. Next, it tests the data to see if it is 'alphanumeric.' QR
@@ -205,18 +217,17 @@ class QRCode:
         # All of the tests failed. The content can only be binary.
         return 'binary'
 
-    def _pick_best_fit(self):
+    def _pick_best_fit(self, encoded_data):
         """This method return the smallest possible QR code version number
         that will fit the specified data with the given error level.
         """
-        data_len = len(self.data)
+        data_len = len(encoded_data)
         for version in range(1, 41):
             # Get the maximum possible capacity
             capacity = tables.data_capacity[version][self.error][self.mode_num]
             # Check the capacity
             if capacity >= data_len:
                 return version
-
         raise ValueError('The data will not fit in any QR code version '
                          'with the given encoding and error level.')
 

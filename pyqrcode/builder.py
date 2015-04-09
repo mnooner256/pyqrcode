@@ -30,21 +30,10 @@ class QRCodeBuilder:
     QR code Debugger:
         http://qrlogo.kaarposoft.dk/qrdecode.html
     """
-    def __init__(self, data, version, mode, error, encoding):
+    def __init__(self, data, version, mode, error):
         """See :py:class:`pyqrcode.QRCode` for information on the parameters."""
 
         # Set what data we are going to use to generate the QR code
-        if isinstance(data, bytes):
-            data = data.decode('utf-8')
-        if mode == 'binary':
-            if encoding is not None:
-                data = data.encode(encoding)
-            else:
-                # Try to use standard-conform encoding
-                try:
-                    data = data.encode('iso-8859-1')
-                except UnicodeError:
-                    data = data.encode('utf-8')
         self.data = data
 
         #Check that the user passed in a valid mode
