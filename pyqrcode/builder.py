@@ -832,7 +832,6 @@ def _get_writable(stream_or_path, mode):
     return stream_or_path, not is_stream
 
 
-
 def _get_png_size(version, scale, border):
     """See: QRCode.get_png_size
 
@@ -956,7 +955,7 @@ def _text(code, module_color='1', background='0', border=4, debug=True):
 def _svg(code, version, file, scale=1, module_color='#000', background=None,
          border=4, xmldecl=True, svgns=True, title=None, svgclass='pyqrcode',
          lineclass='pyqrline', omithw=False, debug=False):
-    """This method writes the QR code out as an SVG document. The
+    """This function writes the QR code out as an SVG document. The
     code is drawn by drawing only the modules corresponding to a 1. They
     are drawn using a line, such that contiguous modules in a row
     are drawn with a single line. The file parameter is used to
@@ -1250,3 +1249,132 @@ def _png(code, version, file, scale=1, module_color=(0, 0, 0, 255),
     finally:
         if autoclose:
             f.close()
+
+
+def _eps(code, version, file_or_path, scale=1, module_color=(0, 0, 0),
+         background=None, border=4):
+    """This function writes the QR code out as an EPS document. The
+    code is drawn by drawing only the modules corresponding to a 1. They
+    are drawn using a line, such that contiguous modules in a row
+    are drawn with a single line. The file parameter is used to
+    specify where to write the document to. It can either be an writable
+    stream or a file path. The scale parameter is sets how large to draw
+    a single module. By default one point (1/72 inch) is used to draw a single
+    module. This may make the code to small to be read efficiently.
+    Increasing the scale will make the code larger. This function will accept
+    fractional scales (e.g. 2.5).
+
+    :param module_color: Color of the QR code (default: ``(0, 0, 0)`` (black))
+            The color can be specified as triple of floats (range: 0 .. 1) or
+            triple of integers (range: 0 .. 255) or as hexadecimal value (i.e.
+            ``#36c`` or ``#33B200``).
+    :param background: Optional background color.
+            (default: ``None`` (no background)). See `module_color` for the
+            supported values.
+    :param border: Border around the QR code (also known as  quiet zone)
+            (default: ``4``). Set to zero (``0``) if the code shouldn't
+            have a border.
+    """
+    from functools import partial
+    import time
+
+    def write_line(writemeth, content):
+        """\
+        Writes `content` and ``LF``.
+        """
+        writemeth(content + '\n')
+
+    def line(offset, length):
+        """\
+        Returns coordinates to draw a line with the provided length.
+        """
+        res = ''
+        if offset > 0:
+            res = ' {0} 0 m'.format(offset)
+        res += ' {0} 0 l'.format(length)
+        return res
+
+    def rgb_to_floats(color):
+        """\
+        Converts the provided color into an acceptable format for Postscript's
+         ``setrgbcolor``
+        """
+        def to_float(clr):
+            if isinstance(clr, float):
+                if not 0.0 <= clr <= 1.0:
+                    raise ValueError('Invalid color "{}". Not in range 0 .. 1'
+                                     .format(clr))
+                return clr
+            if not 0 <= clr <= 255:
+                raise ValueError('Invalid color "{}". Not in range 0 .. 255'
+                                 .format(clr))
+            if clr == 1:
+                return 1
+            return 1/255.0 * clr
+
+        if not isinstance(color, (tuple, list)):
+            if color[0] == '#':
+                color = color[1:]
+            if len(color) == 3:
+                color = color[0] * 2 + color[1] * 2 + color[2] * 2
+            if len(color) != 6:
+                raise ValueError('Input #{} is not in #RRGGBB format'
+                                 .format(color))
+            color = [int(n, 16) for n in (color[:2], color[2:4], color[4:])]
+        return tuple([to_float(i) for i in color])
+
+    f, autoclose = _get_writable(file_or_path, 'w')
+    writeline = partial(write_line, f.write)
+    size = tables.version_size[version] * scale + (2 * border * scale)
+    # Write common header
+    writeline('%!PS-Adobe-3.0 EPSF-3.0')
+    writeline('%%Creator: PyQRCode <https://pypi.python.org/pypi/PyQRCode/>')
+    writeline('%%CreationDate: {0}'.format(time.strftime("%Y-%m-%d %H:%M:%S")))
+    writeline('%%DocumentData: Clean7Bit')
+    writeline('%%BoundingBox: 0 0 {0} {0}'.format(size))
+    # Write the shortcuts
+    writeline('/M { moveto } bind def')
+    writeline('/m { rmoveto } bind def')
+    writeline('/l { rlineto } bind def')
+    mod_color = (0, 0, 0) if module_color == (0, 0, 0) else rgb_to_floats(module_color)
+    if background is not None:
+        writeline('{0} {1} {2} setrgbcolor clippath fill'
+                  .format(*rgb_to_floats(background)))
+        if mod_color == (0, 0, 0):
+            # Reset RGB color back to black iff module color is black
+            # In case module color != black set the module RGB color later
+            writeline('0 0 0 setrgbcolor')
+    if mod_color != (0, 0, 0):
+        writeline('{0} {1} {2} setrgbcolor'.format(*rgb_to_floats(module_color)))
+    if scale != 1:
+        writeline('{0} {0} scale'.format(scale))
+    writeline('newpath')
+    # Current pen position y-axis
+    # Note: 0, 0 = lower left corner in PS coordinate system
+    y = tables.version_size[version] + border + .5  # .5 = linewidth / 2
+    # Loop through each row of the code
+    for row in code:
+        last_bit = 1
+        offset = 0  # Set x-offset of the pen
+        length = 0
+        y -= 1  # Move pen along y-axis
+        coord = '{} {} M'.format(border, y)  # Move pen to initial pos
+        for bit in row:
+            if bit != last_bit:
+                if length:
+                    coord += line(offset, length)
+                    offset = 0
+                    length = 0
+                last_bit = bit
+            if bit == 1:
+                length += 1
+            else:
+                offset += 1
+        if length:
+            coord += line(offset, length)
+        writeline(coord)
+    writeline('stroke')
+    writeline('%%EOF')
+    if autoclose:
+        f.close()
+

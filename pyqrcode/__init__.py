@@ -372,6 +372,40 @@ class QRCode:
                      module_color, background, border, xmldecl, svgns, title,
                      svgclass, lineclass, omithw, debug)
 
+    def eps(self, file, scale=1, module_color=(0, 0, 0), background=None,
+            border=4):
+        """This method writes the QR code out as an EPS document. The
+        code is drawn by drawing only the modules corresponding to a 1. They
+        are drawn using a line, such that contiguous modules in a row
+        are drawn with a single line. The file parameter is used to
+        specify where to write the document to. It can either be an writable
+        stream or a file path. The scale parameter is sets how large to draw
+        a single module. By default one point (1/72 inch) is used to draw a
+        single module. This may make the code to small to be read efficiently.
+        Increasing the scale will make the code larger. This method will accept
+        fractional scales (e.g. 2.5).
+
+        :param module_color: Color of the QR code (default: ``(0, 0, 0)`` (black))
+                The color can be specified as triple of floats (range: 0 .. 1)
+                or triple of integers (range: 0 .. 255) or as hexadecimal value
+                (i.e. ``#36c`` or ``#33B200``).
+        :param background: Optional background color.
+                (default: ``None`` (no background)). See `module_color` for the
+                supported values.
+        :param border: Border around the QR code (also known as  quiet zone)
+                (default: ``4``). Set to zero (``0``) if the code shouldn't
+                have a border.
+
+        Examples:
+            >>> qr = pyqrcode.create('Hello world')
+            >>> qr.eps('hello-world.eps', scale=2.5, module_color='#36C')
+            >>> qr.eps('hello-world2.eps', background='#eee')
+            >>> out = io.StringIO()
+            >>> qr.eps(out, module_color=(.4, .4, .4))
+        """
+        builder._eps(self.code, self.version, file, scale, module_color,
+                     background, border)
+
     def terminal(self, module_color='default', background='reverse'):
         """This method returns a string containing ASCII escape codes,
         such that if printed to a compatible terminal, it will display
