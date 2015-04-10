@@ -4,7 +4,7 @@ Tests against EPS generation.
 """
 from __future__ import absolute_import, unicode_literals
 import io
-from nose.tools import eq_, ok_, raises
+from nose.tools import raises
 import pyqrcode
 
 
