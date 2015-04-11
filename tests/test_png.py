@@ -4,12 +4,13 @@ PNG related tests.
 """
 from __future__ import unicode_literals, absolute_import
 import io
+import os
 from nose.tools import eq_
 import pyqrcode
 try:
-    from . import utils
-except (ValueError, SystemError):
-    import utils
+    import png
+except ImportError:
+    from pyqrcode import png
 
 
 def test_size():
@@ -44,7 +45,7 @@ def test_write_png():
         eq_(error_level, qr.error)
         scale, border = 6, 4
         # Read reference image
-        ref_width, ref_height, ref_pixels = utils.get_png_info(filename=utils.get_reference_filename(reference))
+        ref_width, ref_height, ref_pixels = _get_png_info(filename=_get_reference_filename(reference))
         # Create our image
         out = io.BytesIO()
         qr.png(out, scale=scale, border=border)
@@ -52,7 +53,7 @@ def test_write_png():
         # Excpected width/height
         expected_width = qr.get_png_size(scale, border)
         # Read created image
-        width, height, pixels = utils.get_png_info(file=out)
+        width, height, pixels = _get_png_info(file=out)
         eq_(expected_width, ref_width)
         eq_(expected_width, ref_height)
         eq_(ref_width, width)
@@ -62,6 +63,49 @@ def test_write_png():
 
     for s, err, encoding, ref in _REF_DATA:
         yield check, s, err, encoding, ref
+
+
+def _make_pixel_array(pixels, greyscale):
+    """\
+    Returns a list of lists. Each list contains 0 and/or 1.
+    0 == black, 1 == white.
+
+    `greyscale`
+        Indiciates if this function must convert RGB colors into black/white.
+    """
+    def bw_color(r, g, b):
+        rgb = r, g, b
+        if rgb == (0, 0, 0):
+            return 0
+        elif rgb == (255, 255, 255):
+            return 1
+        else:
+            raise ValueError('Unexpected RGB tuple: {0})'.format(rgb))
+    res = []
+    if greyscale:
+        for row in pixels:
+            res.append(list(row[:]))
+    else:
+        for row in pixels:
+            it = [iter(row)] * 3
+            res.append([bw_color(r, g, b) for r, g, b in zip(*it)])
+    return res
+
+
+def _get_reference_filename(filename):
+    """\
+    Returns an absolute path to the "reference" filename.
+    """
+    return os.path.join(os.path.dirname(__file__), 'ref/{}'.format(filename))
+
+
+def _get_png_info(**kw):
+    """\
+    Returns the width, height and the pixels of the provided PNG file.
+    """
+    reader = png.Reader(**kw)
+    w, h, pixels, meta = reader.asDirect()
+    return w, h, _make_pixel_array(pixels, meta['greyscale'])
 
 
 if __name__ == '__main__':
