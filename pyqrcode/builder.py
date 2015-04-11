@@ -1188,14 +1188,7 @@ def _png(code, version, file, scale=1, module_color=(0, 0, 0, 255),
         if color is None:
             return ()
         if not isinstance(color, (tuple, list)):
-            if color[0] == '#':
-                color = color[1:]
-            if len(color) == 3:
-                color = color[0] * 2 + color[1] * 2 + color[2] * 2
-            if len(color) != 6:
-                raise ValueError('Input #{} is not in #RRGGBB format'
-                                 .format(color))
-            r, g, b = [int(n, 16) for n in (color[:2], color[2:4], color[4:])]
+            r, g, b = _hex_to_rgb(color)
             return r, g, b, 255
         rgba = []
         if not (3 <= len(color) <= 4):
@@ -1307,19 +1300,10 @@ def _eps(code, version, file_or_path, scale=1, module_color=(0, 0, 0),
             if not 0 <= clr <= 255:
                 raise ValueError('Invalid color "{}". Not in range 0 .. 255'
                                  .format(clr))
-            if clr == 1:
-                return 1
-            return 1/255.0 * clr
+            return 1/255.0 * clr if clr != 1 else clr
 
         if not isinstance(color, (tuple, list)):
-            if color[0] == '#':
-                color = color[1:]
-            if len(color) == 3:
-                color = color[0] * 2 + color[1] * 2 + color[2] * 2
-            if len(color) != 6:
-                raise ValueError('Input #{} is not in #RRGGBB format'
-                                 .format(color))
-            color = [int(n, 16) for n in (color[:2], color[2:4], color[4:])]
+            color = _hex_to_rgb(color)
         return tuple([to_float(i) for i in color])
 
     f, autoclose = _get_writable(file_or_path, 'w')
@@ -1377,3 +1361,17 @@ def _eps(code, version, file_or_path, scale=1, module_color=(0, 0, 0),
     if autoclose:
         f.close()
 
+
+def _hex_to_rgb(color):
+    """\
+    Helper function to convert a color provided in hexadecimal format
+    as RGB triple.
+    """
+    if color[0] == '#':
+        color = color[1:]
+    if len(color) == 3:
+        color = color[0] * 2 + color[1] * 2 + color[2] * 2
+    if len(color) != 6:
+        raise ValueError('Input #{} is not in #RRGGBB format'
+                         .format(color))
+    return [int(n, 16) for n in (color[:2], color[2:4], color[4:])]
