@@ -3,7 +3,7 @@
 Different tests against the PyQRCode package.
 """
 from __future__ import unicode_literals
-from nose.tools import eq_
+from nose.tools import eq_, raises
 import pyqrcode
 
 
@@ -72,12 +72,20 @@ def test_utf8_detection():
     eq_(s.encode('utf-8'), qr.builder.data)
 
 
+@raises(ValueError)
 def test_invalid_encoding():
-    try:
-        pyqrcode.create('test', encoding='iso-8859-7')
-        raise Exception('encoding=ISO-8859-7 should raise an exception')
-    except ValueError:
-        pass
+    pyqrcode.create('test', encoding='iso-8859-7')
+
+
+@raises(ValueError)
+def test_invalid_version():
+    pyqrcode.create('test', version=41)
+
+
+@raises(ValueError)
+def test_invalid_ecc():
+    pyqrcode.create('test', error='R')
+
 
 
 if __name__ == '__main__':
