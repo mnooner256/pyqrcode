@@ -1195,8 +1195,7 @@ def _png(code, version, file, scale=1, module_color=(0, 0, 0, 255),
             if len(color) != 6:
                 raise ValueError('Input #{} is not in #RRGGBB format'
                                  .format(color))
-            r, g, b = color[:2], color[2:4], color[4:]
-            r, g, b = [int(n, 16) for n in (r, g, b)]
+            r, g, b = [int(n, 16) for n in (color[:2], color[2:4], color[4:])]
             return r, g, b, 255
         rgba = []
         if not (3 <= len(color) <= 4):
@@ -1352,9 +1351,9 @@ def _eps(code, version, file_or_path, scale=1, module_color=(0, 0, 0),
     # Current pen position y-axis
     # Note: 0, 0 = lower left corner in PS coordinate system
     y = tables.version_size[version] + border + .5  # .5 = linewidth / 2
+    last_bit = 1
     # Loop through each row of the code
     for row in code:
-        last_bit = 1
         offset = 0  # Set x-offset of the pen
         length = 0
         y -= 1  # Move pen along y-axis
