@@ -53,9 +53,9 @@ You can construct the class normally, or use the *create* wrapper function.
 PyPi
 ----
 
-* _PyPi page_: https://pypi.python.org/pypi?name=PyQRCode&:action=display
+* _PyPi page_: https://pypi.python.org/pypi/PyQRCode
 
-* _Documentation_: http://pythonhosted.org/PyQRCode/
+* _Documentation_: https://pythonhosted.org/PyQRCode/
 
 ### Encoding Data ###
 
