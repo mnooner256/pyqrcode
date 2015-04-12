@@ -66,8 +66,7 @@ def create(content, error='H', version=None, mode=None, encoding=None):
     used to encode integer numbers. Next, is 'alphanumeric' which is
     used to encode some ASCII characters. This mode uses only a limited
     set of characters. Most problematic is that it can only use upper case
-    English characters, consequently, the content parameter will be
-    subjected to str.upper() before encoding. See tables.ascii_codes for
+    English characters. See `tables.ascii_codes` for
     a complete list of available characters. We then have 'binary' encoding
     which just encodes the bytes directly into the QR code (this encoding
     is the least efficient). Finally, there is 'kanji'  encoding (i.e.
@@ -251,7 +250,7 @@ class QRCode:
             >>> print(code.get_png_size(5))
             155
         """
-        return builder._get_png_size(self.version, scale, border)
+        return builder._get_png_size(self.version, int(scale), border)
 
     def png(self, file, scale=1, module_color=(0, 0, 0, 255),
             background=(255, 255, 255, 255), border=4, debug=False):

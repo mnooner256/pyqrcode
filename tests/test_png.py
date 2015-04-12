@@ -28,6 +28,22 @@ def test_size():
     eq_((qr_size + 2 * border) * 4, code.get_png_size(4, border=border))
 
 
+def test_png_size_int():
+    qr = pyqrcode.create('test')
+    eq_(21, qr.get_png_size(scale=1, border=0))
+
+
+def test_png_size_int2():
+    qr = pyqrcode.create('test')
+    border = 2
+    eq_(21 + 2 * border, qr.get_png_size(scale=1, border=border))
+
+
+def test_png_size_float():
+    qr = pyqrcode.create('test')
+    eq_(21, qr.get_png_size(scale=1.5, border=0))
+
+
 _REF_DATA = (
     # Input string, error level, encoding, reference file
     ('Märchenbuch', 'M', 'iso-8859-1', 'mb_latin1_m.png'),
