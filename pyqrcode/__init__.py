@@ -114,9 +114,9 @@ class QRCode:
         #Check that the passed in error level is valid
         try:
             self.error = tables.error_level[str(error).upper()]
-        except:
+        except KeyError:
             raise ValueError('The error parameter is not one of '
-                             '"L", "M", "Q", or "H."')
+                             '"L", "M", "Q", or "H.", got "{}"'.format(error))
 
         #Guess the mode of the code, this will also be used for
         #error checking
