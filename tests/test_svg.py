@@ -3,6 +3,7 @@
 Tests against SVG generation.
 """
 from __future__ import absolute_import, unicode_literals
+import re
 import io
 import xml.etree.ElementTree as etree
 from nose.tools import eq_, ok_
@@ -25,6 +26,26 @@ def _parse_xml(buff):
     """
     buff.seek(0)
     return etree.parse(buff).getroot()
+
+
+_DATA = (
+    # Input string, error level, border
+    ('Märchenbuch', 'M', 4),
+    (123, 'H', 0),
+    ('http:/www.example.org/', 'L', 3),
+    ('Hello\nWorld', 'Q', 2),
+)
+
+
+def test_data():
+    def check(data, error, border):
+        qr = pyqrcode.create(data, error=error)
+        out = io.BytesIO()
+        qr.svg(out, border=border)
+        path_matrix = _path_as_matrix(out, border)
+        eq_(qr.code, path_matrix)
+    for data, error, border in _DATA:
+        yield check, data, error, border
 
 
 def test_write_svg():
@@ -134,6 +155,46 @@ def test_title2():
     title_el = _get_title(root)
     ok_(title_el is not None)
     eq_('Määhhh', title_el.text)
+
+
+def _path_as_matrix(buff, border):
+    """\
+    Returns the QR code path as list of [0,1] lists.
+    """
+    root = _parse_xml(buff)
+    path = _get_path(root)
+    h = root.attrib['height']
+    w = root.attrib['width']
+    if h != w:
+        raise ValueError('Expected equal height/width, got height="{}" width="{}"'.format(h, w))
+    size = int(w) - 2 * border
+    d = path.attrib['d']
+    res = []
+    res_row = None
+    absolute_x = -border
+    for op, x, y, l in re.findall(r'([Mm])(\-?[0-9]+(?:\.[0-9]+)?) (\-?[0-9]+(?:\.[0-9]+)?)h([0-9]+)', d):
+        x = int(x)
+        y = float(y)
+        l = int(l)
+        if y != 0.0:  # New row
+            if res_row is not None:
+                res_row.extend([0] * (size - len(res_row)))
+            res_row = []
+            res.append(res_row)
+        if op == 'm':
+            absolute_x += x
+            if x < 0:
+                res_row.extend([0] * absolute_x)
+            else:
+                res_row.extend([0] * x)
+            absolute_x += l
+        elif op == 'M':
+            absolute_x = l
+            if x != border:
+                raise ValueError('Unexpected border width. Expected "{}", got "{}"'.format(border, x))
+        res_row.extend([1] * l)
+    res_row.extend([0] * (size - len(res_row)))
+    return res
 
 
 if __name__ == '__main__':
