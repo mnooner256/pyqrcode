@@ -258,8 +258,8 @@ class QRCode:
         """This method writes the QR code out as an PNG image. The resulting
         PNG has a bit depth of 1 (or 2 if in debug is enabled).
         The file parameter is used to specify where
-        to write the image to. It can either be an writable stream or a
-        file path.
+        to write the image to. It can either be a writable (binary) stream
+        or a file path.
 
         .. note::
             This method depends on the pypng module to actually create the
@@ -318,7 +318,7 @@ class QRCode:
         are drawn with a single line.
 
         The *file* parameter is used to specify where to write the document
-        to. It can either be a writable stream or a file path.
+        to. It can either be a writable (binary) stream or a file path.
 
         The *scale* parameter sets how large to draw
         a single module. By default one pixel is used to draw a single
@@ -378,10 +378,11 @@ class QRCode:
         code is drawn by drawing only the modules corresponding to a 1. They
         are drawn using a line, such that contiguous modules in a row
         are drawn with a single line. The file parameter is used to
-        specify where to write the document to. It can either be an writable
-        stream or a file path. The scale parameter is sets how large to draw
-        a single module. By default one point (1/72 inch) is used to draw a
-        single module. This may make the code to small to be read efficiently.
+        specify where to write the document to. It can either be a writable
+        (text) stream or a file path. The scale parameter is sets how large
+        to draw a single module. By default one point (1/72 inch) is used to
+        draw a single module. This may make the code to small to be read
+        efficiently.
         Increasing the scale will make the code larger. This method will accept
         fractional scales (e.g. 2.5).
 

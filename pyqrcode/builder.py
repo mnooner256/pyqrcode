@@ -818,18 +818,16 @@ class QRCodeBuilder:
 ##############################################################################
 
 
-def _get_writable(stream_or_path, mode):
-    """This method returns the `stream_or_path` parameter if it is an open
-    writable stream. Otherwise it treats the `stream_or_path` parameter as
+def _get_writable(file_or_filename, mode):
+    """This method returns the `file_or_filename` parameter if it is an open
+    writable stream. Otherwise it treats the `file_or_filename` parameter as
     file path and opens it with the given mode.
-    It is used by the svg and png methods to interpret the file parameter.
     """
-    import os.path
-    is_stream = hasattr(stream_or_path, 'write')
+    is_stream = hasattr(file_or_filename, 'write')
     if not is_stream:
         # No stream provided, treat "file" as path
-        stream_or_path = open(os.path.abspath(stream_or_path), mode)
-    return stream_or_path, not is_stream
+        file_or_filename = open(file_or_filename, mode)
+    return file_or_filename, not is_stream
 
 
 def _get_png_size(version, scale, border):
@@ -959,7 +957,7 @@ def _svg(code, version, file, scale=1, module_color='#000', background=None,
     code is drawn by drawing only the modules corresponding to a 1. They
     are drawn using a line, such that contiguous modules in a row
     are drawn with a single line. The file parameter is used to
-    specify where to write the document to. It can either be an writable
+    specify where to write the document to. It can either be a writable (binary)
     stream or a file path. The scale parameter is sets how large to draw
     a single module. By default one pixel is used to draw a single
     module. This may make the code to small to be read efficiently.
@@ -1249,7 +1247,7 @@ def _eps(code, version, file_or_path, scale=1, module_color=(0, 0, 0),
     code is drawn by drawing only the modules corresponding to a 1. They
     are drawn using a line, such that contiguous modules in a row
     are drawn with a single line. The file parameter is used to
-    specify where to write the document to. It can either be an writable
+    specify where to write the document to. It can either be a writable (text)
     stream or a file path. The scale parameter is sets how large to draw
     a single module. By default one point (1/72 inch) is used to draw a single
     module. This may make the code to small to be read efficiently.
