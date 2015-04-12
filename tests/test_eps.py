@@ -74,7 +74,7 @@ def _eps_as_matrix(eps, border):
     res = []
     for i, row in enumerate(rows):
         res_row = []
-        for x, y, op in re.findall(r'([0-9]+(?:.[0-9]+)?) ([0-9]+(?:.[0-9]+)?) ([A-Za-z])', row):
+        for x, y, op in re.findall(r'([0-9]+(?:\.[0-9]+)?) ([0-9]+(?:\.[0-9]+)?) ([A-Za-z])', row):
             if op == 'M':
                 if int(x) != border:
                     raise ValueError('Unexpected border width in row "{}". Expected "{}", got "{}"'.format(i, border, x))
