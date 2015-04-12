@@ -985,7 +985,6 @@ def _svg(code, version, file, scale=1, module_color='#000', background=None,
     :param debug: Inidicates if errors in the QR code should be added to the
             output (default: ``False``).
     """
-
     from functools import partial
     from xml.sax.saxutils import quoteattr
 
@@ -1052,7 +1051,7 @@ def _svg(code, version, file, scale=1, module_color='#000', background=None,
     for rnumber, row in enumerate(code):
         start_column = 0  # Reset the starting column number
         coord = ''  # Reset row coordinates
-        y += 1  # Set y-axis of the pen
+        y += 1  # Pen position on y-axis
         length = 0  # Reset line length
         # Examine every bit in the row
         for colnumber, bit in enumerate(row):
