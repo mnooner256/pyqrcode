@@ -113,6 +113,11 @@ def test_invalid_mode():
 
 
 @raises(ValueError)
+def test_invalid_mode2():
+    pyqrcode.create('test', mode='')
+
+
+@raises(ValueError)
 def test_kanji_not_supported():
     pyqrcode.create('test', mode='kanji')
 

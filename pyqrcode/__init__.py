@@ -122,15 +122,16 @@ class QRCode:
         guessed_content_type = self._detect_content_type()
 
         # Force a passed in mode to be lowercase
-        if mode:
+        if mode is not None:
             mode = mode.lower()
             if mode not in tables.modes or mode == 'kanji':
                 raise ValueError('Unsupported mode "{0}". '
-                                 'Supported: "numeric", "alphanumeric", "binary"')
+                                 'Supported: "numeric", "alphanumeric", "binary"'
+                                 .format(mode))
 
         # Check that the mode parameter is compatible with the contents
         if not mode:
-            #Use the guessed mode
+            # Use the guessed mode
             self.mode = guessed_content_type
             self.mode_num = tables.modes[self.mode]
         elif guessed_content_type == 'binary' and \
@@ -138,7 +139,7 @@ class QRCode:
             # Binary is only guessed as a last resort, if the
             # passed in mode is not binary the data won't encode
             raise ValueError('The content provided cannot be encoded with '
-                             'the mode {}, it can only be encoded as '
+                             'the mode {0}, it can only be encoded as '
                              'binary.'.format(mode))
         elif tables.modes[mode] == tables.modes['numeric'] and \
              guessed_content_type != 'numeric':
@@ -146,7 +147,7 @@ class QRCode:
             # be encoded in that format
             raise ValueError('The content cannot be encoded as numeric.')
         else:
-            #The data should encode with the passed in mode
+            # The data should encode with the passed in mode
             self.mode = mode
             self.mode_num = tables.modes[self.mode]
 
@@ -163,7 +164,7 @@ class QRCode:
                 except UnicodeError:
                     encoded_data = encoded_data.encode('utf-8')
 
-        #Guess the "best" version
+        # Guess the "best" version
         self.version = self._pick_best_fit(encoded_data)
 
         # If the user supplied a version, then check that it has
