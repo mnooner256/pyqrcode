@@ -13,7 +13,7 @@ except ImportError:
     from pyqrcode import png
 
 
-def test_size():
+def test_get_png_size():
     code = pyqrcode.create('Hello world')
     qr_size = 25
     border = 0
@@ -28,23 +28,23 @@ def test_size():
     eq_((qr_size + 2 * border) * 4, code.get_png_size(4, border=border))
 
 
-def test_png_scale_int():
+def test_get_png_size_scale_int():
     qr = pyqrcode.create('test')
     eq_(21, qr.get_png_size(scale=1, border=0))
 
 
-def test_png_scale_int2():
+def test_get_png_size_scale_int2():
     qr = pyqrcode.create('test')
     border = 2
     eq_(21 + 2 * border, qr.get_png_size(scale=1, border=border))
 
 
-def test_png_scale_float():
+def test_get_png_size_scale_float():
     qr = pyqrcode.create('test')
     eq_(21, qr.get_png_size(scale=1.5, border=0))
 
 
-def test_png_scale_float2():
+def test_get_png_size_scale_float2():
     qr = pyqrcode.create('test')
     border = 2
     eq_(21 + 2 * border, qr.get_png_size(scale=1.5, border=border))
