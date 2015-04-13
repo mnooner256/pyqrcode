@@ -144,7 +144,7 @@ def test_background():
     qr.svg(out, background=color)
     root = _parse_xml(out)
     # Background should be the first path in the doc
-    rect = root.find('{%s}path' % _SVG_NS)
+    rect = _get_path(root)
     ok_(rect is not None)
     eq_(color, rect.attrib['fill'])
 
