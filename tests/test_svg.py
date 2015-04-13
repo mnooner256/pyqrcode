@@ -28,26 +28,6 @@ def _parse_xml(buff):
     return etree.parse(buff).getroot()
 
 
-_DATA = (
-    # Input string, error level, border
-    ('Märchenbuch', 'M', 4),
-    (123, 'H', 0),
-    ('http:/www.example.org/', 'L', 3),
-    ('Hello\nWorld', 'Q', 2),
-)
-
-
-def test_data():
-    def check(data, error, border):
-        qr = pyqrcode.create(data, error=error)
-        out = io.BytesIO()
-        qr.svg(out, border=border)
-        path_matrix = _path_as_matrix(out, border)
-        eq_(qr.code, path_matrix)
-    for data, error, border in _DATA:
-        yield check, data, error, border
-
-
 def test_write_svg():
     # Test with default options
     qr = pyqrcode.create('test')
@@ -157,7 +137,7 @@ def test_title2():
     eq_('Määhhh', title_el.text)
 
 
-def _path_as_matrix(buff, border):
+def svg_as_matrix(buff, border):
     """\
     Returns the QR code path as list of [0,1] lists.
     """

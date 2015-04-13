@@ -5,27 +5,8 @@ Tests against EPS generation.
 from __future__ import absolute_import, unicode_literals
 import re
 import io
-from nose.tools import eq_, raises
+from nose.tools import raises
 import pyqrcode
-
-
-_DATA = (
-    # Input string, error level, border
-    ('Märchenbuch', 'M', 4),
-    (123, 'H', 0),
-    ('http:/www.example.org/', 'L', 3),
-    ('Hello\nWorld', 'Q', 2),
-)
-
-def test_data():
-    def check(data, error, border):
-        qr = pyqrcode.create(data, error=error)
-        out = io.StringIO()
-        qr.eps(out, border=border)
-        eps_matrix = _eps_as_matrix(out.getvalue(), border)
-        eq_(qr.code, eps_matrix)
-    for data, error, border in _DATA:
-        yield check, data, error, border
 
 
 @raises(ValueError)
@@ -60,10 +41,11 @@ def test_illegal_color_int2():
     qr.eps(out, module_color=color)
 
 
-def _eps_as_matrix(eps, border):
+def eps_as_matrix(buff, border):
     """\
-    Reads the path in the EPS string and returns it as list of 0, 1 lists.
+    Reads the path in the EPS and returns it as list of 0, 1 lists.
     """
+    eps = buff.getvalue()
     h, w = re.search(r'^%%BoundingBox: 0 0 ([0-9]+) ([0-9]+)', eps,
                    flags=re.MULTILINE).groups()
     if h != w:
