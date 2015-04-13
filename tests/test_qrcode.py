@@ -103,9 +103,23 @@ def test_invalid_version():
 
 
 @raises(ValueError)
+def test_invalid_version2():
+    pyqrcode.create('test', version=0)
+
+
+@raises(ValueError)
+def test_invalid_mode():
+    pyqrcode.create('test', mode='alpha')
+
+
+@raises(ValueError)
+def test_kanji_not_supported():
+    pyqrcode.create('test', mode='kanji')
+
+
+@raises(ValueError)
 def test_invalid_ecc():
     pyqrcode.create('test', error='R')
-
 
 
 if __name__ == '__main__':

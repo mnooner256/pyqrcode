@@ -118,30 +118,32 @@ class QRCode:
             raise ValueError('The error parameter is not one of '
                              '"L", "M", "Q", or "H.", got "{0}"'.format(error))
 
-        #Guess the mode of the code, this will also be used for
-        #error checking
+        # Guess the mode of the code, this will also be used for error checking
         guessed_content_type = self._detect_content_type()
 
-        #Force a passed in mode to be lowercase
+        # Force a passed in mode to be lowercase
         if mode:
             mode = mode.lower()
+            if mode not in tables.modes or mode == 'kanji':
+                raise ValueError('Unsupported mode "{0}". '
+                                 'Supported: "numeric", "alphanumeric", "binary"')
 
-        #Check that the mode parameter is compatible with the contents
+        # Check that the mode parameter is compatible with the contents
         if not mode:
             #Use the guessed mode
             self.mode = guessed_content_type
             self.mode_num = tables.modes[self.mode]
         elif guessed_content_type == 'binary' and \
              tables.modes[mode] != tables.modes['binary']:
-            #Binary is only guessed as a last resort, if the
-            #passed in mode is not binary the data won't encode
+            # Binary is only guessed as a last resort, if the
+            # passed in mode is not binary the data won't encode
             raise ValueError('The content provided cannot be encoded with '
                              'the mode {}, it can only be encoded as '
                              'binary.'.format(mode))
         elif tables.modes[mode] == tables.modes['numeric'] and \
              guessed_content_type != 'numeric':
-            #If numeric encoding is requested make sure the data can
-            #be encoded in that format
+            # If numeric encoding is requested make sure the data can
+            # be encoded in that format
             raise ValueError('The content cannot be encoded as numeric.')
         else:
             #The data should encode with the passed in mode
@@ -164,9 +166,9 @@ class QRCode:
         #Guess the "best" version
         self.version = self._pick_best_fit(encoded_data)
 
-        #If the user supplied a version, then check that it has
-        #sufficient data capacity for the contents passed in
-        if version:
+        # If the user supplied a version, then check that it has
+        # sufficient data capacity for the contents passed in
+        if version is not None:
             if version >= self.version:
                 self.version = version
             else:
