@@ -110,7 +110,10 @@ class QRCode:
                              .format(encoding))
 
         if isinstance(content, bytes):
-            content = content.decode('utf-8')
+            try:
+                content = content.decode('utf-8')
+            except UnicodeError:
+                raise TypeError('Expected bytes representing a UTF-8 encoded string')
         self.data = str(content)
 
         # Check that the passed in error level is valid
@@ -407,11 +410,9 @@ class QRCode:
         builder._eps(self.code, self.version, file, scale, module_color,
                      background, border)
 
-    def terminal(self, module_color='default', background='reverse'):
-        """This method returns a string containing ASCII escape codes,
-        such that if printed to a compatible terminal, it will display
-        a vaild QR code. The code is printed using ASCII escape
-        codes that alter the coloring of the background.
+    def terminal(self, out=None, module_color='default', background='reverse'):
+        """This method writes ASCII escape codes to `out` (if set to ``None``
+        (default) ``sys.stdout`` is used).
 
         The *module_color* parameter sets what color to
         use for the data modules (the black part on most QR codes).
@@ -443,10 +444,9 @@ class QRCode:
 
         Example:
             >>> code = pyqrcode.create('Example')
-            >>> text = code.terminal()
-            >>> print(text)
+            >>> code.terminal()
         """
-        return builder._terminal(self.code, module_color, background)
+        return builder._terminal(self.code, out, module_color, background)
 
     def text(self, module_color='1', background='0', border=4, debug=True):
         """This method returns a string based representation of the QR code.

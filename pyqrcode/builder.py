@@ -836,7 +836,7 @@ def _get_png_size(version, scale, border):
     return (scale * tables.version_size[version]) + (2 * border * scale)
 
 
-def _terminal(code, module_color='default', background='reverse'):
+def _terminal(code, out=None, module_color='default', background='reverse'):
     """This method returns a string containing ASCII escape codes,
     such that if printed to a terminal, it will display a vaild
     QR code. The module_color and the background color should be keys
@@ -866,44 +866,35 @@ def _terminal(code, module_color='default', background='reverse'):
         raise ValueError('The background color, {0}, must a key in '
                          'pyqrcode.tables.term_colors or a number '
                          'between 0 and 256.'.format(background))
+    if out is None:
+        import sys
+        out = sys.stdout
 
-    buf = io.StringIO()
-
-    #This will be the begining and ending row for the code.
+    # This will be the begining and ending row for the code.
     border_row = background * (len(code[0]) + 2)
 
+    # Make sure we begin on a new line, and force the terminal back to normal
+    out.write('\n')
 
-    #Make sure we begin on a new line, and force the terminal back
-    #to normal
-    buf.write('\n')
-
-    #QRCodes have a background border one module tall, before the
-    #code actually starts
-    buf.write(border_row)
-    buf.write('\n')
+    # QRCodes have a background border one module tall, before the
+    # code actually starts
+    out.write(border_row)
+    out.write('\n')
 
     for row in code:
-        #Each code has a border on the left side, this is the left
-        #border for this code
-        buf.write(background)
-
+        # Left border
+        out.write(background)
         for bit in row:
             if bit == 1:
-                buf.write(data)
+                out.write(data)
             elif bit == 0:
-                buf.write(background)
-        
-        #Each row ends with a border on the right side, this is the
-        #right hand border background module
-        buf.write(background)
-        buf.write('\n')
+                out.write(background)
+        # Right border
+        out.write(background)
+        out.write('\n')
 
-    #QRCodes have a background border one module tall, before the
-    #code actually starts
-    buf.write(border_row)
-    buf.write('\n')
-
-    return buf.getvalue()
+    out.write(border_row)
+    out.write('\n')
 
 
 def _text(code, module_color='1', background='0', border=4, debug=True):

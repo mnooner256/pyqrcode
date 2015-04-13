@@ -31,6 +31,13 @@ def test_valid_mode_autodetection():
         yield check, data, mode
 
 
+def test_valid_mode_provided():
+    def check(data, mode):
+        qr = pyqrcode.create(data, mode=mode)
+        eq_(mode, qr.mode)
+    for data, mode in _DATA_AUTODETECT:
+        yield check, data, mode
+
 
 _DATA_INVALID_MODE = (
     # Input, invalid mode
@@ -56,6 +63,11 @@ def test_binary_data():
     qr = pyqrcode.create('Märchenbuch'.encode('utf-8'))
     eq_('Märchenbuch', qr.data)
     eq_('binary', qr.mode)
+
+
+@raises(TypeError)
+def test_binary_data2():
+    pyqrcode.create('Märchenbuch'.encode('latin1'))
 
 
 def test_unicode_utf8():
