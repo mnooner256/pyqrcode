@@ -137,6 +137,49 @@ def test_title2():
     eq_('Määhhh', title_el.text)
 
 
+def test_background():
+    qr = pyqrcode.create('test')
+    out = io.BytesIO()
+    color = '#800080'
+    qr.svg(out, background=color)
+    root = _parse_xml(out)
+    rect = root.find('{%s}path[@fill]' % _SVG_NS)
+    ok_(rect is not None)
+    eq_(color, rect.attrib['fill'])
+
+
+def test_module_color():
+    qr = pyqrcode.create('test')
+    out = io.BytesIO()
+    color = '#800080'
+    qr.svg(out, module_color=color)
+    root = _parse_xml(out)
+    path = _get_path(root)
+    ok_(path is not None)
+    eq_(color, path.attrib['stroke'])
+
+
+def test_scale():
+    qr = pyqrcode.create('test')
+    out = io.BytesIO()
+    qr.svg(out, scale=2)
+    root = _parse_xml(out)
+    path = _get_path(root)
+    ok_(path is not None)
+    ok_('scale(2)' in path.attrib['transform'])
+
+
+def test_scale_float():
+    qr = pyqrcode.create('test')
+    out = io.BytesIO()
+    scale = 2.13
+    qr.svg(out, scale=scale)
+    root = _parse_xml(out)
+    path = _get_path(root)
+    ok_(path is not None)
+    ok_('scale({0})'.format(scale) in path.attrib['transform'])
+
+
 def svg_as_matrix(buff, border):
     """\
     Returns the QR code path as list of [0,1] lists.
