@@ -1185,7 +1185,7 @@ def _png(code, version, file, scale=1, module_color=(0, 0, 0, 255),
         rgba = []
         if not (3 <= len(color) <= 4):
             raise ValueError('Colors must be a list or tuple of length '
-                             ' 3 or 4. You passed in "{}".'.format(color))
+                             ' 3 or 4. You passed in "{0}".'.format(color))
         for c in color:
             c = int(c)
             if 0 <= c <= 255:
@@ -1286,11 +1286,11 @@ def _eps(code, version, file_or_path, scale=1, module_color=(0, 0, 0),
         def to_float(clr):
             if isinstance(clr, float):
                 if not 0.0 <= clr <= 1.0:
-                    raise ValueError('Invalid color "{}". Not in range 0 .. 1'
+                    raise ValueError('Invalid color "{0}". Not in range 0 .. 1'
                                      .format(clr))
                 return clr
             if not 0 <= clr <= 255:
-                raise ValueError('Invalid color "{}". Not in range 0 .. 255'
+                raise ValueError('Invalid color "{0}". Not in range 0 .. 255'
                                  .format(clr))
             return 1/255.0 * clr if clr != 1 else clr
 
@@ -1313,14 +1313,14 @@ def _eps(code, version, file_or_path, scale=1, module_color=(0, 0, 0),
     writeline('/l { rlineto } bind def')
     mod_color = (0, 0, 0) if module_color == (0, 0, 0) else rgb_to_floats(module_color)
     if background is not None:
-        writeline('{0} {1} {2} setrgbcolor clippath fill'
+        writeline('{0:f} {1:f} {2:f} setrgbcolor clippath fill'
                   .format(*rgb_to_floats(background)))
         if mod_color == (0, 0, 0):
             # Reset RGB color back to black iff module color is black
             # In case module color != black set the module RGB color later
             writeline('0 0 0 setrgbcolor')
     if mod_color != (0, 0, 0):
-        writeline('{0} {1} {2} setrgbcolor'.format(*rgb_to_floats(module_color)))
+        writeline('{0:f} {1:f} {2:f} setrgbcolor'.format(*rgb_to_floats(module_color)))
     if scale != 1:
         writeline('{0} {0} scale'.format(scale))
     writeline('newpath')
