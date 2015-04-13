@@ -116,7 +116,7 @@ class QRCode:
             self.error = tables.error_level[str(error).upper()]
         except KeyError:
             raise ValueError('The error parameter is not one of '
-                             '"L", "M", "Q", or "H.", got "{}"'.format(error))
+                             '"L", "M", "Q", or "H.", got "{0}"'.format(error))
 
         #Guess the mode of the code, this will also be used for
         #error checking
@@ -170,10 +170,10 @@ class QRCode:
             if version >= self.version:
                 self.version = version
             else:
-                raise ValueError('The data will not fit inside a version {} '
+                raise ValueError('The data will not fit inside a version {0} '
                                  'code with the given encoding and error '
                                  'level (the code must be at least a '
-                                 'version {}).'.format(version, self.version))
+                                 'version {1}).'.format(version, self.version))
 
         #Build the QR code
         self.builder = builder.QRCodeBuilder(data=encoded_data,
@@ -188,11 +188,11 @@ class QRCode:
         return repr(self)
 
     def __unicode__(self):
-        return self.__str__()
+        return self.__repr__()
 
     def __repr__(self):
-        return 'QRCode(content=\'{}\', error=\'{}\', version={}, mode=\'{}\')'.format(
-                       self.data, self.error, self.version, self.mode)
+        return "QRCode(content='{0}', error='{1}', version={2}, mode='{3}')" \
+                .format(self.data, self.error, self.version, self.mode)
 
     def _detect_content_type(self):
         """This method tries to auto-detect the type of the data. It first

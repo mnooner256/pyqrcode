@@ -72,6 +72,26 @@ def test_utf8_detection():
     eq_(s.encode('utf-8'), qr.builder.data)
 
 
+def test_to_str():
+    py2 = False
+    try:
+        unicode
+        py2 = True
+    except NameError:
+        pass
+    s = 'Märchen'
+    qr = pyqrcode.create(s)
+    if not py2:
+        str(qr)
+    else:
+        try:
+            str(qr)
+            raise Exception('No Unicode error?')
+        except UnicodeError:
+            pass
+        unicode(qr)
+
+
 @raises(ValueError)
 def test_invalid_encoding():
     pyqrcode.create('test', encoding='iso-8859-7')
