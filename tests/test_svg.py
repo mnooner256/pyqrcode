@@ -181,6 +181,44 @@ def test_scale_float():
     ok_('scale({0})'.format(scale) in path.attrib['transform'])
 
 
+def test_debug():
+    qr = pyqrcode.create('test')
+    out = io.BytesIO()
+    code = qr.code
+    # Add some errors
+    code[0][1] = ' '
+    code[0][2] = ' '
+    qr.svg(out, lineclass=None, border=0, debug=True)
+    root = _parse_xml(out)
+    path = [path for path in root.findall('{%s}path' % _SVG_NS) if 'class' in path.attrib]
+    eq_(1, len(path))
+    path = path[0]
+    eq_('pyqrerr', path.attrib['class'])
+    eq_('red', path.attrib['stroke'])
+    ok_('M1' in path.attrib['d'])
+    ok_('M2' in path.attrib['d'])
+
+
+def test_debug_scale():
+    qr = pyqrcode.create('test')
+    out = io.BytesIO()
+    code = qr.code
+    # Add some errors
+    code[0][1] = ' '
+    code[0][2] = ' '
+    scale = 2.1
+    qr.svg(out, lineclass=None, border=0, scale=scale, debug=True)
+    root = _parse_xml(out)
+    path = [path for path in root.findall('{%s}path' % _SVG_NS) if 'class' in path.attrib]
+    eq_(1, len(path))
+    path = path[0]
+    eq_('pyqrerr', path.attrib['class'])
+    eq_('red', path.attrib['stroke'])
+    ok_('M1' in path.attrib['d'])
+    ok_('M2' in path.attrib['d'])
+    ok_('scale({0})'.format(scale) in path.attrib['transform'])
+
+
 def svg_as_matrix(buff, border):
     """\
     Returns the QR code path as list of [0,1] lists.
