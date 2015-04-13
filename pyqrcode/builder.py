@@ -40,14 +40,13 @@ class QRCodeBuilder:
         if mode in tables.modes.keys():
             self.mode = tables.modes[mode]
         else:
-            raise LookupError('{} is not a valid mode.'.format(mode))
+            raise LookupError('{0} is not a valid mode.'.format(mode))
 
         #Check that the user passed in a valid error level
         if error in tables.error_level.keys():
             self.error = tables.error_level[error]
         else:
-            raise LookupError('{} is not a valid error '
-                                'level.'.format(error))
+            raise LookupError('{0} is not a valid error level.'.format(error))
 
         if 1 <= version <= 40:
             self.version = version
@@ -87,7 +86,7 @@ class QRCodeBuilder:
         representation of the given data. This function is used to
         basically create bit fields of a given size.
         """
-        return '{{:0{}b}}'.format(length).format(int(data))
+        return '{{0:0{0}b}}'.format(length).format(int(data))
 
     def get_data_length(self):
         """QR codes contain a "data length" field. This method creates this
@@ -185,9 +184,9 @@ class QRCodeBuilder:
         with io.StringIO() as buf:
             for char in self.data:
                 if isinstance(char, int):
-                    buf.write('{{:0{}b}}'.format(8).format(char))
+                    buf.write('{{0:0{0}b}}'.format(8).format(char))
                 elif isinstance(char, str):
-                    buf.write('{{:0{}b}}'.format(8).format(ord(char)))
+                    buf.write('{{0:0{0}b}}'.format(8).format(ord(char)))
             return buf.getvalue()
 
     def add_data(self):
@@ -856,26 +855,22 @@ def _terminal(code, module_color='default', background='reverse'):
     reset back to how it was.
     """
     if module_color in tables.term_colors:
-        data = '\033[{}m  \033[0m'.format(
-            tables.term_colors[module_color])
+        data = '\033[{0}m  \033[0m'.format(tables.term_colors[module_color])
     elif 0 <= module_color <= 256:
-        data = '\033[48;5;{}m  \033[0m'.format(module_color)
+        data = '\033[48;5;{0}m  \033[0m'.format(module_color)
     else:
-        raise ValueError('The module color, {}, must a key in '
+        raise ValueError('The module color, {0}, must a key in '
                          'pyqrcode.tables.term_colors or a number '
-                         'between 0 and 256.'.format(
-                         module_color))
+                         'between 0 and 256.'.format(module_color))
 
     if background in tables.term_colors:
-        background = '\033[{}m  \033[0m'.format(
-            tables.term_colors[background])
+        background = '\033[{0}m  \033[0m'.format(tables.term_colors[background])
     elif 0 <= background <= 256:
-        background = '\033[48;5;{}m  \033[0m'.format(background)
+        background = '\033[48;5;{0}m  \033[0m'.format(background)
     else:
-        raise ValueError('The background color, {}, must a key in '
+        raise ValueError('The background color, {0}, must a key in '
                          'pyqrcode.tables.term_colors or a number '
-                         'between 0 and 256.'.format(
-                         background))
+                         'between 0 and 256.'.format(background))
 
     buf = io.StringIO()
 
@@ -1034,7 +1029,7 @@ def _svg(code, version, file, scale=1, module_color='#000', background=None,
                 .format(size, background))
     write_bytes(b'<path')
     if scale != 1:
-        write(' transform="scale({})"'.format(scale))
+        write(' transform="scale({0})"'.format(scale))
     if module_color is not None:
         write_bytes(b' stroke=')
         write(quoteattr(module_color))
@@ -1079,8 +1074,8 @@ def _svg(code, version, file, scale=1, module_color='#000', background=None,
     if debug and debug_path:
         write_bytes(b'<path')
         if scale != 1:
-            write(' transform="scale({})"'.format(scale))
-        write(' class="pyqrerr" stroke="red" d="{}"/>'.format(debug_path))
+            write(' transform="scale({0})"'.format(scale))
+        write(' class="pyqrerr" stroke="red" d="{0}"/>'.format(debug_path))
     # Close document
     write_bytes(b'</svg>\n')
     if autoclose:
@@ -1338,7 +1333,7 @@ def _eps(code, version, file_or_path, scale=1, module_color=(0, 0, 0),
         offset = 0  # Set x-offset of the pen
         length = 0
         y -= 1  # Move pen along y-axis
-        coord = '{} {} M'.format(border, y)  # Move pen to initial pos
+        coord = '{0} {1} M'.format(border, y)  # Move pen to initial pos
         for bit in row:
             if bit != last_bit:
                 if length:
@@ -1369,6 +1364,5 @@ def _hex_to_rgb(color):
     if len(color) == 3:
         color = color[0] * 2 + color[1] * 2 + color[2] * 2
     if len(color) != 6:
-        raise ValueError('Input #{} is not in #RRGGBB format'
-                         .format(color))
+        raise ValueError('Input #{0} is not in #RRGGBB format'.format(color))
     return [int(n, 16) for n in (color[:2], color[2:4], color[4:])]
