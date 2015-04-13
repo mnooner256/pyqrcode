@@ -13,6 +13,25 @@ except ImportError:
     from pyqrcode import png
 
 
+_DATA = (
+    # Input string, error level, border
+    ('Märchenbuch', 'M', 4),
+    (123, 'H', 0),
+    ('http:/www.example.org/', 'L', 3),
+    ('Hello\nWorld', 'Q', 2),
+)
+
+def test_data():
+    def check(data, error, border):
+        qr = pyqrcode.create(data, error=error)
+        out = io.BytesIO()
+        qr.png(out, border=border)
+        png_matrix = png_as_matrix(out, border)
+        eq_(qr.code, png_matrix)
+    for data, error, border in _DATA:
+        yield check, data, error, border
+
+
 def test_get_png_size():
     code = pyqrcode.create('Hello world')
     qr_size = 25
@@ -87,13 +106,32 @@ def test_write_png():
         yield check, s, err, encoding, ref
 
 
-def _make_pixel_array(pixels, greyscale):
+def png_as_matrix(buff, border):
+    """\
+    Reads the PNG from the provided buffer and returns the code matrix (list
+    of lists containing 0 .. 1 values).
+    """
+    buff.seek(0)
+    w, h, pixels = _get_png_info(file=buff)
+    # PNG: white = 1, black = 0. QR code: white = 0, black = 1
+    fromidx, toidx = border, -border
+    if border == 0:
+        fromidx = 0
+        toidx = len(pixels)
+    res = []
+    for row in pixels[fromidx:toidx]:
+        res.append([(bit - 1) * -1 for bit in row[fromidx:toidx]])
+    return res
+
+
+def _make_pixel_array(pixels, is_greyscale):
     """\
     Returns a list of lists. Each list contains 0 and/or 1.
     0 == black, 1 == white.
 
-    `greyscale`
-        Indiciates if this function must convert RGB colors into black/white.
+    `is_greyscale`
+        Indiciates if this function must convert RGB colors into black/white
+        (supported values: (0, 0, 0) = black and (255, 255, 255) = white)
     """
     def bw_color(r, g, b):
         rgb = r, g, b
@@ -104,7 +142,7 @@ def _make_pixel_array(pixels, greyscale):
         else:
             raise ValueError('Unexpected RGB tuple: {0})'.format(rgb))
     res = []
-    if greyscale:
+    if is_greyscale:
         for row in pixels:
             res.append(list(row[:]))
     else:
