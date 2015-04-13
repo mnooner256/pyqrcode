@@ -338,11 +338,6 @@ class QRCodeBuilder:
         #Create a string of the needed blocks
         return ''.join([next(block) for x in range(needed_blocks)])
 
-    def _fix_exp(self, exponent):
-        """Makes sure the exponent ranges from 0 to 255."""
-        #return (exponent % 256) + (exponent // 256)
-        return exponent % 255
-
     def make_error_block(self, block, block_number):
         """This function constructs the error correction block of the
         given data block. This is *very complicated* process. To
