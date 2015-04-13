@@ -5,7 +5,7 @@ PNG related tests.
 from __future__ import unicode_literals, absolute_import
 import io
 import os
-from nose.tools import eq_
+from nose.tools import eq_, raises
 import pyqrcode
 try:
     import png
@@ -87,6 +87,30 @@ def test_write_png():
         yield check, s, err, encoding, ref
 
 
+@raises(ValueError)
+def test_hexcolor_too_short():
+    qr = pyqrcode.create('test')
+    qr.png(io.BytesIO(), module_color='#FFFFF')
+
+
+@raises(ValueError)
+def test_hexcolor_too_short_background():
+    qr = pyqrcode.create('test')
+    qr.png(io.BytesIO(), background='#FFFFF')
+
+
+@raises(ValueError)
+def test_hexcolor_too_long():
+    qr = pyqrcode.create('test')
+    qr.png(io.BytesIO(), module_color='#0000000')
+
+
+@raises(ValueError)
+def test_hexcolor_too_long_background():
+    qr = pyqrcode.create('test')
+    qr.png(io.BytesIO(), background='#0000000')
+
+
 def png_as_matrix(buff, border):
     """\
     Reads the PNG from the provided buffer and returns the code matrix (list
@@ -137,7 +161,7 @@ def _get_reference_filename(filename):
     """\
     Returns an absolute path to the "reference" filename.
     """
-    return os.path.join(os.path.dirname(__file__), 'ref/{}'.format(filename))
+    return os.path.join(os.path.dirname(__file__), 'ref/{0}'.format(filename))
 
 
 def _get_png_info(**kw):
