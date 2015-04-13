@@ -35,23 +35,27 @@ def test_valid_mode_autodetection():
 _DATA_INVALID_MODE = (
     # Input, invalid mode
     ('a', 'alphanumeric'),
-    ('a', 'numeric'),
+    ('b', 'numeric'),
+    ('C', 'numeric'),
     ('HELLO\nWORLD', 'alphanumeric'),
     ('MÄRCHENBUCH', 'alphanumeric'),
     ('http://www.example.org/', 'alphanumeric'),
+    ('http://www.example.org/', 'unknown'),
 )
 
 
 def test_invalid_mode_provided():
+    @raises(ValueError)
     def check(data, mode):
-        try:
-            pyqrcode.create(data, mode=mode)
-            raise Exception('Expected an error for create({0}, mode={1})'
-                            .format(data, mode))
-        except ValueError:
-            pass
+        pyqrcode.create(data, mode=mode)
     for data, mode in _DATA_INVALID_MODE:
         yield check, data, mode
+
+
+def test_binary_data():
+    qr = pyqrcode.create('Märchenbuch'.encode('utf-8'))
+    eq_('Märchenbuch', qr.data)
+    eq_('binary', qr.mode)
 
 
 def test_unicode_utf8():

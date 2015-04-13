@@ -109,6 +109,8 @@ class QRCode:
                              'Supported: "UTF-8" and "ISO-8859-1".'
                              .format(encoding))
 
+        if isinstance(content, bytes):
+            content = content.decode('utf-8')
         self.data = str(content)
 
         # Check that the passed in error level is valid
@@ -152,8 +154,6 @@ class QRCode:
             self.mode_num = tables.modes[self.mode]
 
         encoded_data = self.data
-        if isinstance(encoded_data, bytes):
-            encoded_data = encoded_data.decode('utf-8')
         if self.mode == 'binary':
             if encoding is not None:
                 encoded_data = encoded_data.encode(encoding)
