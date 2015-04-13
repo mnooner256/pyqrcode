@@ -111,7 +111,7 @@ class QRCode:
 
         self.data = str(content)
 
-        #Check that the passed in error level is valid
+        # Check that the passed in error level is valid
         try:
             self.error = tables.error_level[str(error).upper()]
         except KeyError:
@@ -177,14 +177,12 @@ class QRCode:
                                  'code with the given encoding and error '
                                  'level (the code must be at least a '
                                  'version {1}).'.format(version, self.version))
-
-        #Build the QR code
+        # Build the QR code
         self.builder = builder.QRCodeBuilder(data=encoded_data,
                                              version=self.version,
                                              mode=self.mode,
                                              error=self.error)
-
-        #Save the code for easier reference
+        # Save the code for easier reference
         self.code = self.builder.code
 
     def __str__(self):
