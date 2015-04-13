@@ -5,7 +5,7 @@ Tests against EPS generation.
 from __future__ import absolute_import, unicode_literals
 import re
 import io
-from nose.tools import raises
+from nose.tools import ok_, raises
 import pyqrcode
 
 
@@ -39,6 +39,58 @@ def test_illegal_color_int2():
     qr = pyqrcode.create('test')
     out = io.StringIO()
     qr.eps(out, module_color=color)
+
+
+def test_default_color():
+    qr = pyqrcode.create('test')
+    out = io.StringIO()
+    qr.eps(out)
+    ok_('setrgbcolor' not in out.getvalue())
+
+
+def test_module_color():
+    qr = pyqrcode.create('test')
+    out = io.StringIO()
+    qr.eps(out, module_color='#195805')
+    ok_('setrgbcolor' in out.getvalue())
+
+
+def test_module_color_omit_black():
+    qr = pyqrcode.create('test')
+    out = io.StringIO()
+    # Black does not need setrgbcolor since it is the default stroke color
+    qr.eps(out, module_color='#000')
+    ok_('setrgbcolor' not in out.getvalue())
+
+
+def test_background():
+    qr = pyqrcode.create('test')
+    out = io.StringIO()
+    qr.eps(out, background='#EEE')
+    ok_('setrgbcolor' in out.getvalue())
+    ok_('clippath' in out.getvalue())
+
+
+def test_default_scale():
+    qr = pyqrcode.create('test')
+    out = io.StringIO()
+    qr.eps(out)
+    ok_('scale' not in out.getvalue())
+
+
+def test_scale():
+    qr = pyqrcode.create('test')
+    out = io.StringIO()
+    qr.eps(out, scale=2)
+    ok_('2 2 scale' in out.getvalue())
+
+
+def test_scale_float():
+    qr = pyqrcode.create('test')
+    out = io.StringIO()
+    scale = 1.34
+    qr.eps(out, scale=scale)
+    ok_('{0} {0} scale'.format(scale) in out.getvalue())
 
 
 def eps_as_matrix(buff, border):
