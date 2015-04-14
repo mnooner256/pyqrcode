@@ -36,33 +36,34 @@ class QRCodeBuilder:
         # Set what data we are going to use to generate the QR code
         self.data = data
 
-        #Check that the user passed in a valid mode
-        if mode in tables.modes.keys():
+        # Check that the user passed in a valid mode
+        try:
             self.mode = tables.modes[mode]
-        else:
-            raise LookupError('{0} is not a valid mode.'.format(mode))
+        except KeyError:
+            raise ValueError('{0} is not a valid mode.'.format(mode))
 
-        #Check that the user passed in a valid error level
-        if error in tables.error_level.keys():
+        # Check that the user passed in a valid error level
+        try:
             self.error = tables.error_level[error]
-        else:
-            raise LookupError('{0} is not a valid error level.'.format(error))
+        except KeyError:
+            raise ValueError('{0} is not a valid error level.'.format(error))
 
         if 1 <= version <= 40:
             self.version = version
         else:
-            raise ValueError("The version must between 1 and 40.")
+            raise ValueError("The version must between 1 and 40, got {0}"
+                             .format(version))
 
-        #Look up the proper row for error correction code words
+        # Look up the proper row for error correction code words
         self.error_code_words = tables.eccwbi[version][self.error]
 
-        #This property will hold the binary string as it is built
+        # This property will hold the binary string as it is built
         self.buffer = io.StringIO()
 
-        #Create the binary data block
+        # Create the binary data block
         self.add_data()
 
-        #Create the actual QR code
+        # Create the actual QR code
         self.make_code()
 
     @staticmethod
