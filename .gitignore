@@ -1,4 +1,3 @@
-*.png
 *.svg
 *.pyc
 build
@@ -17,7 +16,6 @@ _build
 *.zip
 *.gz
 
-png.py
 py3
 py2
 

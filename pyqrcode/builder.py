@@ -1,14 +1,12 @@
+# -*- coding: utf-8 -*-
 """This module does the actual generation of the QR codes. The QRCodeBuilder
 builds the code. While the various output methods draw the code into a file.
 """
-
-#Imports required for 2.7 support
 from __future__ import absolute_import, division, print_function, with_statement, unicode_literals
-
-import pyqrcode.tables as tables
 import io
-import sys
 import itertools
+from . import tables
+
 
 class QRCodeBuilder:
     """This class generates a QR code based on the standard. It is meant to
@@ -35,25 +33,20 @@ class QRCodeBuilder:
     def __init__(self, data, version, mode, error):
         """See :py:class:`pyqrcode.QRCode` for information on the parameters."""
 
-        #Set what data we are going to use to generate
-        #the QR code
-        if isinstance(data, bytes):
-            self.data = data.decode('utf-8')
-        else:
-            self.data = data
+        # Set what data we are going to use to generate the QR code
+        self.data = data
 
         #Check that the user passed in a valid mode
         if mode in tables.modes.keys():
             self.mode = tables.modes[mode]
         else:
-            raise LookupError('{} is not a valid mode.'.format(mode))
+            raise LookupError('{0} is not a valid mode.'.format(mode))
 
         #Check that the user passed in a valid error level
         if error in tables.error_level.keys():
             self.error = tables.error_level[error]
         else:
-            raise LookupError('{} is not a valid error '
-                                'level.'.format(error))
+            raise LookupError('{0} is not a valid error level.'.format(error))
 
         if 1 <= version <= 40:
             self.version = version
@@ -72,7 +65,8 @@ class QRCodeBuilder:
         #Create the actual QR code
         self.make_code()
 
-    def grouper(self, n, iterable, fillvalue=None):
+    @staticmethod
+    def grouper(n, iterable, fillvalue=None):
         """This generator yields a set of tuples, where the
         iterable is broken into n sized chunks. If the
         iterable is not evenly sized then fillvalue will
@@ -86,19 +80,19 @@ class QRCodeBuilder:
             return itertools.zip_longest(*args, fillvalue=fillvalue)
         return itertools.izip_longest(*args, fillvalue=fillvalue)
 
-    def binary_string(self, data, length):
+    @staticmethod
+    def binary_string(data, length):
         """This method returns a string of length n that is the binary
         representation of the given data. This function is used to
         basically create bit fields of a given size.
         """
-        return '{{:0{}b}}'.format(length).format(int(data))
+        return '{{0:0{0}b}}'.format(length).format(int(data))
 
     def get_data_length(self):
         """QR codes contain a "data length" field. This method creates this
         field. A binary string representing the appropriate length is
         returned.
         """
-
         #The "data length" field varies by the type of code and its mode.
         #discover how long the "data length" field should be.
         if 1 <= self.version <= 9:
@@ -125,20 +119,16 @@ class QRCodeBuilder:
             encoded = self.encode_alphanumeric()
         elif self.mode == tables.modes['numeric']:
             encoded = self.encode_numeric()
-        elif self.mode == tables.modes['bytes']:
+        elif self.mode == tables.modes['binary']:
             encoded = self.encode_bytes()
         else:
             raise ValueError('This mode is not yet implemented.')
-
         return encoded
 
     def encode_alphanumeric(self):
         """This method encodes the QR code's data if its mode is
         alphanumeric. It returns the data encoded as a binary string.
         """
-        #Convert the string to upper case
-        self.data = self.data.upper()
-
         #Change the data such that it uses a QR code ascii table
         ascii = []
         for char in self.data:
@@ -146,7 +136,7 @@ class QRCodeBuilder:
         
         #Now perform the algorithm that will make the ascii into bit fields
         with io.StringIO() as buf:
-            for (a,b) in self.grouper(2, ascii):
+            for a, b in self.grouper(2, ascii):
                 if b is not None:
                     buf.write(self.binary_string((45*a)+b, 11))
                 else:
@@ -192,13 +182,12 @@ class QRCodeBuilder:
         8 bit mode. It returns the data encoded as a binary string.
         """
         with io.StringIO() as buf:
-            for char in self.data.encode('ascii'):
+            for char in self.data:
                 if isinstance(char, int):
-                    buf.write('{{:0{}b}}'.format(8).format(char))
-                if isinstance(char, str):
-                    buf.write('{{:0{}b}}'.format(8).format(ord(char)))
+                    buf.write('{{0:0{0}b}}'.format(8).format(char))
+                elif isinstance(char, str):
+                    buf.write('{{0:0{0}b}}'.format(8).format(ord(char)))
             return buf.getvalue()
-
 
     def add_data(self):
         """This function properly constructs a QR code's data string. It takes
@@ -348,11 +337,6 @@ class QRCodeBuilder:
 
         #Create a string of the needed blocks
         return ''.join([next(block) for x in range(needed_blocks)])
-
-    def _fix_exp(self, exponent):
-        """Makes sure the exponent ranges from 0 to 255."""
-        #return (exponent % 256) + (exponent // 256)
-        return exponent % 255
 
     def make_error_block(self, block, block_number):
         """This function constructs the error correction block of the
@@ -827,23 +811,20 @@ class QRCodeBuilder:
 ##############################################################################
 ##############################################################################
 
-def _get_file(file, mode):
-    """This method returns the file parameter if it is an open writable
-    stream. Otherwise it treats the file parameter as a file path and
-    opens it with the given mode. It is used by the svg and png methods
-    to interpret the file parameter.
-    """
-    import os.path
-    #See if the file parameter is a stream
-    if not isinstance(file, io.IOBase):
-        #If it is not a stream open a the file path
-        return open(os.path.abspath(file), mode)
-    elif not file.writable():
-        raise ValueError('Stream is not writable.')
-    else:
-        return file
 
-def _get_png_size(version, scale):
+def _get_writable(file_or_filename, mode):
+    """This method returns the `file_or_filename` parameter if it is an open
+    writable stream. Otherwise it treats the `file_or_filename` parameter as
+    file path and opens it with the given mode.
+    """
+    is_stream = hasattr(file_or_filename, 'write')
+    if not is_stream:
+        # No stream provided, treat "file" as path
+        file_or_filename = open(file_or_filename, mode)
+    return file_or_filename, not is_stream
+
+
+def _get_png_size(version, scale, border):
     """See: QRCode.get_png_size
 
     This function was abstracted away from QRCode to allow for the output of
@@ -852,10 +833,10 @@ def _get_png_size(version, scale):
     to calculate the PNG's size.
     """
     #Formula: scale times number of modules plus the border on each side
-    return (scale * tables.version_size[version]) + (2 * scale)
+    return (scale * tables.version_size[version]) + (2 * border * scale)
 
 
-def _terminal(code, module_color='default', background='reverse'):
+def _terminal(code, out=None, module_color='default', background='reverse'):
     """This method returns a string containing ASCII escape codes,
     such that if printed to a terminal, it will display a vaild
     QR code. The module_color and the background color should be keys
@@ -869,189 +850,226 @@ def _terminal(code, module_color='default', background='reverse'):
     reset back to how it was.
     """
     if module_color in tables.term_colors:
-        data = '\033[{}m  \033[0m'.format(
-            tables.term_colors[module_color])
+        data = '\033[{0}m  \033[0m'.format(tables.term_colors[module_color])
     elif 0 <= module_color <= 256:
-        data = '\033[48;5;{}m  \033[0m'.format(module_color)
+        data = '\033[48;5;{0}m  \033[0m'.format(module_color)
     else:
-        raise ValueError('The module color, {}, must a key in '
+        raise ValueError('The module color, {0}, must a key in '
                          'pyqrcode.tables.term_colors or a number '
-                         'between 0 and 256.'.format(
-                         module_color))
+                         'between 0 and 256.'.format(module_color))
 
     if background in tables.term_colors:
-        background = '\033[{}m  \033[0m'.format(
-            tables.term_colors[background])
+        background = '\033[{0}m  \033[0m'.format(tables.term_colors[background])
     elif 0 <= background <= 256:
-        background = '\033[48;5;{}m  \033[0m'.format(background)
+        background = '\033[48;5;{0}m  \033[0m'.format(background)
     else:
-        raise ValueError('The background color, {}, must a key in '
+        raise ValueError('The background color, {0}, must a key in '
                          'pyqrcode.tables.term_colors or a number '
-                         'between 0 and 256.'.format(
-                         background))
+                         'between 0 and 256.'.format(background))
+    if out is None:
+        import sys
+        out = sys.stdout
 
-    buf = io.StringIO()
-
-    #This will be the begining and ending row for the code.
+    # This will be the begining and ending row for the code.
     border_row = background * (len(code[0]) + 2)
 
+    # Make sure we begin on a new line, and force the terminal back to normal
+    out.write('\n')
 
-    #Make sure we begin on a new line, and force the terminal back
-    #to normal
-    buf.write('\n')
-
-    #QRCodes have a background border one module tall, before the
-    #code actually starts
-    buf.write(border_row)
-    buf.write('\n')
+    # QRCodes have a background border one module tall, before the
+    # code actually starts
+    out.write(border_row)
+    out.write('\n')
 
     for row in code:
-        #Each code has a border on the left side, this is the left
-        #border for this code
-        buf.write(background)
-
+        # Left border
+        out.write(background)
         for bit in row:
             if bit == 1:
-                buf.write(data)
+                out.write(data)
             elif bit == 0:
-                buf.write(background)
-        
-        #Each row ends with a border on the right side, this is the
-        #right hand border background module
-        buf.write(background)
-        buf.write('\n')
+                out.write(background)
+        # Right border
+        out.write(background)
+        out.write('\n')
 
-    #QRCodes have a background border one module tall, before the
-    #code actually starts
-    buf.write(border_row)
-    buf.write('\n')
+    out.write(border_row)
+    out.write('\n')
 
-    return buf.getvalue()
 
-def _text(code):
+def _text(code, module_color='1', background='0', border=4, debug=True):
     """This method returns a text based representation of the QR code.
     This is useful for debugging purposes.
+
+    :param module_color: The character to use for the QR code modules
+            (default: "1")
+    :param background: The character to use for the QR code background
+            (default: "0").
+    :param border: Border around the QR code (also known as quiet zone)
+            (default: ``4``). Set to zero (``0``) if the code shouldn't
+            have a border.
+    :param debug: Inidicates if errors in the QR code should be added (as
+            empty space modules) to the output (default: ``True``).
+            Note, that errors will be invisible if background is set to ``' '``.
     """
     buf = io.StringIO()
 
-    border_row = '0' * (len(code[0]) + 2)
+    border_row = '\n'.join([background * (len(code[0]) + border * 2)] * border)
+    border_module = background * border
+
+    # Lookup table for the "colors"
+    colors = (background, module_color, ' ' if debug else module_color)
 
     buf.write(border_row)
     buf.write('\n')
     for row in code:
-        buf.write('0')
+        buf.write(border_module)
         for bit in row:
-            if bit == 1:
-                buf.write('1')
-            elif bit == 0:
-                buf.write('0')
-            #This is for debugging unfinished QR codes,
-            #unset pixels will be spaces.
-            else:
-                buf.write(' ')
-        buf.write('0\n')
-
+            buf.write(colors[bit if bit in (0, 1) else 2])
+        buf.write('{0}\n'.format(border_module))
     buf.write(border_row)
-
     return buf.getvalue()
 
-def _svg(code, version, file, scale=1, module_color='black', background=None):
-    """This method writes the QR code out as an SVG document. The
+
+def _svg(code, version, file, scale=1, module_color='#000', background=None,
+         border=4, xmldecl=True, svgns=True, title=None, svgclass='pyqrcode',
+         lineclass='pyqrline', omithw=False, debug=False):
+    """This function writes the QR code out as an SVG document. The
     code is drawn by drawing only the modules corresponding to a 1. They
     are drawn using a line, such that contiguous modules in a row
     are drawn with a single line. The file parameter is used to
-    specify where to write the document to. It can either be an writable
+    specify where to write the document to. It can either be a writable (binary)
     stream or a file path. The scale parameter is sets how large to draw
     a single module. By default one pixel is used to draw a single
     module. This may make the code to small to be read efficiently.
     Increasing the scale will make the code larger. This method will accept
     fractional scales (e.g. 2.5).
+
+    :param module_color: Color of the QR code (default: ``#000`` (black))
+    :param background: Optional background color.
+            (default: ``None`` (no background))
+    :param border: Border around the QR code (also known as  quiet zone)
+            (default: ``4``). Set to zero (``0``) if the code shouldn't
+            have a border.
+    :param xmldecl: Inidcates if the XML declaration header should be written
+            (default: ``True``)
+    :param svgns: Indicates if the SVG namespace should be written
+            (default: ``True``)
+    :param title: Optional title of the generated SVG document.
+    :param svgclass: The CSS class of the SVG document
+            (if set to ``None``, the SVG element won't have a class).
+    :param lineclass: The CSS class of the path element
+            (if set to ``None``, the path won't have a class).
+    :param omithw: Indicates if width and height attributes should be
+            omitted (default: ``False``). If these attributes are omitted,
+            a ``viewBox`` attribute will be added to the document.
+    :param debug: Inidicates if errors in the QR code should be added to the
+            output (default: ``False``).
     """
-    #This is the template for the svg line. It is placed here so it
-    #does not need to be recreated for each call to line().
-    line_template = '''
-        <line class="pyqrline" x1="{}" y1="{}" x2="{}" y2="{}"
-              stroke="{}" stroke-width="{}"/>'''
+    from functools import partial
+    from xml.sax.saxutils import quoteattr
 
-    def line(x1, y1, x2, y2, color):
-        """This sub-function draws the modules. It attempts to draw them
-        as a single line per row, rather than as individual rectangles.
-        It uses the l variable as a template t
+    def write_unicode(write_meth, unicode_str):
+        """\
+        Encodes the provided string into UTF-8 and writes the result using
+        the `write_meth`.
         """
-        return line_template.format(x1+scale, y1+scale, x2+scale, y2+scale,
-                                    color, scale)
+        write_meth(unicode_str.encode('utf-8'))
 
-    file = _get_file(file, 'w')
+    def line(x, y, length, relative):
+        """Returns coordinates to draw a line with the provided length.
+        """
+        return '{0}{1} {2}h{3}'.format(('m' if relative else 'M'), x, y, length)
 
-    #Write the document header
-    file.write("""<?xml version="1.0" encoding="UTF-8"?>
-        <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
-           "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+    def errline(col_number, row_number):
+        """Returns the coordinates to draw an error bit.
+        """
+        # Debug path uses always absolute coordinates
+        # .5 == stroke / 2
+        return line(col_number + border, row_number + border + .5, 1, False)
 
-        <svg xmlns="http://www.w3.org/2000/svg" class="pyqrcode"
-             width="{0}" height="{0}">
-        <title>QR code</title>
-        """.format((tables.version_size[version]*scale)+(2*scale)))
+    f, autoclose = _get_writable(file, 'wb')
+    write = partial(write_unicode, f.write)
+    write_bytes = f.write
+    # Write the document header
+    if xmldecl:
+        write_bytes(b'<?xml version="1.0" encoding="UTF-8"?>\n')
+    write_bytes(b'<svg')
+    if svgns:
+        write_bytes(b' xmlns="http://www.w3.org/2000/svg"')
+    size = tables.version_size[version] * scale + (2 * border * scale)
+    if not omithw:
+        write(' height="{0}" width="{0}"'.format(size))
+    else:
+        write(' viewBox="0 0 {0} {0}"'.format(size))
+    if svgclass is not None:
+        write_bytes(b' class=')
+        write(quoteattr(svgclass))
+    write_bytes(b'>')
+    if title is not None:
+        write('<title>{0}</title>'.format(title))
 
-    #Draw a background rectangle if necessary
-    if background:
-        file.write("""
-            <rect width="{0}" height="{0}" style="fill:{1};stroke-width:0" />
-            """.format((tables.version_size[version]*scale)+(2*scale),
-                       background))
-
-    #This will hold the current row number
-    rnumber = 0
-
-    #The current "color," used to define starting a line and ending a line.
-    color = 'black'
-
-    #Loop through each row of the code
-    for row in code:
-        colnumber = 0       #Reset column number
-        start_column = 0    #Reset the starting_column number
-
-        #Examine every bit in the row
-        for bit in row:
-            #Set the color of the bit
+    # Draw a background rectangle if necessary
+    if background is not None:
+        write('<path fill="{1}" d="M0 0h{0}v{0}h-{0}z"/>'
+                .format(size, background))
+    write_bytes(b'<path')
+    if scale != 1:
+        write(' transform="scale({0})"'.format(scale))
+    if module_color is not None:
+        write_bytes(b' stroke=')
+        write(quoteattr(module_color))
+    if lineclass is not None:
+        write_bytes(b' class=')
+        write(quoteattr(lineclass))
+    write_bytes(b' d="')
+    # Used to keep track of unknown/error coordinates.
+    debug_path = ''
+    # Current pen pointer position
+    x, y = -border, border - .5  # .5 == stroke-width / 2
+    wrote_bit = False
+    # Loop through each row of the code
+    for rnumber, row in enumerate(code):
+        start_column = 0  # Reset the starting column number
+        coord = ''  # Reset row coordinates
+        y += 1  # Pen position on y-axis
+        length = 0  # Reset line length
+        # Examine every bit in the row
+        for colnumber, bit in enumerate(row):
             if bit == 1:
-                new_color = 'black'
-            elif bit == 0:
-                new_color = 'white'
-
-            #DEBUG CODE!!
-            #In unfinished QR codes, unset pixels will be red
-            #else:
-                #new_color = 'red'
-
-            #When the color changes then draw a line
-            if new_color != color:
-                #Don't draw the white background
-                if color != 'white':
-                    file.write(line(start_column, rnumber,
-                                    colnumber, rnumber, color))
-
-                #Move the next line's starting color and number
-                start_column = colnumber
-                color = new_color
-
-            #Accumulate the column
-            colnumber += scale
-
-        #End the row by drawing out the accumulated line
-        #if it is not the background
-        if color != 'white':
-            file.write(line(start_column, rnumber,
-                            colnumber, rnumber, color))
-
-        #Set row number
-        rnumber += scale
+                length += 1
+            else:
+                if length:
+                    x = start_column - x
+                    coord += line(x, y, length, relative=wrote_bit)
+                    x = start_column + length
+                    y = 0  # y-axis won't change unless the row changes
+                    length = 0
+                    wrote_bit = True
+                start_column = colnumber + 1
+                if debug and bit != 0:
+                    debug_path += errline(colnumber, rnumber)
+        if length:
+            x = start_column - x
+            coord += line(x, y, length, relative=wrote_bit)
+            x = start_column + length
+            wrote_bit = True
+        write(coord)
+    # Close path
+    write_bytes(b'"/>')
+    if debug and debug_path:
+        write_bytes(b'<path')
+        if scale != 1:
+            write(' transform="scale({0})"'.format(scale))
+        write(' class="pyqrerr" stroke="red" d="{0}"/>'.format(debug_path))
+    # Close document
+    write_bytes(b'</svg>\n')
+    if autoclose:
+        f.close()
 
 
-    #Close the document
-    file.write("</svg>\n")
-
-def _png(code, version, file, scale=1, module_color=None, background=None):
+def _png(code, version, file, scale=1, module_color=(0, 0, 0, 255),
+         background=(255, 255, 255, 255), border=4, debug=False):
     """See: pyqrcode.QRCode.png()
 
     This function was abstracted away from QRCode to allow for the output of
@@ -1061,66 +1079,79 @@ def _png(code, version, file, scale=1, module_color=None, background=None):
 
     This method will write the given file out as a PNG file. Note, it
     depends on the PyPNG module to do this.
-    """
-    import png
 
-    #Coerce scale parameter into an integer
+    :param module_color: Color of the QR code (default: ``(0, 0, 0, 255)`` (black))
+    :param background: Optional background color. If set to ``None`` the PNG
+            will have a transparent background.
+            (default: ``(255, 255, 255, 255)`` (white))
+    :param border: Border around the QR code (also known as quiet zone)
+            (default: ``4``). Set to zero (``0``) if the code shouldn't
+            have a border.
+    :param debug: Inidicates if errors in the QR code should be added (as red
+            modules) to the output (default: ``False``).
+    """
+    try:
+        import png
+    except ImportError:
+        from . import png
+
+    # Coerce scale parameter into an integer
     try:
         scale = int(scale)
     except ValueError:
         raise ValueError('The scale parameter must be an integer')
 
-    def scale_code(code):
+    def scale_code(size):
         """To perform the scaling we need to inflate the number of bits.
         The PNG library expects all of the bits when it draws the PNG.
         Effectively, we double, tripple, etc. the number of columns and
         the number of rows.
         """
-        #This is the row to show up at the top and bottom border
-        border_module = [1] * scale
-        border_row = [1] * _get_png_size(version, scale)
-        border = [border_row] * scale
-
-
-        #This is one row's worth of each possible module
-        #PNG's use 0 for black and 1 for white, this is the
-        #reverse of the QR standard
+        # This is one row's worth of each possible module
+        # PNG's use 0 for black and 1 for white, this is the
+        # reverse of the QR standard
         black = [0] * scale
         white = [1] * scale
 
-        #This will hold the final PNG's bits
+        # Tuple to lookup colors
+        # The 3rd color is the module_color unless "debug" is enabled
+        colors = (white, black, (([2] * scale) if debug else black))
+
+        # Whitespace added on the left and right side
+        border_module = white * border
+        # This is the row to show up at the top and bottom border
+        border_row = [[1] * size] * scale * border
+
+        # This will hold the final PNG's bits
         bits = []
 
-        #Add scale rows before the code as a border,
-        #as per the standard
-        bits.extend(border)
+        # Add scale rows before the code as a border,
+        # as per the standard
+        bits.extend(border_row)
 
-        #Add each row of the to the final PNG bits
+        # Add each row of the to the final PNG bits
         for row in code:
             tmp_row = []
 
-            #Add one all white module to the beginning
-            #to create the vertical border
+            # Add one all white module to the beginning
+            # to create the vertical border
             tmp_row.extend(border_module)
 
-            #Go through each bit in the code
-            for item in row:
-                #Add one scaled module
-                if item == 0:
-                    tmp_row.extend(white)
-                else:
-                    tmp_row.extend(black)
+            # Go through each bit in the code
+            for bit in row:
+                # Use the standard color or the "debug" color
+                tmp_row.extend(colors[(bit if bit in (0, 1) else 2)])
 
-            #Add one all white module to the end
-            #to create the vertical border
+            # Add one all white module to the end
+            # to create the vertical border
             tmp_row.extend(border_module)
 
-            #Copy each row scale times
+            # Copy each row scale times
             for n in range(scale):
                 bits.append(tmp_row)
 
-        #Add the bottom border
-        bits.extend(border)
+        # Add the bottom border
+        bits.extend(border_row)
 
         return bits
 
@@ -1132,52 +1163,192 @@ def _png(code, version, file, scale=1, module_color=None, background=None):
 
         The pallete color is represented as a list, this is what is returned.
         """
-        if color:
-            rgba = []
-            if not (3 <= len(color) <= 4):
-                raise ValueError('Colors must be a list or tuple of length '
-                                 ' 3 or 4. You passed in '
-                                 '"{}".'.format(color))
+        if color is None:
+            return ()
+        if not isinstance(color, (tuple, list)):
+            r, g, b = _hex_to_rgb(color)
+            return r, g, b, 255
+        rgba = []
+        if not (3 <= len(color) <= 4):
+            raise ValueError('Colors must be a list or tuple of length '
+                             ' 3 or 4. You passed in "{0}".'.format(color))
+        for c in color:
+            c = int(c)
+            if 0 <= c <= 255:
+                rgba.append(int(c))
+            else:
+                raise ValueError('Color components must be between 0 and 255')
+        # Make all colors have an alpha channel
+        if len(rgba) == 3:
+            rgba.append(255)
+        return tuple(rgba)
 
-            for c in color:
-                c = int(c)
-                if 0 <= c <= 255:
-                    rgba.append(int(c))
-                else:
-                    raise ValueError('Color components must be between '
-                                     ' 0 and 255')
+    if module_color is None:
+        raise ValueError('The module_color must not be None')
 
-            #Make all all colors have an alpha channel
-            if len(rgba) == 3:
-                rgba.append(255)
+    bitdepth = 1
+    # foreground aka module color
+    fg_col = png_pallete_color(module_color)
+    transparent = background is None
+    # If background color is set to None, the inverse color of the
+    # foreground color is calculated
+    bg_col = png_pallete_color(background) if background is not None else tuple([255 - c for c in fg_col])
+    # Assume greyscale if module color is black and background color is white
+    greyscale = fg_col[:3] == (0, 0, 0) and (not debug and transparent or bg_col == (255, 255, 255, 255))
+    transparent_color = 1 if transparent and greyscale else None
+    palette = [fg_col, bg_col] if not greyscale else None
+    if debug:
+        # Add "red" as color for error modules
+        palette.append((255, 0, 0, 255))
+        bitdepth = 2
 
-        return rgba
+    # The size of the PNG
+    size = _get_png_size(version, scale, border)
 
-    #If the user passes in one parameter, then they must pass in both or neither
-    #Note, this is a logical xor
-    if (not module_color) != (not background):
-        raise ValueError('If you specify either the black or white parameter, '
-                         'then you must specify both.')
+    # We need to increase the size of the code to match up to the
+    # scale parameter.
+    code_rows = scale_code(size)
 
-    #Create the pallete, or set greyscale to True
-    if module_color:
-        palette = [png_pallete_color(module_color),
-                   png_pallete_color(background)]
-        greyscale = False
-    else:
-        palette = None
-        greyscale = True
+    # Write out the PNG
+    f, autoclose = _get_writable(file, 'wb')
+    w = png.Writer(width=size, height=size, greyscale=greyscale,
+                   transparent=transparent_color, palette=palette,
+                   bitdepth=bitdepth)
+    try:
+        w.write(f, code_rows)
+    finally:
+        if autoclose:
+            f.close()
 
-    #The size of the PNG
-    size = _get_png_size(version, scale)
 
-    #We need to increase the size of the code to match up to the
-    #scale parameter.
-    code = scale_code(code)
+def _eps(code, version, file_or_path, scale=1, module_color=(0, 0, 0),
+         background=None, border=4):
+    """This function writes the QR code out as an EPS document. The
+    code is drawn by drawing only the modules corresponding to a 1. They
+    are drawn using a line, such that contiguous modules in a row
+    are drawn with a single line. The file parameter is used to
+    specify where to write the document to. It can either be a writable (text)
+    stream or a file path. The scale parameter is sets how large to draw
+    a single module. By default one point (1/72 inch) is used to draw a single
+    module. This may make the code to small to be read efficiently.
+    Increasing the scale will make the code larger. This function will accept
+    fractional scales (e.g. 2.5).
 
-    #Write out the PNG
-    with _get_file(file, 'wb') as f:
-        w = png.Writer(width=size, height=size, greyscale=greyscale,
-                       palette=palette, bitdepth=1)
+    :param module_color: Color of the QR code (default: ``(0, 0, 0)`` (black))
+            The color can be specified as triple of floats (range: 0 .. 1) or
+            triple of integers (range: 0 .. 255) or as hexadecimal value (i.e.
+            ``#36c`` or ``#33B200``).
+    :param background: Optional background color.
+            (default: ``None`` (no background)). See `module_color` for the
+            supported values.
+    :param border: Border around the QR code (also known as  quiet zone)
+            (default: ``4``). Set to zero (``0``) if the code shouldn't
+            have a border.
+    """
+    from functools import partial
+    import time
 
-        w.write(f, code)
+    def write_line(writemeth, content):
+        """\
+        Writes `content` and ``LF``.
+        """
+        writemeth(content + '\n')
+
+    def line(offset, length):
+        """\
+        Returns coordinates to draw a line with the provided length.
+        """
+        res = ''
+        if offset > 0:
+            res = ' {0} 0 m'.format(offset)
+        res += ' {0} 0 l'.format(length)
+        return res
+
+    def rgb_to_floats(color):
+        """\
+        Converts the provided color into an acceptable format for Postscript's
+         ``setrgbcolor``
+        """
+        def to_float(clr):
+            if isinstance(clr, float):
+                if not 0.0 <= clr <= 1.0:
+                    raise ValueError('Invalid color "{0}". Not in range 0 .. 1'
+                                     .format(clr))
+                return clr
+            if not 0 <= clr <= 255:
+                raise ValueError('Invalid color "{0}". Not in range 0 .. 255'
+                                 .format(clr))
+            return 1/255.0 * clr if clr != 1 else clr
+
+        if not isinstance(color, (tuple, list)):
+            color = _hex_to_rgb(color)
+        return tuple([to_float(i) for i in color])
+
+    f, autoclose = _get_writable(file_or_path, 'w')
+    writeline = partial(write_line, f.write)
+    size = tables.version_size[version] * scale + (2 * border * scale)
+    # Write common header
+    writeline('%!PS-Adobe-3.0 EPSF-3.0')
+    writeline('%%Creator: PyQRCode <https://pypi.python.org/pypi/PyQRCode/>')
+    writeline('%%CreationDate: {0}'.format(time.strftime("%Y-%m-%d %H:%M:%S")))
+    writeline('%%DocumentData: Clean7Bit')
+    writeline('%%BoundingBox: 0 0 {0} {0}'.format(size))
+    # Write the shortcuts
+    writeline('/M { moveto } bind def')
+    writeline('/m { rmoveto } bind def')
+    writeline('/l { rlineto } bind def')
+    mod_color = (0, 0, 0) if module_color == (0, 0, 0) else rgb_to_floats(module_color)
+    if background is not None:
+        writeline('{0:f} {1:f} {2:f} setrgbcolor clippath fill'
+                  .format(*rgb_to_floats(background)))
+        if mod_color == (0, 0, 0):
+            # Reset RGB color back to black iff module color is black
+            # In case module color != black set the module RGB color later
+            writeline('0 0 0 setrgbcolor')
+    if mod_color != (0, 0, 0):
+        writeline('{0:f} {1:f} {2:f} setrgbcolor'.format(*rgb_to_floats(module_color)))
+    if scale != 1:
+        writeline('{0} {0} scale'.format(scale))
+    writeline('newpath')
+    # Current pen position y-axis
+    # Note: 0, 0 = lower left corner in PS coordinate system
+    y = tables.version_size[version] + border + .5  # .5 = linewidth / 2
+    last_bit = 1
+    # Loop through each row of the code
+    for row in code:
+        offset = 0  # Set x-offset of the pen
+        length = 0
+        y -= 1  # Move pen along y-axis
+        coord = '{0} {1} M'.format(border, y)  # Move pen to initial pos
+        for bit in row:
+            if bit != last_bit:
+                if length:
+                    coord += line(offset, length)
+                    offset = 0
+                    length = 0
+                last_bit = bit
+            if bit == 1:
+                length += 1
+            else:
+                offset += 1
+        if length:
+            coord += line(offset, length)
+        writeline(coord)
+    writeline('stroke')
+    writeline('%%EOF')
+    if autoclose:
+        f.close()
+
+
+def _hex_to_rgb(color):
+    """\
+    Helper function to convert a color provided in hexadecimal format
+    as RGB triple.
+    """
+    if color[0] == '#':
+        color = color[1:]
+    if len(color) == 3:
+        color = color[0] * 2 + color[1] * 2 + color[2] * 2
+    if len(color) != 6:
+        raise ValueError('Input #{0} is not in #RRGGBB format'.format(color))
+    return [int(n, 16) for n in (color[:2], color[2:4], color[4:])]
