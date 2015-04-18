@@ -12,7 +12,6 @@ def test_illegal_mode():
         builder.QRCodeBuilder('test', 1, mode='murks', error='M')
         raise Exception('Expected an error for illegal mode')
     except ValueError as ex:
-        print ex
         ok_('murks' in ex.message)
 
 

@@ -185,9 +185,9 @@ class QRCodeBuilder:
         with io.StringIO() as buf:
             for char in self.data:
                 if isinstance(char, int):
-                    buf.write('{{0:0{0}b}}'.format(8).format(char))
+                    buf.write('{0:08b}'.format(char))
                 elif isinstance(char, str):
-                    buf.write('{{0:0{0}b}}'.format(8).format(ord(char)))
+                    buf.write('{0:08b}'.format(ord(char)))
             return buf.getvalue()
 
     def add_data(self):
