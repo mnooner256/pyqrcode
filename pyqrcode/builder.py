@@ -827,21 +827,20 @@ class QRCodeBuilder:
 ##############################################################################
 ##############################################################################
 
-def _get_file(file, mode):
-    """This method returns the file parameter if it is an open writable
-    stream. Otherwise it treats the file parameter as a file path and
-    opens it with the given mode. It is used by the svg and png methods
-    to interpret the file parameter.
+
+def _get_writable(stream_or_path, mode):
+    """This method returns the `stream_or_path` parameter if it is an open
+    writable stream. Otherwise it treats the `stream_or_path` parameter as
+    file path and opens it with the given mode.
+    It is used by the svg and png methods to interpret the file parameter.
     """
     import os.path
-    #See if the file parameter is a stream
-    if not isinstance(file, io.IOBase):
-        #If it is not a stream open a the file path
-        return open(os.path.abspath(file), mode)
-    elif not file.writable():
-        raise ValueError('Stream is not writable.')
-    else:
-        return file
+    is_stream = hasattr(stream_or_path, 'write')
+    if not is_stream:
+        # No stream provided, treat "file" as path
+        stream_or_path = open(os.path.abspath(stream_or_path), mode)
+    return stream_or_path, not is_stream
+
 
 def _get_png_size(version, scale):
     """See: QRCode.get_png_size
@@ -981,7 +980,7 @@ def _svg(code, version, file, scale=1, module_color='black', background=None):
         return line_template.format(x1+scale, y1+scale, x2+scale, y2+scale,
                                     color, scale)
 
-    file = _get_file(file, 'w')
+    file, autoclose = _get_writable(file, 'w')
 
     #Write the document header
     file.write("""<?xml version="1.0" encoding="UTF-8"?>
@@ -1050,6 +1049,10 @@ def _svg(code, version, file, scale=1, module_color='black', background=None):
 
     #Close the document
     file.write("</svg>\n")
+
+    if autoclose:
+        file.close()
+
 
 def _png(code, version, file, scale=1, module_color=None, background=None):
     """See: pyqrcode.QRCode.png()
@@ -1176,8 +1179,11 @@ def _png(code, version, file, scale=1, module_color=None, background=None):
     code = scale_code(code)
 
     #Write out the PNG
-    with _get_file(file, 'wb') as f:
-        w = png.Writer(width=size, height=size, greyscale=greyscale,
+    f, autoclose = _get_writable(file, 'wb')
+    w = png.Writer(width=size, height=size, greyscale=greyscale,
                        palette=palette, bitdepth=1)
-
+    try:
         w.write(f, code)
+    finally:
+        if autoclose:
+            f.close()
