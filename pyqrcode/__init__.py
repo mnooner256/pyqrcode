@@ -274,16 +274,15 @@ class QRCode:
         builder._png(self.code, self.version, file, scale,
                      module_color, background)
 
-    def svg(self, file, scale=1, module_color='#000000', background=None):
+    def svg(self, file, scale=1, module_color='#000', background=None,
+            xmldecl=True, svgns=True, title='PyQRCode', svgclass=None,
+            lineclass=None):
         """This method writes the QR code out as an SVG document. The
         code is drawn by drawing only the modules corresponding to a 1. They
         are drawn using a line, such that contiguous modules in a row
         are drawn with a single line.
-
         The *file* parameter is used to specify where to write the document
-        to. It can either be a writable stream or a file path. The file
-        will not be automatically closed if a stream is given.
-
+        to. It can either be a writable stream or a file path.
         The *scale* parameter sets how large to draw
         a single module. By default one pixel is used to draw a single
         module. This may make the code too small to be read efficiently.
@@ -292,9 +291,15 @@ class QRCode:
 
         Note, three things are done to make the code more appropriate for
         embedding in a HTML document. The "white" part of the code is actually
-        transparent. The code itself has a class of "pyqrcode". The lines
-        making up the QR code have a class "pyqrline". These should make the
-        code easier to style using CSS.
+        transparent. The code itself has a class given by *svgclass* parameter. 
+        The path making up the QR code uses the class set using the *lineclass*.
+        These should make the code easier to style using CSS.
+
+        By default the output of this function is a complete SVG document. If
+        only the code itself is desired, set the *xmldecl* to false. This will
+        result in a fragment that contains only the "drawn" portion of the code.
+        Likewise, you can set the *title* of the document. The SVG name space
+        attribute can be suppressed by setting *svgns* to False.
 
         You can also set the colors directly using the *module_color* and
         *background* parameters. The *module_color* parameter sets what color to
@@ -304,7 +309,7 @@ class QRCode:
         SVG or HTML color. If the background is set to None, then no background
         will be drawn, i.e. the background will be transparent. Note, many color
         combinations are unreadable by scanners, so be careful.
-
+        
         Example:
             >>> code = pyqrcode.create('Hello. Uhh, can we have your liver?')
             >>> code.svg('live-organ-transplants.svg', 3.6)
@@ -312,7 +317,8 @@ class QRCode:
                          module_color='brown', background='0xFFFFFF')
         """
         builder._svg(self.code, self.version, file, scale,
-                     module_color, background)
+                     module_color, background, xmldecl, title, svgclass,
+                     lineclass)
 
     def terminal(self, module_color='default', background='reverse'):
         """This method returns a string containing ASCII escape codes,
