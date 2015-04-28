@@ -241,7 +241,8 @@ class QRCode:
             PNG file.
 
         This method will write the given *file* out as a PNG file. The file
-        can be either a string file path, or a writable stream.
+        can be either a string file path, or a writable stream. The file
+        will not be automatically closed if a stream is given.
 
         The *scale* parameter sets how large to draw a single module. By
         default one pixel is used to draw a single module. This may make the
@@ -280,7 +281,8 @@ class QRCode:
         are drawn with a single line.
 
         The *file* parameter is used to specify where to write the document
-        to. It can either be a writable stream or a file path.
+        to. It can either be a writable stream or a file path. The file
+        will not be automatically closed if a stream is given.
 
         The *scale* parameter sets how large to draw
         a single module. By default one pixel is used to draw a single
