@@ -17,7 +17,7 @@ mode='alphanumeric'
 if not os.path.exists(code_dir):
     os.mkdir(code_dir)
 elif not os.path.isdir(code_dir):
-    raise ValueError('{} is not a directory.'.format(code_dir))
+    raise ValueError('{0} is not a directory.'.format(code_dir))
 
 
 if len(sys.argv) > 1:
@@ -26,14 +26,14 @@ if len(sys.argv) > 2:
     s=int(sys.argv[2])
 
 #for i in range(1, v+1):
-#    print('Generating version {}'.format(i))
+#    print('Generating version {0}'.format(i))
 #    try:
 code = pyqrcode.QRCode(data, error=error, version=version, mode=mode)
-print code.terminal()
-code.png('{}/v{}.png'.format(code_dir, code.version), scale)
-#code.svg('{}/v{}.svg'.format(code_dir, code.version), scale, background="white")
+print(code.terminal())
+code.png('{0}/v{1}.png'.format(code_dir, code.version), scale)
+#code.svg('{0}/v{1}.svg'.format(code_dir, code.version), scale, background="white")
 
-print('Error={}\nVersion={}\nMode={}\nScale={}'.format(code.error, code.version, code.mode, scale))
+print('Error={0}\nVersion={1}\nMode={2}\nScale={3}'.format(code.error, code.version, code.mode, scale))
 #    except ValueError:
-#        print('Version {} will not fit'.format(i))
+#        print('Version {0} will not fit'.format(i))
 #        pass
