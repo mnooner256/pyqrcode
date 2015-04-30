@@ -3,10 +3,7 @@
 Test utilities.
 """
 import os
-try:
-    import png
-except ImportError:
-    from pyqrcode import png
+import png
 
 
 def _make_pixel_array(pixels, greyscale):
