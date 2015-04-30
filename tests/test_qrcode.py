@@ -3,7 +3,7 @@
 Different tests against the PyQRCode package.
 """
 from __future__ import unicode_literals
-from nose.tools import eq_
+from nose.tools import eq_, raises
 import pyqrcode
 
 
@@ -31,28 +31,38 @@ def test_valid_mode_autodetection():
         yield check, data, mode
 
 
+def test_valid_mode_provided():
+    def check(data, mode):
+        qr = pyqrcode.create(data, mode=mode)
+        eq_(mode, qr.mode)
+    for data, mode in _DATA_AUTODETECT:
+        yield check, data, mode
+
 
 _DATA_INVALID_MODE = (
     # Input, invalid mode
     ('a', 'alphanumeric'),
-    ('a', 'numeric'),
+    ('b', 'numeric'),
+    ('C', 'numeric'),
     ('HELLO\nWORLD', 'alphanumeric'),
     ('MÄRCHENBUCH', 'alphanumeric'),
     ('http://www.example.org/', 'alphanumeric'),
+    ('http://www.example.org/', 'unknown'),
 )
 
 
 def test_invalid_mode_provided():
+    @raises(ValueError)
     def check(data, mode):
-        try:
-            pyqrcode.create(data, mode=mode)
-            raise Exception('Expected an error for create({0}, mode={1})'
-                            .format(data, mode))
-        except ValueError:
-            pass
+        pyqrcode.create(data, mode=mode)
     for data, mode in _DATA_INVALID_MODE:
         yield check, data, mode
 
+
+def test_binary_data():
+    qr = pyqrcode.create('Märchenbuch'.encode('utf-8'))
+    eq_('Märchenbuch', qr.data)
+    eq_('binary', qr.mode)
 
 def test_unicode_utf8():
     s = '\u263A'  # ☺ (WHITE SMILING FACE)
@@ -72,12 +82,53 @@ def test_utf8_detection():
     eq_(s.encode('utf-8'), qr.builder.data)
 
 
-#def test_invalid_encoding():
-#    try:
-#        pyqrcode.create('test', encoding='iso-8859-7')
-#        raise Exception('encoding=ISO-8859-7 should raise an exception')
-#    except ValueError:
-#        pass
+def test_to_str():
+    py2 = False
+    try:
+        unicode
+        py2 = True
+    except NameError:
+        pass
+    s = 'Märchen'
+    qr = pyqrcode.create(s)
+    if not py2:
+        str(qr)
+    else:
+        try:
+            str(qr)
+            #raise Exception('No Unicode error?')
+        except UnicodeError:
+            pass
+        unicode(qr)
+
+@raises(ValueError)
+def test_invalid_version():
+    pyqrcode.create('test', version=41)
+
+
+@raises(ValueError)
+def test_invalid_version2():
+    pyqrcode.create('test', version=0)
+
+
+@raises(ValueError)
+def test_invalid_mode():
+    pyqrcode.create('test', mode='alpha')
+
+
+@raises(ValueError)
+def test_invalid_mode2():
+    pyqrcode.create('test', mode='')
+
+
+@raises(ValueError)
+def test_kanji_not_supported():
+    pyqrcode.create('test', mode='kanji')
+
+
+@raises(ValueError)
+def test_invalid_ecc():
+    pyqrcode.create('test', error='R')
 
 
 if __name__ == '__main__':

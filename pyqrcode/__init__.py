@@ -22,6 +22,11 @@ from __future__ import absolute_import, division, print_function, with_statement
 import pyqrcode.tables
 import pyqrcode.builder as builder
 
+try:
+    str = unicode  # Python 2
+except NameError:
+    pass
+
 def create(content, error='H', version=None, mode=None, encoding='utf-8'):
     """When creating a QR code only the content to be encoded is required,
     all the other properties of the code will be guessed based on the
@@ -103,9 +108,19 @@ class QRCode:
     def __init__(self, content, error='H', version=None, mode=None,
                  encoding='utf-8'):
 
-        #Store the parameter for repr
+        #Store the encoding for use later
+        if encoding is None:
+            encoding = 'utf-8'
         self.encoding = encoding
 
+        if version is not None:
+            if 1 <= version <= 40:
+                self.version = version
+            else:
+                raise ValueError("Illegal version {0}, version must be between "
+                                 "1 and 40.".format(version))
+
+        
         #Decode a 'byte array' contents into a string format
         if isinstance(content, bytes):
             self.data = content.decode(encoding)
@@ -139,14 +154,17 @@ class QRCode:
         guessed_content_type = self._detect_content_type(self.data)
 
         #Force a passed in mode to be lowercase
-        if mode:
+        if hasattr(mode, 'lower'):
             mode = mode.lower()
 
         #Check that the mode parameter is compatible with the contents
-        if not mode:
+        if mode is None:
             #Use the guessed mode
             self.mode = guessed_content_type
             self.mode_num = tables.modes[self.mode]
+        elif mode not in tables.modes.keys():
+            #Unknown mode
+            raise ValueError('{0} is not a valid mode.'.format(mode))
         elif guessed_content_type == 'binary' and \
              tables.modes[mode] != tables.modes['binary']:
             #Binary is only guessed as a last resort, if the
@@ -164,12 +182,12 @@ class QRCode:
             self.mode = mode
             self.mode_num = tables.modes[self.mode]
 
-        #Check that the passed in error level is valid
-        try:
-            self.error = tables.error_level[str(error).upper()]
-        except:
-            raise ValueError('The error parameter is not one of '
-                             '"L", "M", "Q", or "H."')
+        #Check that the user passed in a valid error level
+        if error in tables.error_level.keys():
+            self.error = tables.error_level[error]
+        else:
+            raise ValueError('{0} is not a valid error '
+                             'level.'.format(error))
 
         #Guess the "best" version
         self.version = self._pick_best_fit(self.data)
@@ -197,17 +215,12 @@ class QRCode:
     def __str__(self):
         return repr(self)
 
-    def __repr__(self):
-        constructor = unicode('QRCode(content=\'{0}\', error=\'{1}\', '
-                       'version={2}, mode=\'{3}\', encoding=\'{4}\')')
-        if not self.encoding:
-            return constructor.format(self.data, self.error, self.version, 
-                                      self.mode, self.encoding).encode('utf-8')
-        else:
-            return constructor.format(self.data, self.error, self.version, 
-                                      self.mode, self.encoding).encode(
-                                      self.encoding)
+    def __unicode__(self):
+        return self.__repr__()
 
+    def __repr__(self):
+        return "QRCode(content={0}, error='{1}', version={2}, mode='{3}')" \
+                .format(repr(self.data), self.error, self.version, self.mode)
 
     def _detect_content_type(self, content):
         """This method tries to auto-detect the type of the data. It first
@@ -218,7 +231,7 @@ class QRCode:
         range. If all else fails, the data is determined to be of type
         'binary.'
 
-        Note, encoding 'kanji' is not yet implemented.
+        Note, encoding 'kanji' and ECI is not yet implemented.
         """
         #See if the data is an integer
         try:
@@ -231,9 +244,19 @@ class QRCode:
         #See if that data is alphanumeric based on the standards
         #special ASCII table
         valid_characters = ''.join(tables.ascii_codes.keys())
-        valid_characters = valid_characters.encode(self.encoding)
-        if all(map(lambda x: x in valid_characters, content)):
-            return 'alphanumeric'
+        
+        #Force the characters into a byte array
+        valid_characters = valid_characters.encode('ASCII')
+
+        try:
+            if all(map(lambda x: x in valid_characters, content)):
+                return 'alphanumeric'
+        except TypeError:
+            #This occurs if the content does not contain ASCII characters.
+            #Since the whole point of the if statement is to look for ACII
+            #characters, the resulting mode should be binary.
+            #Hence, this is not an error.
+            pass
 
         #All of the tests failed. The content can only be binary.
         return 'binary'
@@ -278,8 +301,8 @@ class QRCode:
         """
         return builder._get_png_size(self.version, scale, quiet_zone)
 
-    def png(self, file, scale=1, module_color=None, background=None,
-            quiet_zone=4):
+    def png(self, file, scale=1, module_color=(0, 0, 0, 255),
+            background=(255, 255, 255, 255), quiet_zone=4):
         """This method writes the QR code out as an PNG image. The resulting
         PNG has a bit depth of 1. The file parameter is used to specify where
         to write the image to. It can either be an writable stream or a
@@ -328,7 +351,8 @@ class QRCode:
 
     def svg(self, file, scale=1, module_color='#000', background=None,
             quiet_zone=4, xmldecl=True, svgns=True, title=None,
-            svgclass='pyqrcode', lineclass='pyqrline', omithw=False):
+            svgclass='pyqrcode', lineclass='pyqrline', omithw=False,
+            debug=False):
         """This method writes the QR code out as an SVG document. The
         code is drawn by drawing only the modules corresponding to a 1. They
         are drawn using a line, such that contiguous modules in a row
@@ -382,7 +406,31 @@ class QRCode:
                      module_color=module_color, background=background,
                      quiet_zone=quiet_zone, xmldecl=xmldecl, svgns=svgns, 
                      title=title, svgclass=svgclass, lineclass=lineclass,
-                     omithw=omithw, debug=False)
+                     omithw=omithw, debug=debug)
+
+    def eps(self, file, scale=1, module_color=(0, 0, 0), background=None,
+            quiet_zone=4):
+        """This method writes the QR code out as an EPS document. The
+        code is drawn by only writing the modules corresponding to a 1. They
+        are drawn using a line, such that contiguous modules in a row
+        are drawn with a single line. The file parameter is used to
+        specify where to write the document to. It can either be a writable
+        (text) stream or a file path. The scale parameter is sets how large
+        to draw a single module. By default one point (1/72 inch) is used to
+        draw a single module. This may make the code to small to be read
+        efficiently.
+        Increasing the scale will make the code larger. This method will accept
+        fractional scales (e.g. 2.5).
+
+        Examples:
+            >>> qr = pyqrcode.create('Hello world')
+            >>> qr.eps('hello-world.eps', scale=2.5, module_color='#36C')
+            >>> qr.eps('hello-world2.eps', background='#eee')
+            >>> out = io.StringIO()
+            >>> qr.eps(out, module_color=(.4, .4, .4))
+        """
+        builder._eps(self.code, self.version, file, scale, module_color,
+                     background, quiet_zone)
 
     def terminal(self, module_color='default', background='reverse', quiet_zone=4):
         """This method returns a string containing ASCII escape codes,
