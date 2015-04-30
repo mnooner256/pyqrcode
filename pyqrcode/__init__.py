@@ -211,7 +211,7 @@ class QRCode:
         raise ValueError('The data will not fit in any QR code version '
                          'with the given encoding and error level.')
 
-    def get_png_size(self, scale):
+    def get_png_size(self, scale, quiet_zone=4):
         """This is method helps users determine what *scale* to use when
         creating a PNG of this QR code. It is meant mostly to be used in the
         console to help the user determine the pixel size of the code
@@ -219,7 +219,13 @@ class QRCode:
 
         This method will return an integer representing the width and height of
         the QR code in pixels, as if it was drawn using the given *scale*.
-        Because QR codes are square, the number represents both dimensions.
+        Because QR codes are square, the number represents both the width
+        and height dimensions.
+
+        The *quiet_zone* parameter sets how wide the quiet zone around the code
+        should be. According to the standard this should be 4 modules. It is
+        left settable because such a wide quiet zone is unnecessary in many
+        applications where the QR code is not being printed.
 
         Example:
             >>> code = pyqrcode.QRCode("I don't like spam!")
@@ -228,9 +234,10 @@ class QRCode:
             >>> print(code.get_png_size(5))
             155
         """
-        return builder._get_png_size(self.version, scale)
+        return builder._get_png_size(self.version, scale, quiet_zone)
 
-    def png(self, file, scale=1, module_color=None, background=None):
+    def png(self, file, scale=1, module_color=None, background=None,
+            quiet_zone=4):
         """This method writes the QR code out as an PNG image. The resulting
         PNG has a bit depth of 1. The file parameter is used to specify where
         to write the image to. It can either be an writable stream or a
@@ -260,9 +267,12 @@ class QRCode:
         be integers between 0 and 255. The first three member give the RGB
         color. The fourth member gives the alpha component, where 0 is
         transparent and 255 is opaque. Note, many color
-        combinations are unreadable by scanners, so be careful.
+        combinations are unreadable by scanners, so be judicious.
 
-
+        The *quiet_zone* parameter sets how wide the quiet zone around the code
+        should be. According to the standard this should be 4 modules. It is
+        left settable because such a wide quiet zone is unnecessary in many
+        applications where the QR code is not being printed.
 
         Example:
             >>> code = pyqrcode.create('Are you suggesting coconuts migrate?')
@@ -272,11 +282,11 @@ class QRCode:
                          background=(0xff, 0xff, 0xff, 0x88)) #50% transparent white
         """
         builder._png(self.code, self.version, file, scale,
-                     module_color, background)
+                     module_color, background, quiet_zone)
 
     def svg(self, file, scale=1, module_color='#000', background=None,
             xmldecl=True, svgns=True, title='PyQRCode', svgclass=None,
-            lineclass=None):
+            lineclass=None, quiet_zone=4):
         """This method writes the QR code out as an SVG document. The
         code is drawn by drawing only the modules corresponding to a 1. They
         are drawn using a line, such that contiguous modules in a row
@@ -301,6 +311,10 @@ class QRCode:
         Likewise, you can set the *title* of the document. The SVG name space
         attribute can be suppressed by setting *svgns* to False.
 
+        When True the *omithw* indicates if width and height attributes should
+        be omitted. If these attributes are omitted, a ``viewBox`` attribute
+        will be added to the document.
+
         You can also set the colors directly using the *module_color* and
         *background* parameters. The *module_color* parameter sets what color to
         use for the data modules (the black part on most QR codes). The
@@ -309,6 +323,11 @@ class QRCode:
         SVG or HTML color. If the background is set to None, then no background
         will be drawn, i.e. the background will be transparent. Note, many color
         combinations are unreadable by scanners, so be careful.
+
+        The *quiet_zone* parameter sets how wide the quiet zone around the code
+        should be. According to the standard this should be 4 modules. It is
+        left settable because such a wide quiet zone is unnecessary in many
+        applications where the QR code is not being printed.
         
         Example:
             >>> code = pyqrcode.create('Hello. Uhh, can we have your liver?')
@@ -318,9 +337,9 @@ class QRCode:
         """
         builder._svg(self.code, self.version, file, scale,
                      module_color, background, xmldecl, title, svgclass,
-                     lineclass)
+                     lineclass, quiet_zone)
 
-    def terminal(self, module_color='default', background='reverse'):
+    def terminal(self, module_color='default', background='reverse', quiet_zone=4):
         """This method returns a string containing ASCII escape codes,
         such that if printed to a compatible terminal, it will display
         a vaild QR code. The code is printed using ASCII escape
@@ -336,7 +355,7 @@ class QRCode:
         eight to sixteen named colors. The following colors are
         supported the most widely supported: black, red, green,
         yellow, blue, magenta, and cyan. There are an some additional
-        named colors that are supported by most termials: light gray,
+        named colors that are supported by most terminals: light gray,
         dark gray, light red, light green, light blue, light yellow,
         light magenta, light cyan, and white. 
 
@@ -354,22 +373,33 @@ class QRCode:
         To use the 256 color scheme set *module_color* and/or
         *background* to a number between 0 and 256.
 
+        The *quiet_zone* parameter sets how wide the quiet zone around the code
+        should be. According to the standard this should be 4 modules. It is
+        left settable because such a wide quiet zone is unnecessary in many
+        applications.
+
         Example:
             >>> code = pyqrcode.create('Example')
             >>> text = code.terminal()
             >>> print(text)
         """
-        return builder._terminal(self.code, module_color, background)
+        return builder._terminal(self.code, module_color, background,
+                                 quiet_zone)
 
-    def text(self):
+    def text(self, quiet_zone=4):
         """This method returns a string based representation of the QR code.
         The data modules are represented by 1's and the background modules are
         represented by 0's. The main purpose of this method is to allow a user
         to write their own renderer.
+
+        The *quiet_zone* parameter sets how wide the quiet zone around the code
+        should be. According to the standard this should be 4 modules. It is
+        left settable because such a wide quiet zone is unnecessary in many
+        applications.
 
         Example:
             >>> code = pyqrcode.create('Example')
             >>> text = code.text()
             >>> print(text)
         """
-        return builder._text(self.code)
+        return builder._text(self.code, quiet_zone)
