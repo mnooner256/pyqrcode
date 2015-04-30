@@ -19,9 +19,14 @@ Glossary
    
    module
    data module
-        A square dot on a QR Code. Generally, only the "black" dots count. The
+        A square dot on a QR code. Generally, only the "black" dots count. The
         "white" squares are considered part of the background. 
    
+   quiet zone
+        An empty area around the QR code. The area is the background module
+        in color. According to the standard this area should be four modules
+        wide.
+
    QR code
    Quick Response code
         A two dimensional barcode developed by Denso Wave.

@@ -1,15 +1,15 @@
 Rendering QR Codes
 ******************
 
-There are three possible formats for rendering the QR Code. The first is
-to render it as a string of 1's and 0's. There are also two image based
-renderers. Both allow you to set the colors used. They also take a scaling
-factor, that way each module is not rendered as 1 pixel.
+There are three possible formats for rendering the QR Code. There are two image
+based renderers and two text based renderers. Three of the renderers allow you
+to set the colors used, and a scaling factor, that way each module is not
+rendered as 1 pixel.
 
 Text Rendering
 ==============
 
-The pyqrcode module includes a text renderer. This will return a string
+The pyqrcode module includes a basic text renderer. This will return a string
 containing the QR code as a string of 1's and 0's, with each row of the code on
 a new line. A :term:`data module` in the QR Code is represented by a 1.
 Likewise, 0 is used to represent the background of the code.
@@ -21,60 +21,68 @@ neither the svg or png renderers are satisfactory.
 
   >>> number = pyqrcode.create(123)
   >>> print(number.text())
-  00000000000000000000000
-  01111111001101011111110
-  01000001000111010000010
-  01011101001011010111010
-  01011101000110010111010
-  01011101010100010111010
-  01000001001111010000010
-  01111111010101011111110
-  00000000010110000000000
-  00011001111000110100000
-  01100100110001110001110
-  01001111001110110010100
-  00111010111010001111110
-  00000001111010101001000
-  00000000010010100010010
-  01111111010110001000110
-  01000001000100011101100
-  01011101001110111110010
-  01011101010100001111100
-  01011101011110011000000
-  01000001000110101001000
-  01111111000001010100100
-  00000000000000000000000
+  00000000000000000000000000000
+  00000000000000000000000000000
+  00000000000000000000000000000
+  00000000000000000000000000000
+  00001111111011110011111110000
+  00001000001000101010000010000
+  00001011101001010010111010000
+  00001011101010011010111010000
+  00001011101000100010111010000
+  00001000001001001010000010000
+  00001111111010101011111110000
+  00000000000001011000000000000
+  00000010111011010100010010000
+  00001011110001111101010010000
+  00000111111011100101001000000
+  00001001100011010011110010000
+  00001111111001101011001110000
+  00000000000010000000001100000
+  00001111111000111100100100000
+  00001000001011010110001100000
+  00001011101010110000101010000
+  00001011101001111111010100000
+  00001011101011101001011010000
+  00001000001001011001110000000
+  00001111111000011011011010000
+  00000000000000000000000000000
+  00000000000000000000000000000
+  00000000000000000000000000000
+  00000000000000000000000000000
+
 
 Terminal Rendering
 ==================
 
 QR codes can be directly rendered to a compatible terminal in a
-manner readable by QR code scanners. Most Linux terminals are supported. This
-is done using ASCII escape codes. The QR code's colors can even be set.
+manner readable by QR code scanners.  The rendering is done using ASCII escape
+codes. Hence, most Linux terminals are supported. The QR code's colors can even
+be set.
 
 .. code-block:: python
 
   >>> text = pyqrcode.create('Example')
   >>> print(text.terminal())
   >>> print(text.terminal(module_color='red', background='yellow'))
-  >>> print(text.terminal(module_color=5, background=123))
+  >>> print(text.terminal(module_color=5, background=123, quiet_zone=1))
 
 Rendering colors in a terminal is a tricky business. Beyond the eight named
-colors, compatability becomes problematic. With this in mind it is best to
+colors, compatibility becomes problematic. With this in mind it is best to
 stick to the eight well known colors: black, red, green, yellow, blue, magenta,
 and cyan. Although, these colors are also supported on almost every color 
 terminal: light gray, dark gray, light red, light green, light blue, light
-yellow, light magenta, light cyan, and white. There are two additional named
-colors.
+yellow, light magenta, light cyan, and white.
 
-The first is "default" it corresponds to the default background color
-of the terminal. The other is "reverse", this inverts the current background
-color. These are the default colors used by the terminal method.
+There are two additional named colors. The first is "default" it corresponds to
+the default background color of the terminal. The other is "reverse", this
+inverts the current background color. These are the default colors used by the
+terminal method.
 
 The terminal method also support the 256 color scheme. This is the least
 transportable of the color schemes. To use this color scheme simply supply a
 number between 0 and 256. This number will act as an index to the terminal's
-color pallete. What color that index actually corresponds to is system
+color palette. What color that index actually corresponds to is system
 dependent. In other words, while most terminal emulators support 256 colors,
 the there is no way to tell what color will be actually displayed.
 
@@ -95,6 +103,11 @@ code would be too small to scan. What scale to use depends on how you plan to
 use the QR code. Generally, three, four, or five will result in small but
 scanable QR codes.
 
+QR codes are also supposed to have a :term:`quiet zone` around them. This area
+is four modules wide on each side. It is designed for scanning on a printed
+area. For electronic usages, this may be unnecessary. Each of the renderers
+that allows you to set this distance.
+
 Both renderers, also, allow you to set the :term:`module` and background colors.
 Although, how the colors are represented are renderer specific.
 
@@ -102,20 +115,19 @@ Scalable Vector Graphic
 -----------------------
 
 The SVG renderer outputs the QR code as a scalable vector graphic using
-the :py:meth:`pyqrcode.QRCode.svg` method. *This
-renderer does not require any external modules.*
+the :py:meth:`pyqrcode.QRCode.svg` method. *This renderer does not require any
+external modules.*
 
-The method draws the QR code using a set of horizontal lines. By default, no
-background is drawn, i.e. the resulting code has a transparent background. The
-default foreground color is black.
+The method draws the QR code using a set of paths. By default, no background is
+drawn, i.e. the resulting code has a transparent background. The
+default foreground (module) color is black.
 
 .. code-block:: python
 
   >>> url = pyqrcode.create('http://uca.edu')
-  >>> url.svg(sys.stdout, scale=1)
   >>> url.svg('uca.svg', scale=4)
   >>> # in-memory stream is also supported
-  >>> buffer = io.StringIO()
+  >>> buffer = io.BytesIO()
   >>> url.svg(buffer)
   >>> # do whatever you want with buffer.getvalue()
   >>> print(list(buffer.getvalue()))
@@ -128,10 +140,13 @@ parameter. Each of these parameters take a HTML style color.
 
   >>> url.svg('uca.svg', scale=4, background="white", module_color="#7D007D")
 
+You can also suppress certain parts of the SVG document. In other words you
+can create a SVG fragment.
+
 Portable Network Graphic
 ------------------------
 
-The PNG renderer ouputs the QR code as a portable network graphic file using
+The PNG renderer outputs the QR code as a portable network graphic file using
 the :py:meth:`pyqrcode.QRCode.png` method.
 
 .. note::

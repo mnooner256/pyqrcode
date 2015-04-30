@@ -2,16 +2,16 @@ pyqrcode
 ================================
 
 The pyqrcode module is a QR code generator that is simple to use and written
-in pure python 3. The module can automate most of the building process for you.
-Most QR codes can be created using only two lines of code!
-
+in pure python. The module can automates most of the building process for
+creating QR codes. Most codes can be created using only two lines of code!
 
 Unlike other generators, all of the helpers can be controlled manually. You are
 free to set any or all of the properties of your QR code.
 
 QR codes can be saved as SVG, PNG (by using the
 [pypng](https://pypi.python.org/pypi/pypng/) module), or plain text. They can
-also be displayed directly in most Linux terminal emulators.
+also be displayed directly in most Linux terminal emulators. PIL is
+not used to render the image files.
 
 The pyqrcode module attempts to follow the QR code standard as closely as
 possible. The terminology and the encodings used in pyqrcode come directly
@@ -21,8 +21,8 @@ standard.
 Requirements
 -------------------------
 
-The pyqrcode module only requires Python 2.6, Python 2.7 or Python 3. You may want to
-install pypng in order to render PNG files, but it is optional.
+The pyqrcode module only requires Python 2.6, Python 2.7 or Python 3. You may
+want to install pypng in order to render PNG files, but it is optional.
 
 Installation
 ------------
@@ -90,9 +90,11 @@ and the new line character.
 >>> life = pyqrcode.create('''MR. CREOSOTE: Better get a bucket. I'm going to throw up.
     MAITRE D: Uh, Gaston! A bucket for monsieur. There you are, monsieur.''')
 ```
-There is one other encoding that is used for Kanji characters. This encoding
-is unimplemented at this time because I don't speak Japanese. If anyone wants
-to help me write an encoder for Kanji, shoot me an email.
+There two other encodings that are unimplemented. The first is used for Kanji
+characters. This encoding is unimplemented at this time because I don't speak
+Japanese. If anyone wants to help me write an encoder for Kanji, shoot me an
+email. The other is ECI mode which allows for multiple encodings in one QR
+code (this will be implemented in a future version).
 
 ### Manually Setting The QR Code's Properties ###
 
@@ -118,7 +120,7 @@ generating several QR codes with varying amounts of data. That way all of the
 generated codes would have the same size.
 
 Finally, the _mode_ parameter sets how the contents will be encoded. As
-mentioned above, three of the four possible encodings have been written. By
+mentioned above, three of the five possible encodings have been written. By
 default the object uses the most efficient encoding for the contents. You can
 change this though. See qrcode.tables.modes for a list of possible values
 for this parameter.
@@ -133,8 +135,8 @@ forces the encoding to be binary (rather than numeric).
 ### Rendering ###
 
 There are four possible formats for rendering the QR Code. The first is
-to render it as a string of 1's and 0's. This is method is available so
-a user can create their own renderer. It is also possible to print the
+to render it as a string of 1's and 0's. This is method is used to help end
+users create their own renderer. It is also possible to print the
 code such that it is directly displayable in most Linux terminals.
 There are also two image based renderers. Both allow you to set the colors
 used. They also take a scaling factor, that way each module is not rendered as
@@ -152,7 +154,7 @@ colors in the terminal, there are several caveats).
 
 The SVG renderer outputs the QR Code as a scalable vector graphic. This
 renderer does not require any external modules. Instead it hand draws the
-QR code as a set of lines.
+QR code as a set paths.
 
 ```python
 >>> url.svg(sys.stdout, scale=1)
@@ -165,8 +167,9 @@ take advantage of transparency.
 
 ```python
 >>> number.png('big-number.png')
->>> life.png('sketch.png', scale=6, module_color=[0, 0, 0, 128], background=[0xff, 0xff, 0xcc])
+>>> life.png('sketch.png', scale=6, module_color=(0, 0, 0, 128), background=(0xff, 0xff, 0xcc))
 ```
+
 Finally, there is a text based renderer. This will output the QR code as a
 string of 1's and 0's, with each row of the code on a new line.
 

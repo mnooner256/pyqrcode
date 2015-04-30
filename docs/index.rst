@@ -66,6 +66,7 @@ and white scalable vector graphics file.
     >>> import pyqrcode
     >>> url = pyqrcode.create('http://uca.edu')
     >>> url.svg('uca-url.svg', scale=8)
+    >>> print(url.terminal(quiet_zone=1))
 
 The pyqrcode module, while easy to use, is powerful. You can set all of the
 properties of the QR code. If you install the optional pypng library, you can
