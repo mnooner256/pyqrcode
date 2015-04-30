@@ -484,6 +484,9 @@ class QRCode:
             >>> code = pyqrcode.create('Example')
             >>> code.terminal()
         """
+        if out is None:
+            import sys
+            out = sys.stdout
         return builder._terminal(self.code, out, module_color, background)
 
     def text(self, module_color='1', background='0', border=4, debug=True):

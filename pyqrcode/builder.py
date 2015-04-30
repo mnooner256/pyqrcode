@@ -837,8 +837,8 @@ def _get_png_size(version, scale, border):
     return (scale * tables.version_size[version]) + (2 * border * scale)
 
 
-def _terminal(code, out=None, module_color='default', background='reverse'):
-    """This method returns a string containing ASCII escape codes,
+def _terminal(code, out, module_color='default', background='reverse'):
+    """This writes a string containing ASCII escape codes,
     such that if printed to a terminal, it will display a vaild
     QR code. The module_color and the background color should be keys
     in the tables.term_colors table for printing using the 8/16
@@ -846,7 +846,7 @@ def _terminal(code, out=None, module_color='default', background='reverse'):
     256 in order to use the 88/256 color scheme. Otherwise, a
     ValueError will be raised.
 
-    Note, the code is ouputted by changing the background color. Then
+    Note, the code is outputted by changing the background color. Then
     two spaces are written to the terminal. Finally, the terminal is
     reset back to how it was.
     """
@@ -867,10 +867,6 @@ def _terminal(code, out=None, module_color='default', background='reverse'):
         raise ValueError('The background color, {0}, must a key in '
                          'pyqrcode.tables.term_colors or a number '
                          'between 0 and 256.'.format(background))
-    if out is None:
-        import sys
-        out = sys.stdout
-
     # This will be the begining and ending row for the code.
     border_row = background * (len(code[0]) + 2)
 
