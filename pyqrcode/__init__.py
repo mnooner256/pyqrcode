@@ -323,7 +323,7 @@ class QRCode:
                      module_color, background, quiet_zone)
 
     def svg(self, file, scale=1, module_color='#000', background=None,
-            quiet_zone=4, xmldecl=True, svgns=True, title='PyQRCode',
+            quiet_zone=4, xmldecl=True, svgns=True, title=None,
             svgclass='pyqrcode', lineclass='pyqrline', omithw=False):
         """This method writes the QR code out as an SVG document. The
         code is drawn by drawing only the modules corresponding to a 1. They
