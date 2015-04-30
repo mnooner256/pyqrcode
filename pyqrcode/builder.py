@@ -138,7 +138,10 @@ class QRCodeBuilder:
         #Change the data such that it uses a QR code ascii table
         ascii = []
         for char in self.data:
-            ascii.append(tables.ascii_codes[char])
+            if isinstance(char, int):
+                ascii.append(tables.ascii_codes[chr(char)])
+            else:
+                ascii.append(tables.ascii_codes[char])
         
         #Now perform the algorithm that will make the ascii into bit fields
         with io.StringIO() as buf:
@@ -189,7 +192,10 @@ class QRCodeBuilder:
         """
         with io.StringIO() as buf:
             for char in self.data:
-                buf.write('{{0:0{0}b}}'.format(8).format(ord(char)))
+                if not isinstance(char, int):
+                    buf.write('{{0:0{0}b}}'.format(8).format(ord(char)))
+                else:
+                    buf.write('{{0:0{0}b}}'.format(8).format(char))
             return buf.getvalue()
 
 
@@ -1021,8 +1027,8 @@ def _svg(code, version, file, scale=1, module_color='#000',
         def line(x, y, length, relative):
             """Returns coordinates to draw a line with the provided length.
             """
-            return bytes('{0}{1} {2}h{3}'.format(('m' if relative else 'M'), 
-                                                 x, y, length))
+            return '{0}{1} {2}h{3}'.format(('m' if relative else 'M'), 
+                                           x, y, length).encode('utf-8')
 
         def errline(col_number, row_number):
             """Returns the coordinates to draw an error bit.
@@ -1035,33 +1041,45 @@ def _svg(code, version, file, scale=1, module_color='#000',
 
         # Write the document header
         if xmldecl:
-            f.write(bytes('<?xml version="1.0" encoding="UTF-8"?>\n'))
-        f.write(bytes('<svg'))
+            f.write('<?xml version="1.0" encoding="UTF-8"?>\n'.encode('utf-8'))
+        f.write('<svg'.encode('utf'))
         if svgns:
-            f.write(bytes(' xmlns="http://www.w3.org/2000/svg"'))
+            f.write(' xmlns="http://www.w3.org/2000/svg"'.encode('utf-8'))
         size = tables.version_size[version] * scale + (2 * quiet_zone * scale)
         if not omithw:
-            f.write(bytes(' height="{0}" width="{0}"').format(size))
+            f.write(' height="{0}" width="{0}"'.format(size).encode('utf-8'))
         else:
-            f.write(bytes(' viewBox="0 0 {0} {0}"').format(size))
+            f.write(' viewBox="0 0 {0} {0}"'.format(size).encode('utf-8'))
         if svgclass is not None:
-            f.write(bytes(' class="{}"').format(svgclass))
-        f.write(bytes('>'))
+            f.write(' class="{}"'.format(svgclass).encode('utf-8'))
+        f.write('>'.encode('utf-8'))
         if title is not None:
-            f.write(bytes('<title>{}</title>').format(title.encode('utf-8')))
+            title = title.encode('utf-8')
+            title_template = '<title>{}</title>'
+
+            #Python2 vs. Python3 Compatibility
+            if hasattr(title_template, 'decode'):
+                title_template = title_template.decode('utf-8').encode('utf-8')
+            title = title_template.format(title)
+
+            #Python2 vs. Python3 Compatibility
+            if hasattr(title, 'decode'):
+                f.write(title.decode('utf-8').encode('utf-8'))
+            else:
+                f.write(title.encode('utf-8'))
 
         # Draw a background rectangle if necessary
         if background is not None:
-            f.write(bytes('<path fill="{1}" d="M0 0h{0}v{0}h-{0}z"/>')
-                    .format(size, background))
-        f.write(bytes('<path'))
+            f.write('<path fill="{1}" d="M0 0h{0}v{0}h-{0}z"/>'
+                    .format(size, background).encode('utf-8'))
+        f.write('<path'.encode('utf-8'))
         if scale != 1:
-            f.write(bytes(' transform="scale({})"').format(scale))
+            f.write(' transform="scale({})"'.format(scale).encode('utf-8'))
         if module_color is not None:
-            f.write(bytes(' stroke="{}"').format(module_color))
+            f.write(' stroke="{}"'.format(module_color).encode('utf-8'))
         if lineclass is not None:
-            f.write(bytes(' class="{}"').format(lineclass))
-        f.write(bytes(' d="'))
+            f.write(' class="{}"'.format(lineclass).encode('utf-8'))
+        f.write(' d="'.encode('utf-8'))
         # Used to keep track of unknown/error coordinates.
         debug_path = ''
         # Current pen pointer position
@@ -1070,7 +1088,7 @@ def _svg(code, version, file, scale=1, module_color='#000',
         # Loop through each row of the code
         for rnumber, row in enumerate(code):
             start_column = 0  # Reset the starting column number
-            coord = ''  # Reset row coordinates
+            coord = ''.encode('utf-8')  # Reset row coordinates
             y += 1  # Set y-axis of the pen
             length = 0  # Reset line length
             # Examine every bit in the row
@@ -1093,17 +1111,17 @@ def _svg(code, version, file, scale=1, module_color='#000',
                 coord += line(x, y, length, relative=wrote_bit)
                 x = start_column + length
                 wrote_bit = True
-            f.write(coord.encode('utf-8'))
+            f.write(coord)
         # Close path
-        f.write(bytes('"/>'))
+        f.write('"/>'.encode('utf-8'))
         if debug and debug_path:
-            f.write(bytes('<path'))
+            f.write('<path'.encode('utf-8'))
             if scale != 1:
-                f.write(bytes(' transform="scale({})"').format(scale))
-            f.write(bytes(' class="pyqrerr" stroke="red" d="{}"/>').format(debug_path))
+                f.write(' transform="scale({})"'.format(scale).encode('utf-8'))
+            f.write(' class="pyqrerr" stroke="red" d="{}"/>'.format(debug_path).encode('utf-8'))
         
         # Close document
-        f.write(bytes('</svg>\n'))
+        f.write('</svg>\n'.encode('utf-8'))
 
         if autoclose:
             f.close()

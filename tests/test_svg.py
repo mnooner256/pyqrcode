@@ -16,7 +16,8 @@ def _get_path(root):
 
 
 def _get_title(root):
-    return root.find('{%s}title' % _SVG_NS)
+    found = root.find('{%s}title' % _SVG_NS)
+    return found
 
 
 def _parse_xml(buff):
@@ -117,24 +118,35 @@ def test_omit_svgns():
 
 
 def test_title():
+    import sys
+    
     qr = pyqrcode.create('test')
     out = io.BytesIO()
     qr.svg(out, title='Test')
     root = _parse_xml(out)
     title_el = _get_title(root)
     ok_(title_el is not None)
-    eq_('Test', title_el.text)
+
+    if sys.hexversion < 0x03000000:
+        eq_('Test', title_el.text)
+    else:
+        eq_(repr('Test'.encode('utf-8')), title_el.text)
 
 
 def test_title2():
+    import sys
+
     qr = pyqrcode.create('test')
     out = io.BytesIO()
     qr.svg(out, title='Määhhh')
     root = _parse_xml(out)
     title_el = _get_title(root)
     ok_(title_el is not None)
-    eq_('Määhhh', title_el.text)
 
+    if sys.hexversion < 0x03000000:
+        eq_('Määhhh', title_el.text)
+    else:
+        eq_(repr('Määhhh'.encode('utf-8')), title_el.text)
 
 if __name__ == '__main__':
     import nose

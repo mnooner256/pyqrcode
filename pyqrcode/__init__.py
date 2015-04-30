@@ -127,7 +127,11 @@ class QRCode:
         #The contents are not a byte array or string, so
         #try naively converting to a string representation.
         else:
-            self.data = unicode(content)
+            #Python2 vs. Python3 compatibility
+            try:
+                self.data = unicode(content)
+            except NameError:
+                self.data = str(content)
         
 
         #Guess the mode of the code, this will also be used for
