@@ -22,3 +22,5 @@ py2
 test.py
 *.png
 !*/ref/*.png
+
+*.eps

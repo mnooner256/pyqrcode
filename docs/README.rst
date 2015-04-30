@@ -58,6 +58,7 @@ file.
     >>> import pyqrcode
     >>> url = pyqrcode.create('http://uca.edu')
     >>> url.svg('uca-url.svg', scale=8)
+    >>> url.eps('uca-url.eps', scale=2)
     >>> print(url.terminal(quiet_zone=1))
 
 The pyqrcode module, while easy to use, is powerful. You can set every
@@ -67,3 +68,4 @@ render the code as a PNG image. Below is a more complex example::
 
     >>> big_code = pyqrcode.create('0987654321', error='L', version=27, mode='binary')
     >>> big_code.png('code.png', scale=6, module_color=[0, 0, 0, 128], background=[0xff, 0xff, 0xcc])
+    >>> big_code.show()

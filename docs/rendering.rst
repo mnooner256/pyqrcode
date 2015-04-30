@@ -1,13 +1,14 @@
 Rendering QR Codes
 ******************
 
-There are three possible formats for rendering the QR Code. There are two image
-based renderers and two text based renderers. Three of the renderers allow you
-to set the colors used, and a scaling factor, that way each module is not
-rendered as 1 pixel.
+There are five possible formats for rendering the QR Code. The first is
+to render it as a string of 1's and 0's. Next, the code can be displayed
+directly in compatible terminals. There are also three image based
+renderers. All, but the first, allow you to set the colors used. They also
+take a scaling factor, that way each module is not rendered as 1 pixel.
 
-Text Rendering
-==============
+Text Based Rendering
+====================
 
 The pyqrcode module includes a basic text renderer. This will return a string
 containing the QR code as a string of 1's and 0's, with each row of the code on
@@ -15,7 +16,7 @@ a new line. A :term:`data module` in the QR Code is represented by a 1.
 Likewise, 0 is used to represent the background of the code.
 
 The purpose of this renderer is to allow users to create their own renderer if
-neither the svg or png renderers are satisfactory.
+none of the built in renderers are satisfactory.
 
 .. code-block:: python
 
@@ -90,10 +91,10 @@ the there is no way to tell what color will be actually displayed.
 Image Rendering
 ===============
 
-There are two ways to get an image of the generated QR code. Both renderers 
-have a few things in common.
+There are three ways to get an image of the generated QR code. All of the
+renderers have a few things in common.
 
-Both renderers take a file path or writable stream and draw the QR
+Each renderer takes a file path or writable stream and draws the QR
 code there. The methods should auto-detect which is which.
 
 Each renderer takes a scale parameter. This parameter sets the size of a single
@@ -109,10 +110,11 @@ area. For electronic usages, this may be unnecessary. Each of the renderers
 that allows you to set this distance.
 
 Both renderers, also, allow you to set the :term:`module` and background colors.
+
 Although, how the colors are represented are renderer specific.
 
-Scalable Vector Graphic
------------------------
+Scalable Vector Graphic (SVG)
+-----------------------------
 
 The SVG renderer outputs the QR code as a scalable vector graphic using
 the :py:meth:`pyqrcode.QRCode.svg` method. *This renderer does not require any
@@ -143,8 +145,27 @@ parameter. Each of these parameters take a HTML style color.
 You can also suppress certain parts of the SVG document. In other words you
 can create a SVG fragment.
 
-Portable Network Graphic
-------------------------
+Encapsulated PostScript (EPS)
+-----------------------------
+
+The EPS renderer outputs the QR code an encapsulated PostScript document using
+the :py:meth:`pyqrcode.QRCode.eps` method. *This renderer does not require any
+external modules.*
+
+The method draws the EPS document using lines of contiguous modules. By default,
+no background is drawn, i.e. the resulting code has a transparent background.
+The default module color is black. Note, that a scale of 1 equates to a module
+being drawn at 1 point (1/72 of an inch).
+
+.. code-block:: python
+  >>> qr = pyqrcode.create('Hello world')
+  >>> qr.eps('hello-world.eps', scale=2.5, module_color='#36C')
+  >>> qr.eps('hello-world2.eps', background='#eee')
+  >>> out = io.StringIO()
+  >>> qr.eps(out, module_color=(.4, .4, .4))
+
+Portable Network Graphic (PNG)
+------------------------------
 
 The PNG renderer outputs the QR code as a portable network graphic file using
 the :py:meth:`pyqrcode.QRCode.png` method.

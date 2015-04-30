@@ -9,7 +9,7 @@ lines of code!
 Unlike many other generators, all of the automation can be controlled manually.
 You are free to set any or all of the properties of your QR code.
 
-QR codes can be saved as SVG, PNG (by using the
+QR codes can be saved as SVG, EPS, PNG (by using the
 `pypng <https://pypi.python.org/pypi/pypng/>`_ module), and plain text. PIL is
 not used to render the image files. You can also display a QR code directly in
 a compatible terminal.
