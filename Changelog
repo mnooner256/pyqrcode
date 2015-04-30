@@ -1,0 +1,16 @@
+# 1.1
+* Added support for Python 2.6
+* Better SVG implementation, thanks to heuer. Now uses paths instead of lines.
+  Also allows for SVG fragments instead of entire documents.
+* All renderers now have a **quiet zone of four**. This value is settable via a
+  parameter.
+* Fixed issue where file streams were not being closed
+* Thanks to heuer we now have unit tests!!
+
+### Special thanks goes to [Lars (heuer)](https://github.com/heuer) who 
+contributed a massive amount of improvements in this version.
+
+# 1.0
+* Fixed issue where terminal bits were being added in the wrong location.
+* Added ability to output QR code to a Linux terminal.
+* Added support for Python 2.7
