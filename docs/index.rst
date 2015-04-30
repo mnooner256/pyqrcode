@@ -2,9 +2,9 @@ Welcome to PyQRCode's documentation!
 ************************************
 
 The pyqrcode module is a QR code generator that is simple to use and written
-in pure python 3, with Python 2.7 compatability. The module automates most of
-the building process for you. Generally, QR codes can be created using only two
-lines of code!
+in pure python. The module is compatible with Python 2.6, 2.7, and 3.x. The
+module automates most of the building process for you. Generally, QR codes can
+be created using only two lines of code!
 
 Unlike many other generators, all of the automation can be controlled manually.
 You are free to set any or all of the properties of your QR code.

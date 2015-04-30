@@ -158,6 +158,7 @@ The default module color is black. Note, that a scale of 1 equates to a module
 being drawn at 1 point (1/72 of an inch).
 
 .. code-block:: python
+
   >>> qr = pyqrcode.create('Hello world')
   >>> qr.eps('hello-world.eps', scale=2.5, module_color='#36C')
   >>> qr.eps('hello-world2.eps', background='#eee')
