@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """This module does the actual generation of the QR codes. The QRCodeBuilder
 builds the code. While the various output methods draw the code into a file.
 """
@@ -34,13 +35,9 @@ class QRCodeBuilder:
     """
     def __init__(self, data, version, mode, error):
         """See :py:class:`pyqrcode.QRCode` for information on the parameters."""
-
         #Set what data we are going to use to generate
         #the QR code
-        if isinstance(data, bytes):
-            self.data = data.decode('utf-8')
-        else:
-            self.data = data
+        self.data = data
 
         #Check that the user passed in a valid mode
         if mode in tables.modes.keys():
@@ -192,11 +189,8 @@ class QRCodeBuilder:
         8 bit mode. It returns the data encoded as a binary string.
         """
         with io.StringIO() as buf:
-            for char in self.data.encode('ascii'):
-                if isinstance(char, int):
-                    buf.write('{{0:0{0}b}}'.format(8).format(char))
-                if isinstance(char, str):
-                    buf.write('{{0:0{0}b}}'.format(8).format(ord(char)))
+            for char in self.data:
+                buf.write('{{0:0{0}b}}'.format(8).format(ord(char)))
             return buf.getvalue()
 
 
