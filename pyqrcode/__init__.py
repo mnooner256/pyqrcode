@@ -443,19 +443,30 @@ class QRCode:
                      title=title, svgclass=svgclass, lineclass=lineclass,
                      omithw=omithw, debug=debug)
 
-    def eps(self, file, scale=1, module_color=(0, 0, 0), background=None,
-            quiet_zone=4):
+    def eps(self, file, scale=1, module_color=(0, 0, 0),
+            background=None, quiet_zone=4):
         """This method writes the QR code out as an EPS document. The
-        code is drawn by only writing the modules corresponding to a 1. They
-        are drawn using a line, such that contiguous modules in a row
-        are drawn with a single line. The file parameter is used to
-        specify where to write the document to. It can either be a writable
-        (text) stream or a file path. The scale parameter is sets how large
-        to draw a single module. By default one point (1/72 inch) is used to
-        draw a single module. This may make the code to small to be read
-        efficiently.
-        Increasing the scale will make the code larger. This method will accept
-        fractional scales (e.g. 2.5).
+        code is drawn by only writing the data modules corresponding to a 1.
+        They are drawn using a line, such that contiguous modules in a row
+        are drawn with a single line.
+
+        The *file* parameter is used to specify where to write the document
+        to. It can either be a writable (text) stream or a file path.
+
+        The *scale* parameter sets how large to draw a single module. By
+        default one point (1/72 inch) is used to draw a single module. This may
+        make the code to small to be read efficiently. Increasing the scale
+        will make the code larger. This method will accept fractional scales
+        (e.g. 2.5).
+
+        The *module_color* parameter sets the color of the data modules. The
+        *background* parameter sets the background (page) color to use. They
+        are specified as either a triple of floats, e.g. (0.5, 0.5, 0.5), or a
+        triple of integers, e.g. (128, 128, 128). The default *module_color* is
+        black. The default *background* color is no background at all.
+
+        The *quiet_zone* parameter sets how large to draw the border around
+        the code. As per the standard, the default value is 4 modules.
 
         Examples:
             >>> qr = pyqrcode.create('Hello world')
@@ -467,7 +478,8 @@ class QRCode:
         builder._eps(self.code, self.version, file, scale, module_color,
                      background, quiet_zone)
 
-    def terminal(self, module_color='default', background='reverse', quiet_zone=4):
+    def terminal(self, module_color='default', background='reverse',
+                 quiet_zone=4):
         """This method returns a string containing ASCII escape codes,
         such that if printed to a compatible terminal, it will display
         a vaild QR code. The code is printed using ASCII escape
