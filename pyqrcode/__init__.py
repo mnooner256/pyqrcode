@@ -307,15 +307,17 @@ class QRCode:
 
         This method is mainly intended for debugging purposes.
 
-        This method saves the output of the `png` method (with a scaling factor
-        of 10) to a temporary file and opens it with the standard PNG viewer
-        application or within the standard webbrowser. The temporary file
-        is deleted afterwards.
+        This method saves the output of the `png` method (with a default
+        scaling factor of 10) to a temporary file and opens it with the
+        standard PNG viewer application or within the standard webbrowser. The
+        temporary file is deleted afterwards.
 
         If this method does not show any result, try to increase the `wait`
         parameter. This parameter specifies the time in seconds to wait till
         the temporary file is deleted. Note, that this method does not return
         until the provided amount of seconds (default: 1.2) has passed.
+
+        The other parameters are simply passed on to the `png` method.
         """
         import os
         import time
