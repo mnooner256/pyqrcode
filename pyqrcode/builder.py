@@ -992,106 +992,129 @@ def _text(code, quiet_zone=4):
 
     return buf.getvalue()
 
-def _svg(code, version, file, scale=1, module_color='#000', background=None,
-         xmldecl=True, omithw=False, svgns=True, title=None, svgclass='pyqrcode',
-         lineclass='pyqrline', quiet_zone=4):
-    """This method writes the QR code out as an SVG document. The
-    code is drawn by drawing only the modules corresponding to a 1. They
-    are drawn using a path The file parameter is used to
-    specify where to write the document to. It can either be an writable
-    stream or a file path. The scale parameter is sets how large to draw
-    a single module. By default one pixel is used to draw a single
-    module. This may make the code too small to be read efficiently.
-    Increasing the scale will make the code larger. This method will accept
-    fractional scales (e.g. 2.5).
-    """
-    debug = False
-
-    def line(x, y, length, relative):
-        """Returns coordinates to draw a line with the provided length.
+def _svg(code, version, file, scale=1, module_color='#000',
+         background=None, quiet_zone=4, xmldecl=True, svgns=True, 
+         title='PyQRCode', svgclass='pyqrcode', lineclass='pyqrline',
+         omithw=False, debug=False):
+        """This method writes the QR code out as an SVG document. The
+        code is drawn by drawing only the modules corresponding to a 1. They
+        are drawn using a line, such that contiguous modules in a row
+        are drawn with a single line. The file parameter is used to
+        specify where to write the document to. It can either be an writable
+        stream or a file path. The scale parameter is sets how large to draw
+        a single module. By default one pixel is used to draw a single
+        module. This may make the code to small to be read efficiently.
+        Increasing the scale will make the code larger. This method will accept
+        fractional scales (e.g. 2.5).
+        :param module_color: Color of the QR Code (default: ``#000`` (black))
+        :param background: Optional background color.
+        :param xmldecl: Inidcates if the XML declaration header should be written
+                (default: ``True``)
+        :param svgns: Indicates if the SVG namespace should be written
+                (default: ``True``)
+        :param title: Optional title of the generated SVG document.
+        :param svgclass: The CSS class of the SVG document
+                (if set to ``None``, the SVG element won't have a class).
+        :param lineclass: The CSS class of the path element
+                (if set to ``None``, the path won't have a class).
+        :param quiet_zone: Border around the QR code (also known as  quiet zone)
+                (default: ``4``). Set to zero (``0``) if the code shouldn't
+                have a border.
+        :param omithw: Indicates if width and height attributes should be
+                omitted (default: ``False``). If these attributes are omitted,
+                a ``viewBox`` attribute will be added to the document.
+        :param debug: Inidicates if errors in the QR Code should be added to the
+                output (default: ``False``).
         """
-        return '{0}{1} {2}h{3}'.format(('m' if relative else 'M'), x, y, length)
 
-    def errline(x, y):
-        """Returns the coordinates to draw an error bit.
-        """
-        return line(x, y, 1, relative=False)
+        def line(x, y, length, relative):
+            """Returns coordinates to draw a line with the provided length.
+            """
+            return '{0}{1} {2}h{3}'.format(('m' if relative else 'M'), x, y, length)
 
-    f, autoclose = _get_file(file, 'w')
+        def errline(col_number, row_number):
+            """Returns the coordinates to draw an error bit.
+            """
+            # Debug path uses always absolute coordinates
+            return line(col_number + quiet_zone, row_number + quiet_zone + .5, 1,
+                        relative=False)
 
-    # Write the document header
-    if xmldecl:
-        f.write('<?xml version="1.0" encoding="UTF-8"?>\n')
-    f.write('<svg')
-    if svgns:
-        f.write(' xmlns="http://www.w3.org/2000/svg"')
-    size = tables.version_size[version] * scale + (2 * quiet_zone * scale)
-    if not omithw:
-        f.write(' height="{0}" width="{0}"'.format(size))
-    else:
-        f.write(' viewBox="0 0 {0} {0}"'.format(size))
-    if svgclass is not None:
-        f.write(' class="{}"'.format(svgclass))
-    f.write('>')
-    if title is not None:
-        f.write('<title>{}</title>'.format(title.encode('utf-8')))
+        f, autoclose = _get_file(file, 'w')
 
-    # Draw a background rectangle if necessary
-    if background is not None:
-        f.write('<path fill="{1}" d="M0 0h{0}v{0}h-{0}z"/>'
-                .format(size, background))
-    f.write('<path')
-    if scale != 1:
-        f.write(' transform="scale({})"'.format(scale))
-    if module_color is not None:
-        f.write(' stroke="{}"'.format(module_color))
-    if lineclass is not None:
-        f.write(' class="{}"'.format(lineclass))
-    f.write(' d="')
-    # Used to keep track of unknown/error coordinates.
-    debug_path = ''
-    # Current pen pointer position
-    x, y = -quiet_zone, quiet_zone - .5  # .5 == stroke-width / 2
-    wrote_bit = False
-    # Loop through each row of the code
-    for rnumber, row in enumerate(code, start=0):
-        start_column = 0  # Reset the starting column number
-        coord = ''  # Reset row coordinates
-        y += 1  # Set y-axis of the pen
-        length = 0  # Reset line length
-        # Examine every bit in the row
-        for colnumber, bit in enumerate(row, start=0):
-            if bit == 1:
-                length += 1
-            else:
-                if length:
-                    x = start_column - x
-                    coord += line(x, y, length, relative=wrote_bit)
-                    x = start_column + length
-                    y = 0  # y-axis won't change unless the row changes
-                    length = 0
-                    wrote_bit = True
-                start_column = colnumber + 1
-                if debug and bit != 0:
-                    debug_path += errline(colnumber, rnumber)
-        if length:
-            x = start_column - x
-            coord += line(x, y, length, relative=wrote_bit)
-            x = start_column + length
-            wrote_bit = True
-        f.write(coord)
-    # Close path
-    f.write('"/>')
-    if debug and debug_path:
+        # Write the document header
+        if xmldecl:
+            f.write('<?xml version="1.0" encoding="UTF-8"?>\n')
+        f.write('<svg')
+        if svgns:
+            f.write(' xmlns="http://www.w3.org/2000/svg"')
+        size = tables.version_size[version] * scale + (2 * quiet_zone * scale)
+        if not omithw:
+            f.write(' height="{0}" width="{0}"'.format(size))
+        else:
+            f.write(' viewBox="0 0 {0} {0}"'.format(size))
+        if svgclass is not None:
+            f.write(' class="{}"'.format(svgclass))
+        f.write('>')
+        if title is not None:
+            f.write('<title>{}</title>'.format(title.encode('utf-8')))
+
+        # Draw a background rectangle if necessary
+        if background is not None:
+            f.write('<path fill="{1}" d="M0 0h{0}v{0}h-{0}z"/>'
+                    .format(size, background))
         f.write('<path')
         if scale != 1:
             f.write(' transform="scale({})"'.format(scale))
-        f.write(' class="pyqrerr" stroke="red" d="{}"/>'.format(debug_path))
-    # Close document
-    f.write('</svg>\n')
+        if module_color is not None:
+            f.write(' stroke="{}"'.format(module_color))
+        if lineclass is not None:
+            f.write(' class="{}"'.format(lineclass))
+        f.write(' d="')
+        # Used to keep track of unknown/error coordinates.
+        debug_path = ''
+        # Current pen pointer position
+        x, y = -quiet_zone, quiet_zone - .5  # .5 == stroke-width / 2
+        wrote_bit = False
+        # Loop through each row of the code
+        for rnumber, row in enumerate(code):
+            start_column = 0  # Reset the starting column number
+            coord = ''  # Reset row coordinates
+            y += 1  # Set y-axis of the pen
+            length = 0  # Reset line length
+            # Examine every bit in the row
+            for colnumber, bit in enumerate(row):
+                if bit == 1:
+                    length += 1
+                else:
+                    if length:
+                        x = start_column - x
+                        coord += line(x, y, length, relative=wrote_bit)
+                        x = start_column + length
+                        y = 0  # y-axis won't change unless the row changes
+                        length = 0
+                        wrote_bit = True
+                    start_column = colnumber + 1
+                    if debug and bit != 0:
+                        debug_path += errline(colnumber, rnumber)
+            if length:
+                x = start_column - x
+                coord += line(x, y, length, relative=wrote_bit)
+                x = start_column + length
+                wrote_bit = True
+            f.write(coord)
+        # Close path
+        f.write('"/>')
+        if debug and debug_path:
+            f.write('<path')
+            if scale != 1:
+                f.write(' transform="scale({})"'.format(scale))
+            f.write(' class="pyqrerr" stroke="red" d="{}"/>'.format(debug_path))
+        
+        # Close document
+        f.write('</svg>\n')
 
-    if autoclose:
-        f.close()
+        if autoclose:
+            f.close()
 
 def _png(code, version, file, scale=1, module_color=None, background=None,
          quiet_zone=4):

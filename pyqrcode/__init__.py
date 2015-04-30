@@ -285,12 +285,13 @@ class QRCode:
                      module_color, background, quiet_zone)
 
     def svg(self, file, scale=1, module_color='#000', background=None,
-            xmldecl=True, svgns=True, title='PyQRCode', svgclass=None,
-            lineclass=None, quiet_zone=4):
+            quiet_zone=4, xmldecl=True, svgns=True, title='PyQRCode',
+            svgclass='pyqrcode', lineclass='pyqrline', omithw=False):
         """This method writes the QR code out as an SVG document. The
         code is drawn by drawing only the modules corresponding to a 1. They
         are drawn using a line, such that contiguous modules in a row
         are drawn with a single line.
+
         The *file* parameter is used to specify where to write the document
         to. It can either be a writable stream or a file path.
         The *scale* parameter sets how large to draw
@@ -335,9 +336,11 @@ class QRCode:
             >>> code.svg('live-organ-transplants.svg', scale=4,
                          module_color='brown', background='0xFFFFFF')
         """
-        builder._svg(self.code, self.version, file, scale,
-                     module_color, background, xmldecl, title, svgclass,
-                     lineclass, quiet_zone)
+        builder._svg(self.code, self.version, file, scale=scale, 
+                     module_color=module_color, background=background,
+                     quiet_zone=quiet_zone, xmldecl=xmldecl, svgns=svgns, 
+                     title=title, svgclass=svgclass, lineclass=lineclass,
+                     omithw=omithw, debug=False)
 
     def terminal(self, module_color='default', background='reverse', quiet_zone=4):
         """This method returns a string containing ASCII escape codes,
