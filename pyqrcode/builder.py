@@ -8,7 +8,6 @@ from __future__ import absolute_import, division, print_function, with_statement
 
 import pyqrcode.tables as tables
 import io
-import sys
 import itertools
 
 class QRCodeBuilder:
@@ -165,7 +164,7 @@ class QRCodeBuilder:
                 for digit in triplet:
                     #Only build the string if digit is not None
                     if digit:
-                        number = ''.join([number, digit])
+                        number = ''.join([number, str(digit)])
                     else:
                         break
 
@@ -1022,46 +1021,47 @@ def _svg(code, version, file, scale=1, module_color='#000',
         def line(x, y, length, relative):
             """Returns coordinates to draw a line with the provided length.
             """
-            return '{0}{1} {2}h{3}'.format(('m' if relative else 'M'), x, y, length)
+            return bytes('{0}{1} {2}h{3}'.format(('m' if relative else 'M'), 
+                                                 x, y, length))
 
         def errline(col_number, row_number):
             """Returns the coordinates to draw an error bit.
             """
             # Debug path uses always absolute coordinates
-            return line(col_number + quiet_zone, row_number + quiet_zone + .5, 1,
-                        relative=False)
+            return line(col_number + quiet_zone, row_number + quiet_zone + .5, 
+                        1, relative=False)
 
-        f, autoclose = _get_file(file, 'w')
+        f, autoclose = _get_file(file, 'wb')
 
         # Write the document header
         if xmldecl:
-            f.write('<?xml version="1.0" encoding="UTF-8"?>\n')
-        f.write('<svg')
+            f.write(bytes('<?xml version="1.0" encoding="UTF-8"?>\n'))
+        f.write(bytes('<svg'))
         if svgns:
-            f.write(' xmlns="http://www.w3.org/2000/svg"')
+            f.write(bytes(' xmlns="http://www.w3.org/2000/svg"'))
         size = tables.version_size[version] * scale + (2 * quiet_zone * scale)
         if not omithw:
-            f.write(' height="{0}" width="{0}"'.format(size))
+            f.write(bytes(' height="{0}" width="{0}"').format(size))
         else:
-            f.write(' viewBox="0 0 {0} {0}"'.format(size))
+            f.write(bytes(' viewBox="0 0 {0} {0}"').format(size))
         if svgclass is not None:
-            f.write(' class="{}"'.format(svgclass))
-        f.write('>')
+            f.write(bytes(' class="{}"').format(svgclass))
+        f.write(bytes('>'))
         if title is not None:
-            f.write('<title>{}</title>'.format(title.encode('utf-8')))
+            f.write(bytes('<title>{}</title>').format(title.encode('utf-8')))
 
         # Draw a background rectangle if necessary
         if background is not None:
-            f.write('<path fill="{1}" d="M0 0h{0}v{0}h-{0}z"/>'
+            f.write(bytes('<path fill="{1}" d="M0 0h{0}v{0}h-{0}z"/>')
                     .format(size, background))
-        f.write('<path')
+        f.write(bytes('<path'))
         if scale != 1:
-            f.write(' transform="scale({})"'.format(scale))
+            f.write(bytes(' transform="scale({})"').format(scale))
         if module_color is not None:
-            f.write(' stroke="{}"'.format(module_color))
+            f.write(bytes(' stroke="{}"').format(module_color))
         if lineclass is not None:
-            f.write(' class="{}"'.format(lineclass))
-        f.write(' d="')
+            f.write(bytes(' class="{}"').format(lineclass))
+        f.write(bytes(' d="'))
         # Used to keep track of unknown/error coordinates.
         debug_path = ''
         # Current pen pointer position
@@ -1093,17 +1093,17 @@ def _svg(code, version, file, scale=1, module_color='#000',
                 coord += line(x, y, length, relative=wrote_bit)
                 x = start_column + length
                 wrote_bit = True
-            f.write(coord)
+            f.write(coord.encode('utf-8'))
         # Close path
-        f.write('"/>')
+        f.write(bytes('"/>'))
         if debug and debug_path:
-            f.write('<path')
+            f.write(bytes('<path'))
             if scale != 1:
-                f.write(' transform="scale({})"'.format(scale))
-            f.write(' class="pyqrerr" stroke="red" d="{}"/>'.format(debug_path))
+                f.write(bytes(' transform="scale({})"').format(scale))
+            f.write(bytes(' class="pyqrerr" stroke="red" d="{}"/>').format(debug_path))
         
         # Close document
-        f.write('</svg>\n')
+        f.write(bytes('</svg>\n'))
 
         if autoclose:
             f.close()
