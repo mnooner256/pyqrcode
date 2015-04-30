@@ -16,15 +16,15 @@ def test_size():
     code = pyqrcode.create('Hello world')
     qr_size = 25
     border = 0
-    eq_(qr_size, code.get_png_size(1, border=border))
+    eq_(qr_size, code.get_png_size(1, quiet_zone=border))
     border = 1
-    eq_((qr_size + 2 * border) * border, code.get_png_size(1, border=border))
+    eq_((qr_size + 2 * border) * border, code.get_png_size(1, quiet_zone=border))
     border = 4  # (default border)
     eq_((qr_size + 2 * border) * 1, code.get_png_size())
     eq_((qr_size + 2 * border) * 1, code.get_png_size(1))
     eq_((qr_size + 2 * border) * 4, code.get_png_size(4))
     border = 0
-    eq_((qr_size + 2 * border) * 4, code.get_png_size(4, border=border))
+    eq_((qr_size + 2 * border) * 4, code.get_png_size(4, quiet_zone=border))
 
 
 _REF_DATA = (
@@ -47,7 +47,7 @@ def test_write_png():
         ref_width, ref_height, ref_pixels = utils.get_png_info(filename=utils.get_reference_filename(reference))
         # Create our image
         out = io.BytesIO()
-        qr.png(out, scale=scale, border=border)
+        qr.png(out, scale=scale, quiet_zone=border)
         out.seek(0)
         # Excpected width/height
         expected_width = qr.get_png_size(scale, border)

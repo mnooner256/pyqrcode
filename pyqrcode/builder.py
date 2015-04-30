@@ -121,7 +121,7 @@ class QRCodeBuilder:
             encoded = self.encode_alphanumeric()
         elif self.mode == tables.modes['numeric']:
             encoded = self.encode_numeric()
-        elif self.mode == tables.modes['bytes']:
+        elif self.mode == tables.modes['binary']:
             encoded = self.encode_bytes()
         else:
             raise ValueError('This mode is not yet implemented.')
