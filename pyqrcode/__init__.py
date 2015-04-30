@@ -301,6 +301,41 @@ class QRCode:
         """
         return builder._get_png_size(self.version, scale, quiet_zone)
 
+    def show(self, wait=1.2, scale=10, module_color=(0, 0, 0, 255),
+            background=(255, 255, 255, 255), quiet_zone=4):
+        """Displays this QR code.
+
+        This method is mainly intended for debugging purposes.
+
+        This method saves the output of the `png` method (with a scaling factor
+        of 10) to a temporary file and opens it with the standard PNG viewer
+        application or within the standard webbrowser. The temporary file
+        is deleted afterwards.
+
+        If this method does not show any result, try to increase the `wait`
+        parameter. This parameter specifies the time in seconds to wait till
+        the temporary file is deleted. Note, that this method does not return
+        until the provided amount of seconds (default: 1.2) has passed.
+        """
+        import os
+        import time
+        import tempfile
+        import webbrowser
+        try:  # Python 2
+            from urlparse import urljoin
+            from urllib import pathname2url
+        except ImportError:  # Python 3
+            from urllib.parse import urljoin
+            from urllib.request import pathname2url
+
+        f = tempfile.NamedTemporaryFile('wb', suffix='.png', delete=False)
+        self.png(f, scale=scale, module_color=module_color,
+                 background=background, quiet_zone=quiet_zone)
+        f.close()
+        webbrowser.open_new_tab(urljoin('file:', pathname2url(f.name)))
+        time.sleep(wait)
+        os.unlink(f.name)
+
     def png(self, file, scale=1, module_color=(0, 0, 0, 255),
             background=(255, 255, 255, 255), quiet_zone=4):
         """This method writes the QR code out as an PNG image. The resulting
