@@ -20,3 +20,5 @@ py3
 py2
 
 test.py
+*.png
+!*/ref/*.png
