@@ -73,15 +73,18 @@ The alphanumeric type is very limited in that it can only encode some ASCII
 characters. It encodes: uppercase letters, 0-9, the horizontal space, and eight
 punctuation characters. A complete list of the possible characters that
 can be encoded can be found in the  pyqrcode.tables.ascii_codes dictionary. The
-available characters will let you encode a URL (the string is uppercased
-automatically).
+available characters will let you encode a URL (note that you have to transform
+the characters to upper-case otherwise the ``create`` function will use the
+``binary`` encoding automatically).
+
 
 ```python
->>> url = pyqrcode.create('http://uca.edu')
+>>> url = pyqrcode.create('http://uca.edu'.upper())
 ```
 
 When all else fails the data can be encoded in pure binary. The quotation below
-must be encoded in binary because of the apostrophe and the new line character.
+must be encoded in binary because of the lower-cased characters, the apostrophe
+and the new line character.
 
 ```python
 >>> life = pyqrcode.create('''MR. CREOSOTE: Better get a bucket. I'm going to throw up.

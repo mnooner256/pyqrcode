@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """This module is used to create QR Codes. It is designed to be as simple and
 as possible. It does this by using sane defaults and autodetection to make
 creating a QR Code very simple.
@@ -21,19 +22,20 @@ from __future__ import absolute_import, division, print_function, with_statement
 import pyqrcode.tables
 import pyqrcode.builder as builder
 
-def create(content, error='H', version=None, mode=None):
+def create(content, error='H', version=None, mode=None, encoding='utf-8'):
     """When creating a QR code only the content to be encoded is required,
     all the other properties of the code will be guessed based on the
     contents given. This function will return a :class:`QRCode` object.
 
     Unless you are familiar with QR code's inner workings
-    it is recommended that you just specify the content and nothing else.
+    it is recommended that you just specify the *content* and nothing else.
     However, there are cases where you may want to specify the various
     properties of the created code manually, this is what the other
     parameters do. Below, you will find a lengthy explanation of what
     each parameter is for. Note, the parameter names and values are taken
     directly from the standards. You may need to familiarize yourself
-    with the terminology of QR codes for the names to make sense.
+    with the terminology of QR codes for the names and their values to
+    make sense.
 
     The *error* parameter sets the error correction level of the code. There
     are four levels defined by the standard. The first is level 'L' which
@@ -70,8 +72,13 @@ def create(content, error='H', version=None, mode=None):
     which just encodes the bytes directly into the QR code (this encoding
     is the least efficient). Finally, there is 'kanji'  encoding (i.e.
     Japanese characters), this encoding is unimplemented at this time.
+
+    The *encoding* parameter specifies how the content will be interpreted.
+    This parameter only matters if the *content* is a string, unicode, or
+    byte array type. This parameter must be a valid encoding string. It will
+    be passed the *content*'s encode/decode methods.
     """
-    return QRCode(content, error, version, mode)
+    return QRCode(content, error, version, mode, encoding)
 
 class QRCode:
     """This class represents a QR code. To use this class simply give the
@@ -93,21 +100,43 @@ class QRCode:
         For what all of the parameters do, see the :func:`pyqrcode.create`
         function.
     """
-    def __init__(self, content, error='H', version=None, mode=None):
+    def __init__(self, content, error='H', version=None, mode=None,
+                 encoding='utf-8'):
 
-        #Coerce the content into a string
-        self.data = str(content)
+        #Store the parameter for repr
+        self.encoding = encoding
 
-        #Check that the passed in error level is valid
-        try:
-            self.error = tables.error_level[str(error).upper()]
-        except:
-            raise ValueError('The error parameter is not one of '
-                             '"L", "M", "Q", or "H."')
+        #Decode a 'byte array' contents into a string format
+        if isinstance(content, bytes):
+            self.data = content.decode(encoding)
+
+        #Encode a string an encoding
+        elif hasattr(content, 'encode'):
+            #Try encoding using the given value
+            if encoding is not None:
+                self.data = content.encode(encoding)
+            else:
+                # Try to use standard-conforming encoding
+                try:
+                    self.data = content.encode('iso-8859-1')
+                    self.encoding = 'iso-8859-1'
+                except UnicodeError:
+                    self.data = content.encode('utf-8')
+                    self.encoding = 'utf-8'
+
+        #The contents are not a byte array or string, so
+        #try naively converting to a string representation.
+        else:
+            #Python2 vs. Python3 compatibility
+            try:
+                self.data = unicode(content)
+            except NameError:
+                self.data = str(content)
+        
 
         #Guess the mode of the code, this will also be used for
         #error checking
-        guessed_content_type = self._detect_content_type()
+        guessed_content_type = self._detect_content_type(self.data)
 
         #Force a passed in mode to be lowercase
         if mode:
@@ -123,7 +152,7 @@ class QRCode:
             #Binary is only guessed as a last resort, if the
             #passed in mode is not binary the data won't encode
             raise ValueError('The content provided cannot be encoded with '
-                             'the mode {0}, it can only be encoded as '
+                             'the mode {}, it can only be encoded as '
                              'binary.'.format(mode))
         elif tables.modes[mode] == tables.modes['numeric'] and \
              guessed_content_type != 'numeric':
@@ -135,8 +164,15 @@ class QRCode:
             self.mode = mode
             self.mode_num = tables.modes[self.mode]
 
+        #Check that the passed in error level is valid
+        try:
+            self.error = tables.error_level[str(error).upper()]
+        except:
+            raise ValueError('The error parameter is not one of '
+                             '"L", "M", "Q", or "H."')
+
         #Guess the "best" version
-        self.version = self._pick_best_fit()
+        self.version = self._pick_best_fit(self.data)
 
         #If the user supplied a version, then check that it has
         #sufficient data capacity for the contents passed in
@@ -144,13 +180,13 @@ class QRCode:
             if version >= self.version:
                 self.version = version
             else:
-                raise ValueError('The data will not fit inside a version {0} '
+                raise ValueError('The data will not fit inside a version {} '
                                  'code with the given encoding and error '
                                  'level (the code must be at least a '
-                                 'version {1}).'.format(version, self.version))
+                                 'version {}).'.format(version, self.version))
 
         #Build the QR code
-        self.builder = builder.QRCodeBuilder(data=content,
+        self.builder = builder.QRCodeBuilder(data=self.data,
                                              version=self.version,
                                              mode=self.mode,
                                              error=self.error)
@@ -162,11 +198,18 @@ class QRCode:
         return repr(self)
 
     def __repr__(self):
-        return 'QRCode(content=\'{0}\', error=\'{1}\', version={2}, mode=\'{3}\')'.format(
-                       self.data, self.error, self.version, self.mode)
+        constructor = unicode('QRCode(content=\'{0}\', error=\'{1}\', '
+                       'version={2}, mode=\'{3}\', encoding=\'{4}\')')
+        if not self.encoding:
+            return constructor.format(self.data, self.error, self.version, 
+                                      self.mode, self.encoding).encode('utf-8')
+        else:
+            return constructor.format(self.data, self.error, self.version, 
+                                      self.mode, self.encoding).encode(
+                                      self.encoding)
 
 
-    def _detect_content_type(self):
+    def _detect_content_type(self, content):
         """This method tries to auto-detect the type of the data. It first
         tries to see if the data is a valid integer, in which case it returns
         numeric. Next, it tests the data to see if it is 'alphanumeric.' QR
@@ -179,7 +222,7 @@ class QRCode:
         """
         #See if the data is an integer
         try:
-            test = int(self.data)
+            test = int(content)
             return 'numeric'
         except:
             #Data is not numeric, this is not an error
@@ -187,14 +230,15 @@ class QRCode:
 
         #See if that data is alphanumeric based on the standards
         #special ASCII table
-        valid_characters = tables.ascii_codes.keys()
-        if all(map(lambda x: x in valid_characters, self.data.upper())):
+        valid_characters = ''.join(tables.ascii_codes.keys())
+        valid_characters = valid_characters.encode(self.encoding)
+        if all(map(lambda x: x in valid_characters, content)):
             return 'alphanumeric'
 
         #All of the tests failed. The content can only be binary.
         return 'binary'
 
-    def _pick_best_fit(self):
+    def _pick_best_fit(self, content):
         """This method return the smallest possible QR code version number
         that will fit the specified data with the given error level.
         """
@@ -203,9 +247,7 @@ class QRCode:
             capacity = tables.data_capacity[version][self.error][self.mode_num]
 
             #Check the capacity
-            if (self.mode_num == tables.modes['binary'] and \
-               capacity >= len(self.data.encode('ascii'))) or \
-               capacity >= len(self.data):
+            if capacity >= len(content):
                 return version
 
         raise ValueError('The data will not fit in any QR code version '
@@ -285,7 +327,7 @@ class QRCode:
                      module_color, background, quiet_zone)
 
     def svg(self, file, scale=1, module_color='#000', background=None,
-            quiet_zone=4, xmldecl=True, svgns=True, title='PyQRCode',
+            quiet_zone=4, xmldecl=True, svgns=True, title=None,
             svgclass='pyqrcode', lineclass='pyqrline', omithw=False):
         """This method writes the QR code out as an SVG document. The
         code is drawn by drawing only the modules corresponding to a 1. They
