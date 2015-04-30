@@ -126,12 +126,7 @@ def test_title():
     root = _parse_xml(out)
     title_el = _get_title(root)
     ok_(title_el is not None)
-
-    if sys.hexversion < 0x03000000:
-        eq_('Test', title_el.text)
-    else:
-        eq_(repr('Test'.encode('utf-8')), title_el.text)
-
+    eq_('Test', title_el.text)
 
 def test_title2():
     import sys
@@ -142,11 +137,7 @@ def test_title2():
     root = _parse_xml(out)
     title_el = _get_title(root)
     ok_(title_el is not None)
-
-    if sys.hexversion < 0x03000000:
-        eq_('Määhhh', title_el.text)
-    else:
-        eq_(repr('Määhhh'.encode('utf-8')), title_el.text)
+    eq_('Määhhh', title_el.text)
 
 if __name__ == '__main__':
     import nose
