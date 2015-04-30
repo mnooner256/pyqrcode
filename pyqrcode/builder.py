@@ -856,11 +856,9 @@ def _get_file(file, mode):
     """
     import os.path
     #See if the file parameter is a stream
-    if not isinstance(file, io.IOBase):
+    if not hasattr(file, 'write'):
         #If it is not a stream open a the file path
         return open(os.path.abspath(file), mode), True
-    elif not file.writable():
-        raise ValueError('Stream is not writable.')
     else:
         return file, False
 
