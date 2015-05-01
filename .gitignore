@@ -24,3 +24,4 @@ test.py
 !*/ref/*.png
 
 *.eps
+*.pdf
