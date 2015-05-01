@@ -131,7 +131,10 @@ class QRCodeBuilder:
 
         data_length = tables.data_length_field[max_version][self.mode]
 
-        length_string = self.binary_string(len(self.data), data_length)
+        if self.mode != 'kanji':
+            length_string = self.binary_string(len(self.data), data_length)
+        else:
+            length_string = self.binary_string(len(self.data) / 2, data_length)
 
         if len(length_string) > data_length:
             raise ValueError('The supplied data will not fit '
@@ -148,8 +151,8 @@ class QRCodeBuilder:
             encoded = self.encode_numeric()
         elif self.mode == tables.modes['binary']:
             encoded = self.encode_bytes()
-        else:
-            raise ValueError('This mode is not yet implemented.')
+        elif self.mode == tables.modes['kanji']:
+            encoded = self.encode_kanji()
 
         return encoded
 
@@ -221,6 +224,45 @@ class QRCodeBuilder:
                     buf.write('{{0:0{0}b}}'.format(8).format(ord(char)))
                 else:
                     buf.write('{{0:0{0}b}}'.format(8).format(char))
+            return buf.getvalue()
+
+    def encode_kanji(self):
+        """This method encodes the QR code's data if its mode is
+        kanji. It returns the data encoded as a binary string.
+        """
+        def two_bytes():
+            """Output two byte character code as a single integer."""
+            def next_byte(b):
+                """Make sure that character code is an int. Python 2 and
+                3 compatibility.
+                """
+                if not isinstance(b, int):
+                    return ord(b)
+                else:
+                    return b
+
+            #Go through the data by looping to every other character
+            for i in range(0, len(self.data), 2):
+                yield (next_byte(self.data[i]) << 8) | next_byte(self.data[i+1])
+
+        #Now perform the algorithm that will make the kanji into 13 bit fields
+        with io.StringIO() as buf:
+            for asint in two_bytes():
+                #Shift the two byte value as indicated by the standard
+                if 0x8140 <= asint <= 0x9FFC:
+                    difference = asint - 0x8140
+                elif 0xE040 <= asint <= 0xEBBF:
+                    difference = asint - 0xC140
+
+                #Split the new value into most and least significant bytes
+                msb = (difference >> 8)
+                lsb = (difference & 0x00FF)
+
+                #Calculate the actual 13 bit binary value
+                buf.write('{0:013b}'.format((msb * 0xC0) + lsb))
+
+
+            #Return the binary string
             return buf.getvalue()
 
 

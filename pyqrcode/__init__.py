@@ -51,7 +51,7 @@ try:
 except NameError:
     pass
 
-def create(content, error='H', version=None, mode=None, encoding='utf-8'):
+def create(content, error='H', version=None, mode=None, encoding=None):
     """When creating a QR code only the content to be encoded is required,
     all the other properties of the code will be guessed based on the
     contents given. This function will return a :class:`QRCode` object.
@@ -130,13 +130,21 @@ class QRCode:
         function.
     """
     def __init__(self, content, error='H', version=None, mode=None,
-                 encoding='utf-8'):
+                 encoding=None):
+
+        #Guess the mode of the code, this will also be used for
+        #error checking
+        guessed_content_type = self._detect_content_type(content)
 
         #Store the encoding for use later
         if encoding is None:
-            encoding = 'utf-8'
-        self.encoding = encoding
+            if guessed_content_type != 'kanji':
+                encoding = 'utf-8'
+            else:
+                encoding = 'shiftjis'
 
+        self.encoding = encoding
+        
         if version is not None:
             if 1 <= version <= 40:
                 self.version = version
@@ -144,7 +152,6 @@ class QRCode:
                 raise ValueError("Illegal version {0}, version must be between "
                                  "1 and 40.".format(version))
 
-        
         #Decode a 'byte array' contents into a string format
         if isinstance(content, bytes):
             self.data = content.decode(encoding)
@@ -171,11 +178,6 @@ class QRCode:
                 self.data = unicode(content)
             except NameError:
                 self.data = str(content)
-        
-
-        #Guess the mode of the code, this will also be used for
-        #error checking
-        guessed_content_type = self._detect_content_type(self.data)
 
         #Force a passed in mode to be lowercase
         if hasattr(mode, 'lower'):
@@ -201,6 +203,9 @@ class QRCode:
             #If numeric encoding is requested make sure the data can
             #be encoded in that format
             raise ValueError('The content cannot be encoded as numeric.')
+        elif tables.modes[mode] == tables.modes['kanji'] and \
+             guessed_content_type != 'kanji':
+            raise ValueError('The content cannot be encoded as kanji.')
         else:
             #The data should encode with the passed in mode
             self.mode = mode
@@ -257,11 +262,26 @@ class QRCode:
 
         Note, encoding 'kanji' and ECI is not yet implemented.
         """
+        def two_bytes(c):
+            """Output two byte character code as a single integer."""
+            def next_byte(b):
+                """Make sure that character code is an int. Python 2 and
+                3 compatibility.
+                """
+                if not isinstance(b, int):
+                    return ord(b)
+                else:
+                    return b
+
+            #Go through the data by looping to every other character
+            for i in range(0, len(c), 2):
+                yield (next_byte(c[i]) << 8) | next_byte(c[i+1])
+
         #See if the data is an integer
         try:
             test = int(content)
             return 'numeric'
-        except:
+        except ValueError:
             #Data is not numeric, this is not an error
             pass
 
@@ -273,16 +293,50 @@ class QRCode:
         valid_characters = valid_characters.encode('ASCII')
 
         try:
-            if all(map(lambda x: x in valid_characters, content)):
+            if isinstance(content, bytes):
+                c = content.decode('ASCII')
+            else:
+                c = content.encode('ASCII')
+
+            if all(map(lambda x: x in valid_characters, c)):
                 return 'alphanumeric'
+
+        #This occurs if the content does not contain ASCII characters.
+        #Since the whole point of the if statement is to look for ACII
+        #characters, the resulting mode should not be alphanumeric.
+        #Hence, this is not an error.
         except TypeError:
-            #This occurs if the content does not contain ASCII characters.
-            #Since the whole point of the if statement is to look for ACII
-            #characters, the resulting mode should be binary.
-            #Hence, this is not an error.
+            pass
+        except UnicodeError:
             pass
 
-        #All of the tests failed. The content can only be binary.
+        try:
+            if isinstance(content, bytes):
+                c = content.decode('shiftjis')
+            else:
+                c = content.encode('shiftjis')
+            
+            #All kanji characters must be two bytes long, make sure the
+            #string length is not odd.
+            if len(c) % 2 != 0:
+                return 'binary'
+
+            #Make sure the characters are actually in range.
+            for asint in two_bytes(c):
+                #Shift the two byte value as indicated by the standard
+                if not (0x8140 <= asint <= 0x9FFC or
+                        0xE040 <= asint <= 0xEBBF):
+                    return 'binary'
+
+            return 'kanji'
+
+        except UnicodeError:
+            #This occurs if the content does not contain Shift JIS kanji
+            #characters. Hence, the resulting mode should not be kanji.
+            #This is not an error.
+            pass
+
+        #All of the other attempts failed. The content can only be binary.
         return 'binary'
 
     def _pick_best_fit(self, content):

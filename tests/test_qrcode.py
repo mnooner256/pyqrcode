@@ -76,11 +76,17 @@ def test_unicode_utf8():
 
 
 def test_utf8_detection():
-    s = '㋡'
+    s = '㋡' #White Smiley face
     qr = pyqrcode.create(s)
     eq_('binary', qr.mode)
     eq_(s.encode('utf-8'), qr.builder.data)
 
+def test_kanji_detection():
+    s = '点茗' #Characters directly from the standard
+    qr = pyqrcode.create(s)
+    qr.png("test-kanji.png", background=(255, 255, 255), scale=4)
+    eq_('kanji', qr.mode)
+    eq_(s.encode('shiftjis'), qr.builder.data)
 
 def test_to_str():
     py2 = False
