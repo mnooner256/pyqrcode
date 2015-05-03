@@ -70,8 +70,12 @@ def test_write_png():
     # 3. Add the input string, the error level, the encoding and filename to
     #    the _REF_DATA dict
     #
-    # Caution: The reference file must have the same dimensions as the generated
-    #          image (scale = 6, quiet_zone = 4
+    # Caution: The "reference file" must have the same dimensions as the
+    #          generated image (config: scale = 6, quiet_zone = 4) and must be
+    #          black/white.
+    #
+    # If a generated image isn't equal to the reference file, the error message
+    # isn't very helpful, though.
     #
     def check(s, error_level, encoding, reference):
         qr = pyqrcode.create(s, error=err, encoding=encoding)
