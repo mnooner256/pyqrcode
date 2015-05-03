@@ -9,6 +9,8 @@ import pyqrcode
 
 def test_default_encoding():
     qr = pyqrcode.create('Märchenbücher', error='m')
+    # 1 since the data fits into version 1 if ISO/IEC 8859-1 (the default
+    # encoding) is used
     eq_(1, qr.version)
     eq_('binary', qr.mode)
 
