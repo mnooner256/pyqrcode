@@ -7,10 +7,7 @@ import io
 import os
 from nose.tools import eq_, raises
 import pyqrcode
-try:
-    import png
-except ImportError:
-    from pyqrcode import png
+from pyqrcode import png
 
 
 def test_get_png_size():
@@ -65,6 +62,17 @@ _REF_DATA = (
 
 
 def test_write_png():
+    #
+    # How does it work?
+    #
+    # 1. Generate a PNG with another QR Code generator
+    # 2. Safe the PNG into the test/ref directory
+    # 3. Add the input string, the error level, the encoding and filename to
+    #    the _REF_DATA dict
+    #
+    # Caution: The reference file must have the same dimensions as the generated
+    #          image (scale = 6, quiet_zone = 4
+    #
     def check(s, error_level, encoding, reference):
         qr = pyqrcode.create(s, error=err, encoding=encoding)
         eq_(error_level, qr.error)
