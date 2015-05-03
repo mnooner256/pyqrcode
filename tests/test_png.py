@@ -7,7 +7,7 @@ import io
 import os
 from nose.tools import eq_, raises
 import pyqrcode
-from pyqrcode import png
+import png
 
 
 def test_get_png_size():
