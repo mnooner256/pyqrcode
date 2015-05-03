@@ -136,12 +136,9 @@ class QRCode:
         #error checking
         guessed_content_type = self._detect_content_type(content)
 
-        #Store the encoding for use later
-        if encoding is None:
-            if guessed_content_type != 'kanji':
-                encoding = 'utf-8'
-            else:
-                encoding = 'shiftjis'
+        # Store the encoding for use later
+        if encoding is None and guessed_content_type == 'kanji':
+            encoding = 'shiftjis'
 
         self.encoding = encoding
         
