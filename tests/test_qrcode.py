@@ -3,6 +3,7 @@
 Different tests against the PyQRCode package.
 """
 from __future__ import unicode_literals
+import io
 from nose.tools import eq_, raises
 import pyqrcode
 
@@ -64,6 +65,7 @@ def test_binary_data():
     eq_('Märchenbuch', qr.data)
     eq_('binary', qr.mode)
 
+
 def test_unicode_utf8():
     s = '\u263A'  # ☺ (WHITE SMILING FACE)
     try:
@@ -81,12 +83,14 @@ def test_utf8_detection():
     eq_('binary', qr.mode)
     eq_(s.encode('utf-8'), qr.builder.data)
 
+
 def test_kanji_detection():
     s = '点茗' #Characters directly from the standard
     qr = pyqrcode.create(s)
-    qr.png("test-kanji.png", background=(255, 255, 255), scale=4)
+    qr.png(io.BytesI(), scale=4)
     eq_('kanji', qr.mode)
     eq_(s.encode('shiftjis'), qr.builder.data)
+
 
 def test_to_str():
     py2 = False
@@ -102,10 +106,11 @@ def test_to_str():
     else:
         try:
             str(qr)
-            #raise Exception('No Unicode error?')
+            raise Exception('No Unicode error?')
         except UnicodeError:
             pass
         unicode(qr)
+
 
 @raises(ValueError)
 def test_invalid_version():
