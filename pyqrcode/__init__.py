@@ -173,11 +173,7 @@ class QRCode:
         #The contents are not a byte array or string, so
         #try naively converting to a string representation.
         else:
-            #Python2 vs. Python3 compatibility
-            try:
-                self.data = unicode(content)
-            except NameError:
-                self.data = str(content)
+            self.data = str(content)  # str == unicode in Py2 (see file header)
 
         #Force a passed in mode to be lowercase
         if hasattr(mode, 'lower'):
@@ -277,12 +273,11 @@ class QRCode:
             for i in range(0, len(c), 2):
                 yield (next_byte(c[i]) << 8) | next_byte(c[i+1])
 
-        #See if the data is an integer
+        #See if the data is a number
         try:
-            test = int(content)
-            return 'numeric'
-        except ValueError:
-            #Data is not numeric, this is not an error
+            if str(content).isdigit():
+                return 'numeric'
+        except (TypeError, UnicodeError):
             pass
 
         #See if that data is alphanumeric based on the standards
@@ -296,7 +291,7 @@ class QRCode:
             if isinstance(content, bytes):
                 c = content.decode('ASCII')
             else:
-                c = content.encode('ASCII')
+                c = str(content).encode('ASCII')
 
             if all(map(lambda x: x in valid_characters, c)):
                 return 'alphanumeric'
