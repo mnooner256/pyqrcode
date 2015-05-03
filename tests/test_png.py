@@ -58,7 +58,7 @@ _REF_DATA = (
     ('点',           'M', 'shift_jis', 'kanji',  'kanji1_m.png'),
     ('茗',           'M', 'shift_jis', 'kanji',  'kanji2_m.png'),
     ('漢字',         'M', 'shift_jis', 'kanji',  'kanji3_m.png'),
-    ('外来語',       'L', 'shift_jis', 'kanji',  'kanji3_l.png'),
+    ('外来語',       'L', 'shift_jis', 'kanji',  'kanji4_l.png'),
 )
 
 
