@@ -57,7 +57,8 @@ _REF_DATA = (
     ('Märchen',     'Q', 'utf-8',      'binary', 'm_utf8_q.png'),
     ('点',           'M', 'shift_jis', 'kanji',  'kanji1_m.png'),
     ('茗',           'M', 'shift_jis', 'kanji',  'kanji2_m.png'),
-    ('斑点',         'L', 'shift_jis', 'kanji',  'kanji3_l.png'),
+    ('漢字',         'M', 'shift_jis', 'kanji',  'kanji3_m.png'),
+    ('外来語',       'L', 'shift_jis', 'kanji',  'kanji3_l.png'),
 )
 
 

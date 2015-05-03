@@ -173,11 +173,7 @@ class QRCode:
         #The contents are not a byte array or string, so
         #try naively converting to a string representation.
         else:
-            #Python2 vs. Python3 compatibility
-            try:
-                self.data = unicode(content)
-            except NameError:
-                self.data = str(content)
+            self.data = str(content)  # str == unicode in Py 2.x, see file head
 
         #Force a passed in mode to be lowercase
         if hasattr(mode, 'lower'):

@@ -63,13 +63,13 @@ class QRCodeBuilder:
         self.data = data
 
         #Check that the user passed in a valid mode
-        if mode in tables.modes.keys():
+        if mode in tables.modes:
             self.mode = tables.modes[mode]
         else:
             raise ValueError('{0} is not a valid mode.'.format(mode))
 
         #Check that the user passed in a valid error level
-        if error in tables.error_level.keys():
+        if error in tables.error_level:
             self.error = tables.error_level[error]
         else:
             raise ValueError('{0} is not a valid error '
@@ -131,7 +131,7 @@ class QRCodeBuilder:
 
         data_length = tables.data_length_field[max_version][self.mode]
 
-        if self.mode != 'kanji':
+        if self.mode != tables.modes['kanji']:
             length_string = self.binary_string(len(self.data), data_length)
         else:
             length_string = self.binary_string(len(self.data) / 2, data_length)
@@ -153,7 +153,6 @@ class QRCodeBuilder:
             encoded = self.encode_bytes()
         elif self.mode == tables.modes['kanji']:
             encoded = self.encode_kanji()
-
         return encoded
 
     def encode_alphanumeric(self):
@@ -260,8 +259,6 @@ class QRCodeBuilder:
 
                 #Calculate the actual 13 bit binary value
                 buf.write('{0:013b}'.format((msb * 0xC0) + lsb))
-
-
             #Return the binary string
             return buf.getvalue()
 
