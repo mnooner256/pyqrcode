@@ -21,6 +21,10 @@ _DATA_AUTODETECT = (
     ('®', 'binary'),
     ('http://www.example.org/', 'binary'),
     ('http://www.example.org/path/index.html', 'binary'),
+    ('点', 'kanji'),
+    ('茗', 'kanji'),
+    ('漢字', 'kanji'),
+    ('外来語', 'kanji'),
 )
 
 
@@ -87,7 +91,7 @@ def test_utf8_detection():
 def test_kanji_detection():
     s = '点茗' #Characters directly from the standard
     qr = pyqrcode.create(s)
-    qr.png(io.BytesI(), scale=4)
+    qr.png(io.BytesIO(), scale=4)
     eq_('kanji', qr.mode)
     eq_(s.encode('shiftjis'), qr.builder.data)
 
