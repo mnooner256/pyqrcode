@@ -48,16 +48,16 @@ def test_get_png_size_scale_float2():
 
 
 _REF_DATA = (
-    # Input string, error level, encoding, reference file
-    ('Märchenbuch', 'M', 'iso-8859-1', 'mb_latin1_m.png'),
-    ('Märchenbuch', 'M', 'utf-8', 'mb_utf8_m.png'),
-    ('Märchenbuch', 'L', 'utf-8', 'mb_utf8_l.png'),
-    ('Märchenbuch', 'H', 'utf-8', 'mb_utf8_h.png'),
-    ('Märchenbuch', 'Q', 'utf-8', 'mb_utf8_q.png'),
-    ('Märchen',     'Q', 'utf-8', 'm_utf8_q.png'),
-    ('点',           'M', 'shift_jis', 'kanji1_m.png'),
-    ('茗',           'M', 'shift_jis', 'kanji2_m.png'),
-    ('斑点',         'L', 'shift_jis', 'kanji3_l.png'),
+    # Input string, error level, encoding, mode, reference file
+    ('Märchenbuch', 'M', 'iso-8859-1', 'binary', 'mb_latin1_m.png'),
+    ('Märchenbuch', 'M', 'utf-8',      'binary', 'mb_utf8_m.png'),
+    ('Märchenbuch', 'L', 'utf-8',      'binary', 'mb_utf8_l.png'),
+    ('Märchenbuch', 'H', 'utf-8',      'binary', 'mb_utf8_h.png'),
+    ('Märchenbuch', 'Q', 'utf-8',      'binary', 'mb_utf8_q.png'),
+    ('Märchen',     'Q', 'utf-8',      'binary', 'm_utf8_q.png'),
+    ('点',           'M', 'shift_jis', 'kanji',  'kanji1_m.png'),
+    ('茗',           'M', 'shift_jis', 'kanji',  'kanji2_m.png'),
+    ('斑点',         'L', 'shift_jis', 'kanji',  'kanji3_l.png'),
 )
 
 
@@ -67,8 +67,10 @@ def test_write_png():
     #
     # 1. Generate a PNG with another QR Code generator
     # 2. Safe the PNG into the test/ref directory
-    # 3. Add the input string, the error level, the encoding and filename to
-    #    the _REF_DATA dict
+    # 3. Add the input string, the error level, the encoding, mode, and
+    #    filename to the _REF_DATA dict
+    #    The input string, error and encoding is used to create the QR Code.
+    #    The mode IS NOT handled over to the QR Code factory function "create"
     #
     # Caution: The "reference file" must have the same dimensions as the
     #          generated image (config: scale = 6, quiet_zone = 4) and must be
@@ -77,9 +79,10 @@ def test_write_png():
     # If a generated image isn't equal to the reference file, the error message
     # isn't very helpful, though.
     #
-    def check(s, error_level, encoding, reference):
+    def check(s, error_level, encoding, expected_mode, reference):
         qr = pyqrcode.create(s, error=err, encoding=encoding)
         eq_(error_level, qr.error)
+        eq_(expected_mode, qr.mode)
         scale, quiet_zone = 6, 4
         # Read reference image
         ref_width, ref_height, ref_pixels = _get_png_info(filename=_get_reference_filename(reference))
@@ -98,8 +101,8 @@ def test_write_png():
         eq_(len(ref_pixels), len(pixels))
         eq_(ref_pixels, pixels)
 
-    for s, err, encoding, ref in _REF_DATA:
-        yield check, s, err, encoding, ref
+    for s, err, encoding, mode, ref in _REF_DATA:
+        yield check, s, err, encoding, mode, ref
 
 
 @raises(ValueError)
