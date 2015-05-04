@@ -3,7 +3,7 @@
 Different tests against the PyQRCode package.
 """
 from __future__ import unicode_literals
-from nose.tools import eq_, raises
+from nose.tools import eq_, raises, ok_
 import pyqrcode
 
 
@@ -126,7 +126,11 @@ def test_kanji_bytes():
 
 def test_to_str():
     s = 'Märchen'
-    str(pyqrcode.create(s))
+    ok_(str(pyqrcode.create(s)))
+
+    s = '外来語'
+    qr = pyqrcode.create(s)
+    ok_(str(pyqrcode.create(s)))
 
 
 @raises(ValueError)
