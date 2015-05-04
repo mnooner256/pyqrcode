@@ -3,7 +3,6 @@
 Different tests against the PyQRCode package.
 """
 from __future__ import unicode_literals
-import io
 from nose.tools import eq_, raises
 import pyqrcode
 
@@ -91,7 +90,6 @@ def test_utf8_detection():
 def test_kanji_detection():
     s = '点茗' #Characters directly from the standard
     qr = pyqrcode.create(s)
-    qr.png(io.BytesIO(), scale=4)
     eq_('kanji', qr.mode)
     eq_(s.encode('shiftjis'), qr.builder.data)
 
