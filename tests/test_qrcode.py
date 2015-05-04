@@ -96,17 +96,17 @@ def test_kanji_detection():
     eq_(s.encode('shiftjis'), qr.builder.data)
 
 
-def test_kanji_enforce_byte():
+def test_kanji_enforce_binary():
     data = '点'
     # 1. Try usual mode --> kanji
     qr = pyqrcode.create(data)
     eq_('kanji', qr.mode)
-    # 2. Try another encoding --> byte
+    # 2. Try another encoding --> binary
     qr = pyqrcode.create(data, encoding='utf-8')
     eq_('binary', qr.mode)
 
 
-def test_kanji_enforce_byte2():
+def test_kanji_enforce_binary2():
     data = '点'
     qr = pyqrcode.create(data.encode('utf-8'))
     eq_('binary', qr.mode)
