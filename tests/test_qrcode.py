@@ -125,12 +125,6 @@ def test_kanji_bytes():
     eq_('kanji', qr.mode)
 
 def test_to_str():
-    py2 = False
-    try:
-        unicode
-        py2 = True
-    except NameError:
-        pass
     s = 'Märchen'
     str(pyqrcode.create(s))
 
