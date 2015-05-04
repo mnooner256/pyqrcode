@@ -20,6 +20,10 @@ _DATA_AUTODETECT = (
     ('®', 'binary'),
     ('http://www.example.org/', 'binary'),
     ('http://www.example.org/path/index.html', 'binary'),
+    ('点', 'kanji'),
+    ('茗', 'kanji'),
+    ('漢字', 'kanji'),
+    ('外来語', 'kanji'),
 )
 
 
@@ -64,6 +68,7 @@ def test_binary_data():
     eq_('Märchenbuch', qr.data)
     eq_('binary', qr.mode)
 
+
 def test_unicode_utf8():
     s = '\u263A'  # ☺ (WHITE SMILING FACE)
     try:
@@ -80,6 +85,7 @@ def test_utf8_detection():
     qr = pyqrcode.create(s)
     eq_('binary', qr.mode)
     eq_(s.encode('utf-8'), qr.builder.data)
+
 
 def test_kanji_detection():
     s = '点茗' #Characters directly from the standard
@@ -105,6 +111,27 @@ def test_kanji_encoding():
     #See if the calculated code matches the known code
     eq_(b, codewords)
 
+def test_kanji_enforce_binary():
+    data = '点'
+    # 1. Try usual mode --> kanji
+    qr = pyqrcode.create(data)
+    eq_('kanji', qr.mode)
+    # 2. Try another encoding --> binary
+    qr = pyqrcode.create(data, encoding='utf-8')
+    eq_('binary', qr.mode)
+
+
+def test_kanji_enforce_binary2():
+    data = '点'
+    qr = pyqrcode.create(data.encode('utf-8'))
+    eq_('binary', qr.mode)
+
+
+def test_kanji_bytes():
+    data = '外来語'
+    qr = pyqrcode.create(data.encode('shift_jis'))
+    eq_('kanji', qr.mode)
+
 def test_to_str():
     py2 = False
     try:
@@ -119,10 +146,11 @@ def test_to_str():
     else:
         try:
             str(qr)
-            #raise Exception('No Unicode error?')
+            raise Exception('No Unicode error?')
         except UnicodeError:
             pass
         unicode(qr)
+
 
 @raises(ValueError)
 def test_invalid_version():
