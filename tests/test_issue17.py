@@ -11,20 +11,20 @@ def test_umlaut():
     s = 'Märchenbuch'
     code = pyqrcode.create(s, error='M')
     eq_('binary', code.mode)
-    eq_(s.encode('utf-8'), code.data)
+    eq_(s.encode('iso-8859-1'), code.data)
 
 def test_ascii():
     s = 'MAERCHENBUCH'
     code = pyqrcode.create(s, error='M', encoding='utf-8')
     eq_('alphanumeric', code.mode)
-    eq_(s, code.data.decode('utf-8'))
+    eq_(s, code.data.decode('iso-8859-1'))
 
 
 def test_ascii2():
     s = 'MAERCHENBUCH'
     code = pyqrcode.create(s, error='M', encoding=None)
     eq_('alphanumeric', code.mode)
-    eq_(s, code.data.decode('utf-8'))
+    eq_(s, code.data.decode('iso-8859-1'))
 
 
 if __name__ == '__main__':
