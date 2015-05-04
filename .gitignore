@@ -1,3 +1,5 @@
+.coverage
+.tox
 *.svg
 *.pyc
 build
