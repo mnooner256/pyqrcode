@@ -421,11 +421,6 @@ class QRCodeBuilder:
         #Create a string of the needed blocks
         return ''.join([next(block) for x in range(needed_blocks)])
 
-    def _fix_exp(self, exponent):
-        """Makes sure the exponent ranges from 0 to 255."""
-        #return (exponent % 256) + (exponent // 256)
-        return exponent % 255
-
     def make_error_block(self, block, block_number):
         """This function constructs the error correction block of the
         given data block. This is *very complicated* process. To
@@ -900,39 +895,25 @@ class QRCodeBuilder:
 ##############################################################################
 
 def _get_writable(stream_or_path, mode):
-    """This method returns the `stream_or_path` parameter if it is an open
-    writable stream. Otherwise it treats the `stream_or_path` parameter as
-    file path and opens it with the given mode.
-    It is used by the svg and png methods to interpret the file parameter.
-    """
-    import os.path
-    is_stream = hasattr(stream_or_path, 'write')
-    if not is_stream:
-        # No stream provided, treat "file" as path
-        stream_or_path = open(os.path.abspath(stream_or_path), mode)
-    return stream_or_path, not is_stream
-
-def _get_file(file, mode):
     """This method returns a tuple containing the stream and a flag to indicate
     if the stream should be automatically closed.
 
-    The file parameter is returned if it is an open writable stream. Otherwise.
-    it treats the file parameter as a file path and opens it with the given
-    mode.
+    The `stream_or_path` parameter is returned if it is an open writable stream.
+    Otherwise, it treats the `stream_or_path` parameter as a file path and
+    opens it with the given mode.
 
     It is used by the svg and png methods to interpret the file parameter.
 
-    :type file: str | io.BufferedIOBase
+    :type stream_or_path: str | io.BufferedIOBase
     :type mode: str | unicode
     :rtype: (io.BufferedIOBase, bool)
     """
-    import os.path
-    #See if the file parameter is a stream
-    if not hasattr(file, 'write'):
-        #If it is not a stream open a the file path
-        return open(os.path.abspath(file), mode), True
-    else:
-        return file, False
+    is_stream = hasattr(stream_or_path, 'write')
+    if not is_stream:
+        # No stream provided, treat "stream_or_pat" as path
+        stream_or_path = open(stream_or_path, mode)
+    return stream_or_path, not is_stream
+
 
 def _get_png_size(version, scale, quiet_zone=4):
     """See: QRCode.get_png_size
@@ -944,6 +925,7 @@ def _get_png_size(version, scale, quiet_zone=4):
     """
     #Formula: scale times number of modules plus the border on each side
     return (int(scale) * tables.version_size[version]) + (2 * quiet_zone * int(scale))
+
 
 def _terminal(code, module_color='default', background='reverse', quiet_zone=4):
     """This method returns a string containing ASCII escape codes,
