@@ -79,14 +79,6 @@ def test_unicode_utf8():
     qr = pyqrcode.create(s, encoding='utf-8')
     eq_('binary', qr.mode)
 
-
-def test_utf8_detection():
-    s = '㋡' #White Smiley face
-    qr = pyqrcode.create(s)
-    eq_('binary', qr.mode)
-    eq_(s.encode('utf-8'), qr.builder.data)
-
-
 def test_kanji_detection():
     s = '点茗' #Characters directly from the standard
     qr = pyqrcode.create(s)
@@ -140,16 +132,7 @@ def test_to_str():
     except NameError:
         pass
     s = 'Märchen'
-    qr = pyqrcode.create(s)
-    if not py2:
-        str(qr)
-    else:
-        try:
-            str(qr)
-            raise Exception('No Unicode error?')
-        except UnicodeError:
-            pass
-        unicode(qr)
+    str(pyqrcode.create(s))
 
 
 @raises(ValueError)
