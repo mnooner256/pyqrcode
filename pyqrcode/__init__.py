@@ -131,11 +131,10 @@ class QRCode:
     """
     def __init__(self, content, error='H', version=None, mode=None,
                  encoding=None):
-
         #Guess the mode of the code, this will also be used for
         #error checking
         guessed_content_type = self._detect_content_type(content)
-        
+
         #Store the encoding for use later
         if guessed_content_type == 'kanji':
             encoding = 'shiftjis'
@@ -306,7 +305,7 @@ class QRCode:
 
         try:
             if isinstance(content, bytes):
-                c = content.decode('shiftjis')
+                c = content.decode('shiftjis').encode('shiftjis')
             else:
                 c = content.encode('shiftjis')
             
