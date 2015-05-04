@@ -260,7 +260,7 @@ class QRCode:
         range. If all else fails, the data is determined to be of type
         'binary.'
 
-        Note, encoding 'kanji' and ECI is not yet implemented.
+        Note, encoding ECI is not yet implemented.
         """
         def two_bytes(c):
             """Output two byte character code as a single integer."""

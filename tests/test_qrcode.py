@@ -84,9 +84,26 @@ def test_utf8_detection():
 def test_kanji_detection():
     s = '点茗' #Characters directly from the standard
     qr = pyqrcode.create(s)
-    qr.png("test-kanji.png", background=(255, 255, 255), scale=4)
     eq_('kanji', qr.mode)
     eq_(s.encode('shiftjis'), qr.builder.data)
+
+def test_kanji_encoding():
+    s = '点茗' #Characters directly from the standard
+
+    #These come from a reference image passed through the debugger
+    codewords = [128,38,207,234,168,0,236,17,236,18,75,55,241,75,140,21,
+                 117,174,242,221,243,87,199,123,50,169]
+    
+    qr = pyqrcode.create(s)
+
+    #Get the binary representation of the data for the code
+    bin_words = qr.builder.buffer.getvalue()
+
+    #Convert the data into integer bytes
+    b = [int(bin_words[i:i+8], base=2) for i in range(0, len(bin_words), 8)]
+
+    #See if the calculated code matches the known code
+    eq_(b, codewords)
 
 def test_to_str():
     py2 = False

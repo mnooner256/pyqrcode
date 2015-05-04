@@ -50,8 +50,9 @@ class QRCodeBuilder:
     Test codes were tested against:
         http://zxing.org/w/decode.jspx
 
-    Also, reference codes were generated at:
+    Also, reference codes were generat/ed at:
         http://www.morovia.com/free-online-barcode-generator/qrcode-maker.php
+        http://demos.telerik.com/aspnet-ajax/barcode/examples/qrcode/defaultcs.aspx
 
     QR code Debugger:
         http://qrlogo.kaarposoft.dk/qrdecode.html
@@ -131,7 +132,7 @@ class QRCodeBuilder:
 
         data_length = tables.data_length_field[max_version][self.mode]
 
-        if self.mode != 'kanji':
+        if self.mode != tables.modes['kanji']:
             length_string = self.binary_string(len(self.data), data_length)
         else:
             length_string = self.binary_string(len(self.data) / 2, data_length)
@@ -274,6 +275,14 @@ class QRCodeBuilder:
         self.buffer.write(self.binary_string(self.mode, 4))
         self.buffer.write(self.get_data_length())
         self.buffer.write(self.encode())
+
+        #Converts the buffer into "code word" integers.
+        #The online debugger outputs them this way, makes
+        #for easier comparisons.
+        #s = self.buffer.getvalue()
+        #for i in range(0, len(s), 8):
+        #    print(int(s[i:i+8], 2), end=',')
+        #print()
         
         #Fix for issue #3: https://github.com/mnooner256/pyqrcode/issues/3#
         #I was performing the terminate_bits() part in the encoding.
