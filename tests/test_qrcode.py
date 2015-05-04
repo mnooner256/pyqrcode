@@ -64,7 +64,7 @@ def test_invalid_mode_provided():
 
 
 def test_binary_data():
-    qr = pyqrcode.create('Märchenbuch'.encode('utf-8'))
+    qr = pyqrcode.create('Märchenbuch'.encode('utf-8'), encoding='utf-8')
     eq_('Märchenbuch', qr.data)
     eq_('binary', qr.mode)
 
