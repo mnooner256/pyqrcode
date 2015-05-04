@@ -230,7 +230,7 @@ class QRCodeBuilder:
         """This method encodes the QR code's data if its mode is
         kanji. It returns the data encoded as a binary string.
         """
-        def two_bytes():
+        def two_bytes(data):
             """Output two byte character code as a single integer."""
             def next_byte(b):
                 """Make sure that character code is an int. Python 2 and
@@ -242,12 +242,18 @@ class QRCodeBuilder:
                     return b
 
             #Go through the data by looping to every other character
-            for i in range(0, len(self.data), 2):
-                yield (next_byte(self.data[i]) << 8) | next_byte(self.data[i+1])
+            for i in range(0, len(data), 2):
+                yield (next_byte(data[i]) << 8) | next_byte(data[i+1])
 
+        #Force the data into Kanji encoded bytes
+        if isinstance(self.data, bytes):
+            data = self.data.decode('shiftjis').encode('shiftjis')
+        else:
+            data = self.data.encode('shiftjis')
+        
         #Now perform the algorithm that will make the kanji into 13 bit fields
         with io.StringIO() as buf:
-            for asint in two_bytes():
+            for asint in two_bytes(data):
                 #Shift the two byte value as indicated by the standard
                 if 0x8140 <= asint <= 0x9FFC:
                     difference = asint - 0x8140

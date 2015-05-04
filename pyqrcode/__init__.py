@@ -135,13 +135,12 @@ class QRCode:
         #Guess the mode of the code, this will also be used for
         #error checking
         guessed_content_type = self._detect_content_type(content)
-
+        
         #Store the encoding for use later
-        if encoding is None:
-            if guessed_content_type != 'kanji':
-                encoding = 'utf-8'
-            else:
-                encoding = 'shiftjis'
+        if guessed_content_type == 'kanji':
+            encoding = 'shiftjis'
+        elif encoding is None:
+            encoding = 'iso-8859-1'
 
         self.encoding = encoding
         
@@ -154,13 +153,13 @@ class QRCode:
 
         #Decode a 'byte array' contents into a string format
         if isinstance(content, bytes):
-            self.data = content.decode(encoding)
+            self.data = content.decode(self.encoding)
 
         #Encode a string an encoding
         elif hasattr(content, 'encode'):
             #Try encoding using the given value
-            if encoding is not None:
-                self.data = content.encode(encoding)
+            if self.encoding is not None:
+                self.data = content.encode(self.encoding)
             else:
                 # Try to use standard-conforming encoding
                 try:

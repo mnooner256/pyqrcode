@@ -117,7 +117,7 @@ def test_kanji_enforce_binary():
     qr = pyqrcode.create(data)
     eq_('kanji', qr.mode)
     # 2. Try another encoding --> binary
-    qr = pyqrcode.create(data, encoding='utf-8')
+    qr = pyqrcode.create(data, mode='binary', encoding='utf-8')
     eq_('binary', qr.mode)
 
 
