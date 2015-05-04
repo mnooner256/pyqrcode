@@ -112,6 +112,12 @@ def test_kanji_enforce_binary2():
     eq_('binary', qr.mode)
 
 
+def test_kanji_bytes():
+    data = '外来語'
+    qr = pyqrcode.create(data.encode('shift_jis'))
+    eq_('kanji', qr.mode)
+
+
 def test_to_str():
     py2 = False
     try:
