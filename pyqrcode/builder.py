@@ -1363,12 +1363,16 @@ def _eps(code, version, file_or_path, scale=1, module_color=(0, 0, 0),
     """
     from functools import partial
     import time
+    import textwrap
 
     def write_line(writemeth, content):
         """\
         Writes `content` and ``LF``.
         """
-        writemeth(content + '\n')
+        # Postscript: Max. 255 characters per line
+        for line in textwrap.wrap(content, 255):
+            writemeth(line)
+            writemeth('\n')
 
     def line(offset, length):
         """\
