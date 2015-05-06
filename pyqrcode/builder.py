@@ -1413,7 +1413,7 @@ def _eps(code, version, file_or_path, scale=1, module_color=(0, 0, 0),
     writeline('/M { moveto } bind def')
     writeline('/m { rmoveto } bind def')
     writeline('/l { rlineto } bind def')
-    mod_color = (0, 0, 0) if module_color == (0, 0, 0) else rgb_to_floats(module_color)
+    mod_color = module_color if module_color == (0, 0, 0) else rgb_to_floats(module_color)
     if background is not None:
         writeline('{0:f} {1:f} {2:f} setrgbcolor clippath fill'
                   .format(*rgb_to_floats(background)))
@@ -1422,7 +1422,7 @@ def _eps(code, version, file_or_path, scale=1, module_color=(0, 0, 0),
             # In case module color != black set the module RGB color later
             writeline('0 0 0 setrgbcolor')
     if mod_color != (0, 0, 0):
-        writeline('{0:f} {1:f} {2:f} setrgbcolor'.format(*rgb_to_floats(module_color)))
+        writeline('{0:f} {1:f} {2:f} setrgbcolor'.format(*mod_color))
     if scale != 1:
         writeline('{0} {0} scale'.format(scale))
     writeline('newpath')
