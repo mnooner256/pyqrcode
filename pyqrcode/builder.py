@@ -193,9 +193,12 @@ class QRCodeBuilder:
             for triplet in self.grouper(3, self.data):
                 number = ''
                 for digit in triplet:
+                    if isinstance(digit, int):
+                        digit = chr(digit)
+
                     #Only build the string if digit is not None
                     if digit:
-                        number = ''.join([number, str(digit)])
+                        number = ''.join([number, digit])
                     else:
                         break
 

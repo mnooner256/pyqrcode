@@ -336,11 +336,17 @@ class QRCode:
         """This method return the smallest possible QR code version number
         that will fit the specified data with the given error level.
         """
-        for version in range(1,41):
+        import math
+        
+        for version in range(1, 41):
             #Get the maximum possible capacity
             capacity = tables.data_capacity[version][self.error][self.mode_num]
-
+            
             #Check the capacity
+            #Kanji's count in the table is "characters" which are two bytes
+            if (self.mode_num == tables.modes['kanji'] and
+                capacity >= math.ceil(len(content) / 2)):
+                return version
             if capacity >= len(content):
                 return version
 
