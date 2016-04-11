@@ -43,6 +43,8 @@ Examples:
 #Imports required for 2.7 support
 from __future__ import absolute_import, division, print_function, with_statement, unicode_literals
 
+import io
+import base64
 import pyqrcode.tables
 import pyqrcode.builder as builder
 
@@ -462,6 +464,49 @@ class QRCode:
         """
         builder._png(self.code, self.version, file, scale,
                      module_color, background, quiet_zone)
+
+    def png_as_base64_str(self, scale=1, module_color=(0, 0, 0, 255),
+                          background=(255, 255, 255, 255), quiet_zone=4):
+        """This method execute the same of png method execute, but not require a file
+        parameter and return a PNG image encoded as base64 string
+
+        The *scale* parameter sets how large to draw a single module. By
+        default one pixel is used to draw a single module. This may make the
+        code too small to be read efficiently. Increasing the scale will make
+        the code larger. Only integer scales are usable. This method will
+        attempt to coerce the parameter into an integer (e.g. 2.5 will become 2,
+        and '3' will become 3).
+
+        The *module_color* parameter sets what color to use for the encoded
+        modules (the black part on most QR codes). The *background* parameter
+        sets what color to use for the background (the white part on most
+        QR codes). If either parameter is set, then both must be
+        set or a ValueError is raised. Colors should be specified as either
+        a list or a tuple of length 3 or 4. The components of the list must
+        be integers between 0 and 255. The first three member give the RGB
+        color. The fourth member gives the alpha component, where 0 is
+        transparent and 255 is opaque. Note, many color
+        combinations are unreadable by scanners, so be judicious.
+
+        The *quiet_zone* parameter sets how wide the quiet zone around the code
+        should be. According to the standard this should be 4 modules. It is
+        left settable because such a wide quiet zone is unnecessary in many
+        applications where the QR code is not being printed.
+
+        .. note::
+            This method depends on the pypng module to actually create the
+            PNG image.
+
+        Example:
+            >>> code = pyqrcode.create('Are you suggesting coconuts migrate?')
+            >>> image_as_str = code.png_as_base64_str(scale=5)
+            >>> html_img = '<img src="data:image/png;base64,{}">'.format(image_as_str)
+        """
+        with io.BytesIO() as virtual_file:
+            self.png(file=virtual_file, scale=scale, module_color=module_color,
+                     background=background, quiet_zone=quiet_zone)
+            image_as_str = base64.b64encode(virtual_file.getvalue()).decode("ascii")
+        return image_as_str
 
     def svg(self, file, scale=1, module_color='#000', background=None,
             quiet_zone=4, xmldecl=True, svgns=True, title=None,
