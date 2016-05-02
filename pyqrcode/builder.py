@@ -33,6 +33,7 @@ from __future__ import absolute_import, division, print_function, with_statement
 import pyqrcode.tables as tables
 import io
 import itertools
+import math
 
 class QRCodeBuilder:
     """This class generates a QR code based on the standard. It is meant to
@@ -1052,6 +1053,37 @@ def _text(code, quiet_zone=4):
         buf.write('\n')
 
     return buf.getvalue()
+
+def _xbm(code, quiet_zone=4, zoom=5):
+    """This function will format the QR code as a X BitMap.
+    This can be used to display the QR code with Tkinter.
+    """
+    # Calculate the width in pixels
+    pixel_width = (len(code[0]) + quiet_zone * 2) * zoom
+    # Add the size information and open the pixel data section
+    buf = '#define im_width {}\n#define im_height {}\nstatic char im_bits[] = {{\n'.format(pixel_width, pixel_width)
+    # Calculate the number of bytes per row
+    byte_width = int(math.ceil(pixel_width / 8.0))
+    # Add the top quiet zone
+    buf += ('0x00,' * byte_width + '\n') * quiet_zone * zoom
+    for row in code:
+        # Add the left quiet zone
+        row_bits = '0' * quiet_zone * zoom
+        # Add the actual QR code
+        for pixel in row:
+            row_bits += str(pixel) * zoom
+        # Add the right quiet zone
+        row_bits += '0' * quiet_zone * zoom
+        # Format the row
+        formated_row = ''
+        for b in range(byte_width):
+            formated_row += '0x{:02x},'.format(int(row_bits[:8][::-1], 2))
+            row_bits = row_bits[8:]
+        formated_row += '\n'
+        # Add the formatted row
+        buf += formated_row * zoom
+    # Add the bottom quiet zone and close the pixel data section
+    return buf + ('0x00,' * byte_width + '\n') * quiet_zone * zoom + '};'
 
 def _svg(code, version, file, scale=1, module_color='#000', background=None,
          quiet_zone=4, xmldecl=True, svgns=True, title=None, svgclass='pyqrcode',

@@ -622,3 +622,7 @@ class QRCode:
             >>> print(text)
         """
         return builder._text(self.code, quiet_zone)
+
+    def xbm(self, quiet_zone=4, zoom=5):
+        return builder._xbm(self.code, quiet_zone, zoom)
+
