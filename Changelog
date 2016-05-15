@@ -3,8 +3,8 @@
 * Added ability to output PNG QR codes as a base64 string. Allows coded to be
   created for web services without the need to create intermediary files.
   Thanks to [Fábio C. Barrionuevo da Luz (luzfcb)](https://github.com/luzfcb)
-* Added renderer for XBM. Thanks to
-  [Seth VanHeulen (svanheulen)](https://github.com/svanheulen)
+* Added renderer for XBM. Displaying QR codes in Tkinter is now extreamly
+  simple. Thanks to [Seth VanHeulen (svanheulen)](https://github.com/svanheulen)
 
 # 1.1.1
 * Fix for issue #38, where numeric encodings got broken by added unicode support.

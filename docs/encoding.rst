@@ -49,21 +49,30 @@ characters. It encodes:
 
 A complete list of the possible characters can be found in the
 :py:data:`pyqrcode.tables.ascii_codes` dictionary. While limited, this encoding
-is much more efficient than using the binary encoding, in many cases.
-
-.. note::
-   The QRCode object will try to use this encoding by using the
-   string.upper() method. In other words, it will change the case of input
-   if this encoding is selected. If the content's case matters then be sure
-   to explicitly set the mode to binary.
-
-Luckily, the available characters will let you encode a URL
-(the string is uppercased automatically).
+is much more efficient than using the binary encoding, in many cases. Luckily,
+the available characters will let you encode a URL.
 
 .. code-block:: python
 
-  >>> url = pyqrcode.create('http://uca.edu')
+  >>> url = pyqrcode.create('http://uca.edu'.upper())
 
+Kanji
+=====
+
+The final mode allows for the encoding of Kanji characters. Denso Wave, the
+creators of the QR code, is a Japenese company. Hence, they made special
+provisions for using QR codes with Japenese text.
+
+Only one python string encoding for Kanji characters is supported, shift-jis. 
+The auto-detection algorithm will try to encode the given string as shift-jis.
+if the characters are supported, then the mode will be set to kanji.
+Alternatively, you can explicitly define the data's encoding.
+
+.. code-block:: python
+
+  >>> utf8 = 'モンティ'.encode('utf-8')
+  >>> monty = pyqrcode.create(utf8, encoding='utf-8')
+  >>> python = pyqrcode.create('錦蛇')
 
 Binary
 ======
@@ -81,10 +90,3 @@ characters will not have their case changed.
 
   >>> life = pyqrcode.create('''MR. CREOSOTE: Better get a bucket. I'm going to throw up.
       MAITRE D: Uh, Gaston! A bucket for monsieur. There you are, monsieur.''')
-
-Kanji
-=====
-
-There is one other encoding. This mode is used for Kanji characters. This
-mode is unimplemented at this time because I don't speak Japanese. If anyone
-wants to help me write an encoder for Kanji, shoot me an email.

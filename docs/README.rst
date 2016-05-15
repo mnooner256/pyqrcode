@@ -21,7 +21,6 @@ possible. The terminology and the encodings used in pyqrcode come directly
 from the standard. This module also follows the algorithm laid out in the
 standard.
 
-
 **Homepage**: https://github.com/mnooner256/pyqrcode
 
 **Documentation**: http://pythonhosted.org/PyQRCode/
@@ -29,7 +28,7 @@ standard.
 Requirements
 ============
 
-The pyqrcode module only requires Python 2.7, Python 2.6, or Python 3. You may
+The pyqrcode module only requires Python 2.6, Python 2.7, or Python 3. You may
 want to install `pypng <https://pypi.python.org/pypi/pypng/>`_ in order to
 render PNG files, but it is optional. Note, pypng is a pure python PNG writer
 which does not require any other libraries.
@@ -42,7 +41,7 @@ command::
 
     $ pip install pyqrcode
 
-or from the terminal::
+Or from the terminal::
 
     $ python setup.py install
 

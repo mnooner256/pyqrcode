@@ -90,22 +90,23 @@ def create(content, error='H', version=None, mode=None, encoding=None):
     of data. That way all of the generated codes would have the same size.
 
     The *mode* parameter specifies how the contents will be encoded. By
-    default, the best possible encoding for the contents is guessed. There
-    are four possible encoding methods. First, is 'numeric' which is
+    default, the best possible mode for the contents is guessed. There
+    are four possible modes. First, is 'numeric' which is
     used to encode integer numbers. Next, is 'alphanumeric' which is
     used to encode some ASCII characters. This mode uses only a limited
     set of characters. Most problematic is that it can only use upper case
     English characters, consequently, the content parameter will be
     subjected to str.upper() before encoding. See tables.ascii_codes for
-    a complete list of available characters. We then have 'binary' encoding
+    a complete list of available characters. The is 'kanji' mode can be
+    used for Japanese characters, but only those that can be understood
+    via the shift-jis string encoding. Finally, we then have 'binary' mode
     which just encodes the bytes directly into the QR code (this encoding
-    is the least efficient). Finally, there is 'kanji'  encoding (i.e.
-    Japanese characters), this encoding is unimplemented at this time.
+    is the least efficient).
 
     The *encoding* parameter specifies how the content will be interpreted.
     This parameter only matters if the *content* is a string, unicode, or
-    byte array type. This parameter must be a valid encoding string. It will
-    be passed the *content*'s encode/decode methods.
+    byte array type. This parameter must be a valid encoding string or None. 
+    t will be passed the *content*'s encode/decode methods.
     """
     return QRCode(content, error, version, mode, encoding)
 

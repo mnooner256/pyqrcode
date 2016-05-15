@@ -87,7 +87,6 @@ color palette. What color that index actually corresponds to is system
 dependent. In other words, while most terminal emulators support 256 colors,
 the there is no way to tell what color will be actually displayed.
 
-
 Image Rendering
 ===============
 
@@ -105,20 +104,48 @@ use the QR code. Generally, three, four, or five will result in small but
 scanable QR codes.
 
 QR codes are also supposed to have a :term:`quiet zone` around them. This area
-is four modules wide on each side. It is designed for scanning on a printed
-area. For electronic usages, this may be unnecessary. Each of the renderers
-that allows you to set this distance.
+is four modules wide on each side. The purpose of the quiet zone is to make
+scanning a printed area more reliable. For electronic usages, this may be
+unnecessary depending on how the code is being displayed. Each of the renderers
+allows you to set the size of the quiet zone.
 
-Both renderers, also, allow you to set the :term:`module` and background colors.
+Many of the renderers, also, allow you to set the :term:`module` and background
+colors. Although, how the colors are represented are renderer specific.
 
-Although, how the colors are represented are renderer specific.
+XBM Rendering
+-------------
+
+The XBM file format is a simple black and white image format. The image data
+takes the form of a valid C header file. XBM rendering is handled via the
+:py:meth:`pyqrcode.QRCode.xbm` method.
+
+XMB's are natively supported by Tkinter. This makes displaying QR codes in a
+Tkinter application very simple.
+
+.. code-block:: python
+
+    >>> import pyqrcode
+    >>> import tkinter
+    >>> # Create and render the QR code
+    >>> code = pyqrcode.create('Knights who say ni!')
+    >>> code_xbm = code.xbm(scale=5)
+    >>> # Create a tk window
+    >>> top = tkinter.Tk()
+    >>> # Make generate the bitmap image from the redered code
+    >>> code_bmp = tkinter.BitmapImage(data=code_xbm)
+    >>> # Set the code to have a white background,
+    >>> # instead of transparent
+    >>> code_bmp.config(background="white")
+    >>> # Bitmaps are accepted by lots of Widgets
+    >>> label = tkinter.Label(image=code_bmp)
+    >>> # The QR code is now visible
+    >>> label.pack()
 
 Scalable Vector Graphic (SVG)
 -----------------------------
 
 The SVG renderer outputs the QR code as a scalable vector graphic using
-the :py:meth:`pyqrcode.QRCode.svg` method. *This renderer does not require any
-external modules.*
+the :py:meth:`pyqrcode.QRCode.svg` method.
 
 The method draws the QR code using a set of paths. By default, no background is
 drawn, i.e. the resulting code has a transparent background. The
@@ -201,5 +228,7 @@ black, and the background modules colored white.
 
 .. code-block:: python
 
-  >>> url.png('uca-colors.png', scale=6, module_color=[0, 0, 0, 128], background=[0xff, 0xff, 0xcc])
+  >>> url.png('uca-colors.png', scale=6, 
+  ...         module_color=[0, 0, 0, 128], 
+  ...         background=[0xff, 0xff, 0xcc])
 

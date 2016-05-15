@@ -8,10 +8,10 @@ creating QR codes. Most codes can be created using only two lines of code!
 Unlike other generators, all of the helpers can be controlled manually. You are
 free to set any or all of the properties of your QR code.
 
-QR codes can be saved as SVG, PNG (by using the
+QR codes can be saved as SVG, XBM, EPS, PNG (by using the
 [pypng](https://pypi.python.org/pypi/pypng/) module), or plain text. They can
-also be displayed directly in most Linux terminal emulators. PIL is
-not used to render the image files.
+also be displayed directly in most Linux terminal emulators and Tkinter. PIL
+is not used to render the image files.
 
 The pyqrcode module attempts to follow the QR code standard as closely as
 possible. The terminology and the encodings used in pyqrcode come directly
@@ -21,7 +21,7 @@ standard.
 Requirements
 -------------------------
 
-The pyqrcode module only requires Python 2.6, Python 2.7 or Python 3. You may
+The pyqrcode module only requires Python 2.6, Python 2.7, or Python 3. You may
 want to install pypng in order to render PNG files, but it is optional.
 
 Installation
@@ -34,7 +34,7 @@ command:
 $ pip install pyqrcode
 ```
 
-or from the code
+Or from the code
 
 ```bash
 $ python setup.py install
@@ -48,6 +48,8 @@ You can construct the class normally, or use the *create* wrapper function.
 
 ```python
 >>> import pyqrcode
+>>> qr = pyqrcode.create('Unladden swallow')
+>>> qr.png('famous-joke.png', scale=5)
 ```
 
 PyPi
@@ -59,8 +61,10 @@ PyPi
 
 ### Encoding Data ###
 
-This module supports three encodings for data: numeric, alphanumeric, and
-binary. The numeric type is the most efficient way to encode digits. As the
+This module supports all four encodings for data: numeric, alphanumeric, kanji,
+and binary.
+
+The numeric type is the most efficient way to encode digits. As the
 name implies it is designed to encode integers. Some numbers might be two
 large, the object can use a string containing only digits instead of an
 actual number.
@@ -71,15 +75,10 @@ actual number.
 
 The alphanumeric type is very limited in that it can only encode some ASCII
 characters. It encodes: uppercase letters, 0-9, the horizontal space, and eight
-punctuation characters. A complete list of the possible characters that
-can be encoded can be found in the  pyqrcode.tables.ascii_codes dictionary. The
-available characters will let you encode a URL (note that you have to transform
-the characters to upper-case otherwise the ``create`` function will use the
-``binary`` encoding automatically).
-
+punctuation characters. The available characters will let you encode a URL 
 
 ```python
->>> url = pyqrcode.create('http://uca.edu'.upper())
+>>> url = pyqrcode.create('http://uca.edu')
 ```
 
 When all else fails the data can be encoded in pure binary. The quotation below
@@ -90,10 +89,7 @@ and the new line character.
 >>> life = pyqrcode.create('''MR. CREOSOTE: Better get a bucket. I'm going to throw up.
     MAITRE D: Uh, Gaston! A bucket for monsieur. There you are, monsieur.''')
 ```
-There two other encodings that are unimplemented. The first is used for Kanji
-characters. This encoding is unimplemented at this time because I don't speak
-Japanese. If anyone wants to help me write an encoder for Kanji, shoot me an
-email. The other is ECI mode which allows for multiple encodings in one QR
+The only unimplemented encoding is ECI mode which allows for multiple encodings in one QR
 code (this will be implemented in a future version).
 
 ### Manually Setting The QR Code's Properties ###
@@ -134,13 +130,11 @@ forces the encoding to be binary (rather than numeric).
 
 ### Rendering ###
 
-There are four possible formats for rendering the QR Code. The first is
+There are many possible formats for rendering the QR Code. The first is
 to render it as a string of 1's and 0's. This is method is used to help end
 users create their own renderer. It is also possible to print the
 code such that it is directly displayable in most Linux terminals.
-There are also two image based renderers. Both allow you to set the colors
-used. They also take a scaling factor, that way each module is not rendered as
-1 pixel.
+There are several image based renderers.
 
 The terminal renderer outputs a string of ASCII escape codes that when
 displayed in a compatible terminal, will display a valid QR code. The
