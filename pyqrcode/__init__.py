@@ -43,8 +43,6 @@ Examples:
 #Imports required for 2.7 support
 from __future__ import absolute_import, division, print_function, with_statement, unicode_literals
 
-import io
-import base64
 import pyqrcode.tables
 import pyqrcode.builder as builder
 
@@ -502,6 +500,9 @@ class QRCode:
             >>> image_as_str = code.png_as_base64_str(scale=5)
             >>> html_img = '<img src="data:image/png;base64,{}">'.format(image_as_str)
         """
+        import io
+        import base64
+        
         with io.BytesIO() as virtual_file:
             self.png(file=virtual_file, scale=scale, module_color=module_color,
                      background=background, quiet_zone=quiet_zone)
