@@ -353,6 +353,44 @@ class QRCode:
         raise ValueError('The data will not fit in any QR code version '
                          'with the given encoding and error level.')
 
+    def show(self, wait=1.2, scale=10, module_color=(0, 0, 0, 255),
+            background=(255, 255, 255, 255), quiet_zone=4):
+        """Displays this QR code.
+
+        This method is mainly intended for debugging purposes.
+
+        This method saves the output of the :py:meth:`png` method (with a default
+        scaling factor of 10) to a temporary file and opens it with the
+        standard PNG viewer application or within the standard webbrowser. The
+        temporary file is deleted afterwards.
+
+        If this method does not show any result, try to increase the `wait`
+        parameter. This parameter specifies the time in seconds to wait till
+        the temporary file is deleted. Note, that this method does not return
+        until the provided amount of seconds (default: 1.2) has passed.
+
+        The other parameters are simply passed on to the `png` method.
+        """
+        import os
+        import time
+        import tempfile
+        import webbrowser
+ 
+        try:  # Python 2
+            from urlparse import urljoin
+            from urllib import pathname2url
+        except ImportError:  # Python 3
+            from urllib.parse import urljoin
+            from urllib.request import pathname2url
+
+        f = tempfile.NamedTemporaryFile('wb', suffix='.png', delete=False)
+        self.png(f, scale=scale, module_color=module_color,
+                 background=background, quiet_zone=quiet_zone)
+        f.close()
+        webbrowser.open_new_tab(urljoin('file:', pathname2url(f.name)))
+        time.sleep(wait)
+        os.unlink(f.name)
+        
     def get_png_size(self, scale=1, quiet_zone=4):
         """This is method helps users determine what *scale* to use when
         creating a PNG of this QR code. It is meant mostly to be used in the
@@ -378,43 +416,6 @@ class QRCode:
         """
         return builder._get_png_size(self.version, scale, quiet_zone)
 
-    def show(self, wait=1.2, scale=10, module_color=(0, 0, 0, 255),
-            background=(255, 255, 255, 255), quiet_zone=4):
-        """Displays this QR code.
-
-        This method is mainly intended for debugging purposes.
-
-        This method saves the output of the `png` method (with a default
-        scaling factor of 10) to a temporary file and opens it with the
-        standard PNG viewer application or within the standard webbrowser. The
-        temporary file is deleted afterwards.
-
-        If this method does not show any result, try to increase the `wait`
-        parameter. This parameter specifies the time in seconds to wait till
-        the temporary file is deleted. Note, that this method does not return
-        until the provided amount of seconds (default: 1.2) has passed.
-
-        The other parameters are simply passed on to the `png` method.
-        """
-        import os
-        import time
-        import tempfile
-        import webbrowser
-        try:  # Python 2
-            from urlparse import urljoin
-            from urllib import pathname2url
-        except ImportError:  # Python 3
-            from urllib.parse import urljoin
-            from urllib.request import pathname2url
-
-        f = tempfile.NamedTemporaryFile('wb', suffix='.png', delete=False)
-        self.png(f, scale=scale, module_color=module_color,
-                 background=background, quiet_zone=quiet_zone)
-        f.close()
-        webbrowser.open_new_tab(urljoin('file:', pathname2url(f.name)))
-        time.sleep(wait)
-        os.unlink(f.name)
-
     def png(self, file, scale=1, module_color=(0, 0, 0, 255),
             background=(255, 255, 255, 255), quiet_zone=4):
         """This method writes the QR code out as an PNG image. The resulting
@@ -435,7 +436,8 @@ class QRCode:
         code too small to be read efficiently. Increasing the scale will make
         the code larger. Only integer scales are usable. This method will
         attempt to coerce the parameter into an integer (e.g. 2.5 will become 2,
-        and '3' will become 3).
+        and '3' will become 3). You can use the :py:meth:`get_png_size` method
+        to calculate the actual pixel size of the resulting PNG image.
 
         The *module_color* parameter sets what color to use for the encoded
         modules (the black part on most QR codes). The *background* parameter
@@ -463,6 +465,34 @@ class QRCode:
         builder._png(self.code, self.version, file, scale,
                      module_color, background, quiet_zone)
 
+    def png_as_base64_str(self, scale=1, module_color=(0, 0, 0, 255),
+                          background=(255, 255, 255, 255), quiet_zone=4):
+        """This method uses the png render and returns the PNG image encoded as
+        base64 string. This can be useful for creating dynamic PNG images for
+        web development, since no file needs to be created.
+        
+        Example:
+            >>> code = pyqrcode.create('Are you suggesting coconuts migrate?')
+            >>> image_as_str = code.png_as_base64_str(scale=5)
+            >>> html_img = '<img src="data:image/png;base64,{}">'.format(image_as_str)
+
+        The parameters are passed directly to the :py:meth:`png` method. Refer
+        to that method's documentation for the meaning behind the parameters.
+        
+        .. note::
+            This method depends on the pypng module to actually create the
+            PNG image.
+
+        """
+        import io
+        import base64
+        
+        with io.BytesIO() as virtual_file:
+            self.png(file=virtual_file, scale=scale, module_color=module_color,
+                     background=background, quiet_zone=quiet_zone)
+            image_as_str = base64.b64encode(virtual_file.getvalue()).decode("ascii")
+        return image_as_str
+
     def svg(self, file, scale=1, module_color='#000', background=None,
             quiet_zone=4, xmldecl=True, svgns=True, title=None,
             svgclass='pyqrcode', lineclass='pyqrline', omithw=False,
@@ -474,6 +504,7 @@ class QRCode:
 
         The *file* parameter is used to specify where to write the document
         to. It can either be a writable stream or a file path.
+        
         The *scale* parameter sets how large to draw
         a single module. By default one pixel is used to draw a single
         module. This may make the code too small to be read efficiently.
@@ -608,8 +639,8 @@ class QRCode:
     def text(self, quiet_zone=4):
         """This method returns a string based representation of the QR code.
         The data modules are represented by 1's and the background modules are
-        represented by 0's. The main purpose of this method is to allow a user
-        to write their own renderer.
+        represented by 0's. The main purpose of this method is to act a
+        starting point for users to create their own renderers.
 
         The *quiet_zone* parameter sets how wide the quiet zone around the code
         should be. According to the standard this should be 4 modules. It is
