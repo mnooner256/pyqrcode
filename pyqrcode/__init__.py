@@ -133,13 +133,14 @@ class QRCode:
                  encoding='iso-8859-1'):
         #Guess the mode of the code, this will also be used for
         #error checking
-        guessed_content_type = self._detect_content_type(content, encoding)
+        guessed_content_type, encoding = self._detect_content_type(content, encoding)
+        
+        if encoding is None:
+            encoding = 'iso-8859-1'
 
         #Store the encoding for use later
         if guessed_content_type == 'kanji':
             self.encoding = 'shiftjis'
-        elif encoding is None:
-            self.encoding = 'iso-8859-1'
         else:
             self.encoding = encoding
         
@@ -152,21 +153,12 @@ class QRCode:
 
         #Decode a 'byte array' contents into a string format
         if isinstance(content, bytes):
-            self.data = content.decode(self.encoding)
+            self.data = content.decode(encoding)
+            print(encoding)
 
-        #Encode a string an encoding
+        #Give a string an encoding
         elif hasattr(content, 'encode'):
-            #Try encoding using the given value
-            if self.encoding is not None:
-                self.data = content.encode(self.encoding)
-            else:
-                # Try to use standard-conforming encoding
-                try:
-                    self.data = content.encode('iso-8859-1')
-                    self.encoding = 'iso-8859-1'
-                except UnicodeError:
-                    self.data = content.encode('utf-8')
-                    self.encoding = 'utf-8'
+            self.data = content.encode(self.encoding)
 
         #The contents are not a byte array or string, so
         #try naively converting to a string representation.
@@ -253,6 +245,8 @@ class QRCode:
         The code's data is tested to make sure it fits inside this limited
         range. If all else fails, the data is determined to be of type
         'binary.'
+        
+        Returns a tuple containing the detected mode and encoding.
 
         Note, encoding ECI is not yet implemented.
         """
@@ -274,7 +268,7 @@ class QRCode:
         #See if the data is a number
         try:
             if str(content).isdigit():
-                return 'numeric'
+                return 'numeric', encoding
         except (TypeError, UnicodeError):
             pass
 
@@ -292,10 +286,10 @@ class QRCode:
                 c = str(content).encode('ASCII')
 
             if all(map(lambda x: x in valid_characters, c)):
-                return 'alphanumeric'
+                return 'alphanumeric', 'ASCII'
 
         #This occurs if the content does not contain ASCII characters.
-        #Since the whole point of the if statement is to look for ACII
+        #Since the whole point of the if statement is to look for ASCII
         #characters, the resulting mode should not be alphanumeric.
         #Hence, this is not an error.
         except TypeError:
@@ -315,16 +309,16 @@ class QRCode:
             #All kanji characters must be two bytes long, make sure the
             #string length is not odd.
             if len(c) % 2 != 0:
-                return 'binary'
+                return 'binary', encoding
 
             #Make sure the characters are actually in range.
             for asint in two_bytes(c):
                 #Shift the two byte value as indicated by the standard
                 if not (0x8140 <= asint <= 0x9FFC or
                         0xE040 <= asint <= 0xEBBF):
-                    return 'binary'
+                    return 'binary', encoding
 
-            return 'kanji'
+            return 'kanji', encoding
 
         except UnicodeError:
             #This occurs if the content does not contain Shift JIS kanji
@@ -333,7 +327,7 @@ class QRCode:
             pass
 
         #All of the other attempts failed. The content can only be binary.
-        return 'binary'
+        return 'binary', encoding
 
     def _pick_best_fit(self, content):
         """This method return the smallest possible QR code version number

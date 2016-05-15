@@ -102,6 +102,21 @@ def test_kanji_encoding():
 
     #See if the calculated code matches the known code
     eq_(b, codewords)
+    
+def test_kanji_tranform_encoding():
+    """Test the encoding can be set to shiftjis for utf-8 encoding.
+    """
+    s = 'モンティ'
+    s = '点茗' #Characters directly from the standard
+    
+    #Encode the string as utf-8 *not* shiftjis
+    utf8 = s.encode('utf-8')
+    
+    qr = pyqrcode.create(utf8, encoding='utf-8')
+    
+    eq_(qr.mode, 'kanji')
+    eq_(qr.encoding, 'shiftjis')
+    
 
 def test_kanji_enforce_binary():
     data = '点'
