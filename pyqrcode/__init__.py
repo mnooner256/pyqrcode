@@ -492,6 +492,40 @@ class QRCode:
                      background=background, quiet_zone=quiet_zone)
             image_as_str = base64.b64encode(virtual_file.getvalue()).decode("ascii")
         return image_as_str
+        
+    def xbm(self, scale=1, quiet_zone=4):
+        """Returns a string representing an XBM image of the QR code.
+        The XBM format is a black and white image format that looks like a
+        C header file. 
+        
+        Example of using this renderer with Tkinter:
+            >>> import pyqrcode
+            >>> import tkinter
+            >>> code = pyqrcode.create('Knights who say ni!')
+            >>> code_xbm = code.xbm(scale=5)
+            >>>
+            >>> top = tkinter.Tk()
+            >>> code_bmp = tkinter.BitmapImage(data=code_xbm)
+            >>> code_bmp.config(foreground="black")
+            >>> code_bmp.config(background="white")
+            >>> label = tkinter.Label(image=code_bmp)
+            >>> label.pack()
+
+        
+        The *scale* parameter sets how large to draw a single module. By
+        default one pixel is used to draw a single module. This may make the
+        code too small to be read efficiently. Increasing the scale will make
+        the code larger. Only integer scales are usable. This method will
+        attempt to coerce the parameter into an integer (e.g. 2.5 will become 2,
+        and '3' will become 3). You can use the :py:meth:`get_png_size` method
+        to calculate the actual pixel size of this image when displayed.
+
+        The *quiet_zone* parameter sets how wide the quiet zone around the code
+        should be. According to the standard this should be 4 modules. It is
+        left settable because such a wide quiet zone is unnecessary in many
+        applications where the QR code is not being printed.
+        """
+        return builder._xbm(self.code, scale, quiet_zone)
 
     def svg(self, file, scale=1, module_color='#000', background=None,
             quiet_zone=4, xmldecl=True, svgns=True, title=None,
@@ -653,7 +687,4 @@ class QRCode:
             >>> print(text)
         """
         return builder._text(self.code, quiet_zone)
-
-    def xbm(self, quiet_zone=4, zoom=5):
-        return builder._xbm(self.code, quiet_zone, zoom)
 

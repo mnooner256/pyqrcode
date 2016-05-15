@@ -920,7 +920,7 @@ def _get_writable(stream_or_path, mode):
     """
     is_stream = hasattr(stream_or_path, 'write')
     if not is_stream:
-        # No stream provided, treat "stream_or_pat" as path
+        # No stream provided, treat "stream_or_path" as path
         stream_or_path = open(stream_or_path, mode)
     return stream_or_path, not is_stream
 
@@ -1054,26 +1054,29 @@ def _text(code, quiet_zone=4):
 
     return buf.getvalue()
 
-def _xbm(code, quiet_zone=4, zoom=5):
+def _xbm(code, scale=1, quiet_zone=4):
     """This function will format the QR code as a X BitMap.
     This can be used to display the QR code with Tkinter.
     """
     # Calculate the width in pixels
-    pixel_width = (len(code[0]) + quiet_zone * 2) * zoom
+    pixel_width = (len(code[0]) + quiet_zone * 2) * scale
+    
     # Add the size information and open the pixel data section
     buf = '#define im_width {}\n#define im_height {}\nstatic char im_bits[] = {{\n'.format(pixel_width, pixel_width)
+    
     # Calculate the number of bytes per row
     byte_width = int(math.ceil(pixel_width / 8.0))
+    
     # Add the top quiet zone
-    buf += ('0x00,' * byte_width + '\n') * quiet_zone * zoom
+    buf += ('0x00,' * byte_width + '\n') * quiet_zone * scale
     for row in code:
         # Add the left quiet zone
-        row_bits = '0' * quiet_zone * zoom
+        row_bits = '0' * quiet_zone * scale
         # Add the actual QR code
         for pixel in row:
-            row_bits += str(pixel) * zoom
+            row_bits += str(pixel) * scale
         # Add the right quiet zone
-        row_bits += '0' * quiet_zone * zoom
+        row_bits += '0' * quiet_zone * scale
         # Format the row
         formated_row = ''
         for b in range(byte_width):
@@ -1081,9 +1084,9 @@ def _xbm(code, quiet_zone=4, zoom=5):
             row_bits = row_bits[8:]
         formated_row += '\n'
         # Add the formatted row
-        buf += formated_row * zoom
+        buf += formated_row * scale
     # Add the bottom quiet zone and close the pixel data section
-    return buf + ('0x00,' * byte_width + '\n') * quiet_zone * zoom + '};'
+    return buf + ('0x00,' * byte_width + '\n') * quiet_zone * scale + '};'
 
 def _svg(code, version, file, scale=1, module_color='#000', background=None,
          quiet_zone=4, xmldecl=True, svgns=True, title=None, svgclass='pyqrcode',
