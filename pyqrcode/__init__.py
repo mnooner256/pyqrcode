@@ -130,18 +130,18 @@ class QRCode:
         function.
     """
     def __init__(self, content, error='H', version=None, mode=None,
-                 encoding=None):
+                 encoding='iso-8859-1'):
         #Guess the mode of the code, this will also be used for
         #error checking
-        guessed_content_type = self._detect_content_type(content)
+        guessed_content_type = self._detect_content_type(content, encoding)
 
         #Store the encoding for use later
         if guessed_content_type == 'kanji':
-            encoding = 'shiftjis'
+            self.encoding = 'shiftjis'
         elif encoding is None:
-            encoding = 'iso-8859-1'
-
-        self.encoding = encoding
+            self.encoding = 'iso-8859-1'
+        else:
+            self.encoding = encoding
         
         if version is not None:
             if 1 <= version <= 40:
@@ -245,7 +245,7 @@ class QRCode:
         return "QRCode(content={0}, error='{1}', version={2}, mode='{3}')" \
                 .format(repr(self.data), self.error, self.version, self.mode)
 
-    def _detect_content_type(self, content):
+    def _detect_content_type(self, content, encoding):
         """This method tries to auto-detect the type of the data. It first
         tries to see if the data is a valid integer, in which case it returns
         numeric. Next, it tests the data to see if it is 'alphanumeric.' QR
@@ -305,7 +305,10 @@ class QRCode:
 
         try:
             if isinstance(content, bytes):
-                c = content.decode('shiftjis').encode('shiftjis')
+                if encoding is None:
+                    encoding = 'shiftjis'
+
+                c = content.decode(encoding).encode('shiftjis')
             else:
                 c = content.encode('shiftjis')
             
@@ -497,6 +500,10 @@ class QRCode:
         """Returns a string representing an XBM image of the QR code.
         The XBM format is a black and white image format that looks like a
         C header file. 
+        
+        Because displaying QR codes in Tkinter is the
+        primary use case for this renderer, this method does not take a file
+        parameter. Instead it retuns the rendered QR code data as a string.
         
         Example of using this renderer with Tkinter:
             >>> import pyqrcode
