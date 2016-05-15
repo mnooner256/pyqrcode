@@ -149,7 +149,24 @@ def png_as_matrix(buff, quiet_zone):
 
 
 def png_png_as_base64_str():
-    expected_str = "iVBORw0KGgoAAAANSUhEUgAAAOEAAADhAQAAAAAWyO/XAAACIklEQVR4nO2YMXKrQBBER6WAkCPsTaSLUbVU6WLmJhyBkIDSuLtXxtgu/8DBbwUiQMBTMMzsdM8S+Y9jjBd90b/SJSJOS831upyzu/e3zDc86sy0Zk7LUPKtHyMu/RbdhIDddMAtws17REH0Q8FtlGeguZX10ufcMYn5PDSQSSRR9X0Gqvqec2US1xOe/ay+gaoXVNWP049O+f9UB9KJ0znjmre5+64qDsqWREERZzCTG35ZaTNlkE3IkkJWZ572mE2U637iWuMDLL06U0bmzkwRZFJj78gf6ptzC9xLkUk2J8uLSCG0sbLSnZmOAYOsLYkSD5jSba++jZZ81PeW6wVJXIMeYKZb7AoyB00JHpB7fU2Ui58tidOAnDKxgavOS9mXV7mQTAnplIKYKTQCLSkrOiOTqu/hjVwULXnpR81csTa/zKN3eyi88bRoHAzOOePjyk4RMyRN4oHmpIHv/eGi1A32AiQjPlrj4N0mSpdsVsQ5DMMEZotPNXPRFnM0jaWaJSW3mCmnB6w1Chkkg9NhnKQmXspZXt7N/E34C3Zodc+zi3LBAdAg24ZDs0WaKfSU9dXmJx+T9BBmqkPPtIdVc3Kj7aXal2lnzcD1gWRavu7aHLS2lsR0gw5tBrkcV52H6tuIbrfHK8Rhh2ulQxtXIR7JwOunbngpp5vCj0mRx+nLRVVfDcz6YqNeqHaqXhBN+tFYvs2EFvr78aIv+kf6Dm6Pdk09JdaJAAAAAElFTkSuQmCC"
+    """\
+    Test PNG to Base64 converions using a known Base64 string.
+    """
+    expected_str = "iVBORw0KGgoAAAANSUhEUgAAAOEAAADhAQAAAAAWyO/XAAACIklEQVR4n"\
+                   "O2YMXKrQBBER6WAkCPsTaSLUbVU6WLmJhyBkIDSuLtXxtgu/8DBbwUiQMB"\
+                   "TMMzsdM8S+Y9jjBd90b/SJSJOS831upyzu/e3zDc86sy0Zk7LUPKtHyMu/"\
+                   "RbdhIDddMAtws17REH0Q8FtlGeguZX10ufcMYn5PDSQSSRR9X0Gqvqec2U"\
+                   "S1xOe/ay+gaoXVNWP049O+f9UB9KJ0znjmre5+64qDsqWREERZzCTG35Za"\
+                   "TNlkE3IkkJWZ572mE2U637iWuMDLL06U0bmzkwRZFJj78gf6ptzC9xLkUk"\
+                   "2J8uLSCG0sbLSnZmOAYOsLYkSD5jSba++jZZ81PeW6wVJXIMeYKZb7AoyB"\
+                   "00JHpB7fU2Ui58tidOAnDKxgavOS9mXV7mQTAnplIKYKTQCLSkrOiOTqu/"\
+                   "hjVwULXnpR81csTa/zKN3eyi88bRoHAzOOePjyk4RMyRN4oHmpIHv/eGi1"\
+                   "A32AiQjPlrj4N0mSpdsVsQ5DMMEZotPNXPRFnM0jaWaJSW3mCmnB6w1Chk"\
+                   "kg9NhnKQmXspZXt7N/E34C3Zodc+zi3LBAdAg24ZDs0WaKfSU9dXmJx+T9"\
+                   "BBmqkPPtIdVc3Kj7aXal2lnzcD1gWRavu7aHLS2lsR0gw5tBrkcV52H6tu"\
+                   "IbrfHK8Rhh2ulQxtXIR7JwOunbngpp5vCj0mRx+nLRVVfDcz6YqNeqHaqX"\
+                   "hBN+tFYvs2EFvr78aIv+kf6Dm6Pdk09JdaJAAAAAElFTkSuQmCC"
+                   
     qr = pyqrcode.create('Are you suggesting coconuts migrate?')
     generated_str = qr.png_as_base64_str(scale=5)
     eq_(generated_str, expected_str)
