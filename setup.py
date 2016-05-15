@@ -25,7 +25,7 @@
 from setuptools import setup
 import sys, os.path, shutil
 
-version = '1.1.1'
+version = '1.2'
 
 if sys.version_info < (2, 6, 0) and sys.version_info < (3, 0, 0):
     sys.stderr.write("pyqrcode requires Python 2.6+ or 3.\n")
