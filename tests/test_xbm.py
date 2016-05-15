@@ -55,7 +55,7 @@ def test_xbm():
     #Check the bit values
     for i in range(len(e_bits)):
         eq_(c_bits[i], e_bits[i],
-            "Wrong value at {}: {} != {}".format(i, c_bits[i], e_bits[i]))
+            "Wrong value at {0}: {1} != {2}".format(i, c_bits[i], e_bits[i]))
         
 def test_xbm_with_tkinter():
     """Test XBM renderer is compatible with Tkinter
