@@ -1,5 +1,13 @@
 #!/bin/bash -e
 
+#Check that print statements did not get left in by accident.
+if grep -n --color '^[[:space:]]\+print' pyqrcode/*.py tests/*.py; then
+  echo 'Cleanup debug code!!'
+  exit
+else
+  echo 'No print statements found'
+fi
+
 #Remove tox cache, pycache, and pyc files
 if [ -d .tox ] ; then
   rm -rf .tox
