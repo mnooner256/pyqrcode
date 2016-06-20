@@ -155,7 +155,6 @@ class QRCode:
         #Decode a 'byte array' contents into a string format
         if isinstance(content, bytes):
             self.data = content.decode(encoding)
-            print(encoding)
 
         #Give a string an encoding
         elif hasattr(content, 'encode'):
