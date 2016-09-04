@@ -36,9 +36,9 @@ from __future__ import absolute_import
 from __future__ import print_function
 from __future__ import unicode_literals
 
-
 # ======================================================================
 # :: Python Standard Library Imports
+import warnings  # Warning control
 
 
 # ======================================================================
@@ -108,7 +108,6 @@ class QrSpecial(object):
             lines = [
                 '{}: {}'.format(field, str(self.data[field]))
                 for field in cls._fields if field in self.data]
-            text = cls.__name__ + '\n' + '\n'.join(lines)
         else:
             lines = []
             for field in cls._fields:
@@ -120,7 +119,12 @@ class QrSpecial(object):
                     else:
                         lines.append('{}: {}'.format(
                             field, str(self.data[field])))
-            text = (cls.__name__ + '\n' + '\n'.join(lines))
+        text = '<{}>'.format(cls.__name__)
+        if lines:
+            text += '\n' + '\n'.join(lines)
+        else:
+            text += ': <EMPTY>'
+
         return text
 
     # ==================================
@@ -287,6 +291,15 @@ class QrSpecial(object):
 
         Returns:
             obj (QrSpecial): The QrSpecial-derived object.
+
+        Examples:
+            >>> print(QrSpecial.parse('tel:+39070653263'))
+            <QrPhone>
+            number: +39070653263
+            >>> print(QrSpecial.parse('mailto:spam@python.org'))
+            <QrEmail>
+            email: spam@python.org
+
         """
         # Construct a QrSpecial
         subclss = (
@@ -323,7 +336,7 @@ class QrPhone(QrSpecial):
         Examples:
             >>> qrs = QrPhone('+39070653263')
             >>> print(qrs)
-            QrPhone
+            <QrPhone>
             number: +39070653263
             >>> print(qrs.to_str())
             tel:+39070653263
@@ -356,7 +369,7 @@ class QrEmail(QrSpecial):
         Examples:
             >>> qrs = QrEmail('spam@python.org')
             >>> print(qrs)
-            QrEmail
+            <QrEmail>
             email: spam@python.org
             >>> print(qrs.to_str())
             mailto:spam@python.org
@@ -392,7 +405,7 @@ class QrMessage(QrSpecial):
         Examples:
             >>> qrs = QrMessage('+39070653263', 'I like your code!')
             >>> print(qrs)
-            QrMessage
+            <QrMessage>
             number: +39070653263
             text: I like your code!
             >>> print(qrs.to_str())
@@ -433,7 +446,7 @@ class QrGeolocation(QrSpecial):
         Examples:
             >>> qrs = QrGeolocation(42.989, -71.465, 'www.python.org')
             >>> print(qrs)
-            QrGeolocation
+            <QrGeolocation>
             lat: 42.989
             lon: -71.465
             query: www.python.org
@@ -441,8 +454,9 @@ class QrGeolocation(QrSpecial):
             geo:42.989,-71.465?q=www.python.org
             >>> qrs == QrGeolocation.from_str(qrs.to_str())
             True
+
             >>> print(QrGeolocation(47.68, -122.121))
-            QrGeolocation
+            <QrGeolocation>
             lat: 47.68
             lon: -122.121
         """
@@ -495,7 +509,7 @@ class QrUrl(QrSpecial):
         Examples:
             >>> qrs = QrUrl('http://www.python.org')
             >>> print(qrs)
-            QrUrl
+            <QrUrl>
             url: www.python.org
             >>> print(qrs.to_str())
             http://www.python.org
@@ -604,7 +618,7 @@ class QrContact(QrSpecial):
         Examples:
             >>> qrs = QrContact('Py Thon', email=('py@py.org', 'thon@py.org'))
             >>> print(qrs)
-            QrContact
+            <QrContact>
             name: Py Thon
             email: py@py.org
             email: thon@py.org
@@ -615,7 +629,7 @@ class QrContact(QrSpecial):
 
             >>> qrs = QrContact('QrSpecial', birthday=20160904)
             >>> print(qrs)
-            QrContact
+            <QrContact>
             name: QrSpecial
             birthday: 20160904
             >>> print(qrs.to_str())
@@ -646,7 +660,7 @@ class QrWifi(QrSpecial):
     _start_tag = 'WIFI:'
     _field_tags = dict((
         ('ssid', 'S'),
-        ('mode', 'T'),
+        ('security', 'T'),
         ('password', 'P'),
         ('hidden', 'H'),
     ))
@@ -656,21 +670,65 @@ class QrWifi(QrSpecial):
     def __init__(
             self,
             ssid=None,
-            mode=None,
+            security=None,
             password=None,
             hidden=None):
         """
         Generate the QrSpecial-derived WiFi network.
 
-        This is useful
+        This is useful for sharing WiFi network authentication information.
+
+        Args:
+            ssid (str|unicode): The SSID of the WiFi network.
+            security (str|unicode|None): The security standard to use.
+                Accepted values are: [WEP|WPA|WPA2]
+                Note that `WPA2` is not defined in the standard but it is
+                accepted by the ZXing implementation.
+                If None, no encryption is used.
+            password (str|unicode): The password of the WiFi network.
+                If security is None, it is forced to be empty.
+            hidden (bool): Determine the SSID broadcast mode.
+                If True, the SSID is not expected to be broadcast.
+
+        Examples:
+            >>> qrs = QrWifi('Python', 'WEP', 'Monty', True)
+            >>> print(qrs)
+            <QrWifi>
+            ssid: Python
+            security: WEP
+            password: Monty
+            hidden: true
+            >>> print(qrs.to_str())
+            WIFI:S:Python;T:WEP;P:Monty;H:true;;
+            >>> qrs == QrWifi.from_str(qrs.to_str())
+            True
+
+            >>> qrs = QrWifi('Python', 'WEP', 'Monty')
+            >>> print(qrs)
+            <QrWifi>
+            ssid: Python
+            security: WEP
+            password: Monty
+            >>> print(qrs.to_str())
+            WIFI:S:Python;T:WEP;P:Monty;;
+
+            >>> qrs = QrWifi('Python', 'X', 'Monty')
+            >>> print(qrs)
+            <QrWifi>
+            ssid: Python
+            >>> print(qrs.to_str())
+            WIFI:S:Python;;
         """
         if hidden:
             hidden = 'true'
-        if mode:
-            mode = mode.upper()
-            if mode not in type(self)._modes:
-                mode = None
-        if password and not mode:
+        else:
+            hidden = None
+        if security:
+            security = security.upper()
+            if security not in type(self)._modes:
+                warnings.warn('Unknown WiFi security `{}`'.format(security))
+                security = None
+        if password and not security:
             password = None
         # QrSpecial.__init__(**locals())  # Py3-only
         kws = locals()
@@ -690,9 +748,3 @@ if __name__ == '__main__':
     import doctest  # Test interactive Python examples
 
     doctest.testmod()
-
-    # qrs = MeCard('Riccardo Metere', email='rick@metere.it')
-    # print(qrs)
-    # print(qrs.to_str())
-    # print(qrs.__dict__)
-    # print(QrContact.from_str(qrs.to_str()).__dict__)
