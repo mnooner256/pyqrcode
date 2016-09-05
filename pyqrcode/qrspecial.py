@@ -513,12 +513,12 @@ class QrUrl(QrSpecial):
         supported.
 
         Args:
-            protocol (str|unicode): The protocol of the URL.
-                It should be one of: [http|https|ftp|ftps].
-                Otherwise a warning is issued.
             url (str|unicode): The Uniform Resource Locator (URL).
                 If the protocol is specified directly in the URL, the
                 `protocol` keyword argument is ignored.
+            protocol (str|unicode): The protocol of the URL.
+                It should be one of: [http|https|ftp|ftps].
+                Otherwise a warning is issued.
 
         Examples:
             >>> qrs = QrUrl('https://www.python.org')
