@@ -83,8 +83,9 @@ class QrSpecial(object):
         cls._is_simple = len(cls._field_tags) == 0
         # cls._fields = signature(cls).parameters.keys()  # Py3-only
         # first argument is always `self`
-        cls._fields = cls.__init__.__code__.co_varnames[
-                      1:cls.__init__.__code__.co_argcount]
+        if not cls._fields:
+            cls._fields = cls.__init__.__code__.co_varnames[
+                          1:cls.__init__.__code__.co_argcount]
         self.data = {}
         for field in cls._fields:
             if field in kws:
@@ -496,14 +497,17 @@ class QrUrl(QrSpecial):
     """
     _sep = '://'
     _protocols = 'http', 'https', 'ftp', 'ftps'
+    _fields = ('protocol', 'url')
 
     # ==================================
     def __init__(
             self,
-            protocol='http',
-            url=None):
+            url=None,
+            protocol='http'):
         """
         Generate the QrSpecial-derived Uniform Resource Locator (URL).
+
+        This assumes that the HTTP protocol will be used.
 
         Only the protocols requiring the '://' sequence of characters are
         supported.
@@ -517,7 +521,7 @@ class QrUrl(QrSpecial):
                 `protocol` keyword argument is ignored.
 
         Examples:
-            >>> qrs = QrUrl(url='https://www.python.org')
+            >>> qrs = QrUrl('https://www.python.org')
             >>> print(qrs)
             <QrUrl>
             protocol: https
@@ -527,7 +531,7 @@ class QrUrl(QrSpecial):
             >>> qrs == QrUrl.from_str(qrs.to_str())
             True
 
-            >>> qrs = QrUrl(url='www.python.org')
+            >>> qrs = QrUrl('www.python.org')
             >>> print(qrs)
             <QrUrl>
             protocol: http
@@ -537,7 +541,7 @@ class QrUrl(QrSpecial):
             >>> qrs == QrUrl.from_str(qrs.to_str())
             True
 
-            >>> qrs = QrUrl('https', 'www.python.org')
+            >>> qrs = QrUrl('www.python.org', 'https')
             >>> print(qrs)
             <QrUrl>
             protocol: https
@@ -759,7 +763,11 @@ class QrWifi(QrSpecial):
             >>> print(qrs.to_str())
             WIFI:S:Python;T:WEP;P:Monty;;
 
-            >>> qrs = QrWifi('Python', 'X', 'Monty')
+            >>> with warnings.catch_warnings(record=True) as w:
+            ...     qrs = QrWifi('Python', 'X', 'Monty')
+            ...     assert(len(w) == 1)
+            ...     'Unknown WiFi security' in str(w[-1].message)
+            True
             >>> print(qrs)
             <QrWifi>
             ssid: Python
