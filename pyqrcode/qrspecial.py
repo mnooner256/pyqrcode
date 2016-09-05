@@ -492,33 +492,80 @@ class QrGeolocation(QrSpecial):
 # ======================================================================
 class QrUrl(QrSpecial):
     """
-    QrSpecial-derived URL.
+    QrSpecial-derived Uniform Resource Locator (URL).
     """
-    _start_tag = 'http://'
+    _sep = '://'
+    _protocols = 'http', 'https', 'ftp', 'ftps'
 
     # ==================================
     def __init__(
             self,
+            protocol='http',
             url=None):
         """
-        Generate the QrSpecial-derived e-mail address.
+        Generate the QrSpecial-derived Uniform Resource Locator (URL).
+
+        Only the protocols requiring the '://' sequence of characters are
+        supported.
 
         Args:
-            url (str|unicode): The e-mail address.
+            protocol (str|unicode): The protocol of the URL.
+                It should be one of: [http|https|ftp|ftps].
+                Otherwise a warning is issued.
+            url (str|unicode): The Uniform Resource Locator (URL).
+                If the protocol is specified directly in the URL, the
+                `protocol` keyword argument is ignored.
 
         Examples:
-            >>> qrs = QrUrl('http://www.python.org')
+            >>> qrs = QrUrl(url='https://www.python.org')
             >>> print(qrs)
             <QrUrl>
+            protocol: https
+            url: www.python.org
+            >>> print(qrs.to_str())
+            https://www.python.org
+            >>> qrs == QrUrl.from_str(qrs.to_str())
+            True
+
+            >>> qrs = QrUrl(url='www.python.org')
+            >>> print(qrs)
+            <QrUrl>
+            protocol: http
             url: www.python.org
             >>> print(qrs.to_str())
             http://www.python.org
             >>> qrs == QrUrl.from_str(qrs.to_str())
             True
+
+            >>> qrs = QrUrl('https', 'www.python.org')
+            >>> print(qrs)
+            <QrUrl>
+            protocol: https
+            url: www.python.org
+            >>> print(qrs.to_str())
+            https://www.python.org
+            >>> qrs == QrUrl.from_str(qrs.to_str())
+            True
+
+            >>> with warnings.catch_warnings(record=True) as w:
+            ...     qrs = QrUrl(url='mtp://www.python.org')
+            ...     assert(len(w) == 1)
+            ...     'Unusual protocol detected' in str(w[-1].message)
+            True
+            >>> print(qrs)
+            <QrUrl>
+            protocol: mtp
+            url: www.python.org
+            >>> print(qrs.to_str())
+            mtp://www.python.org
         """
         cls = type(self)
-        if url is not None and url.startswith(cls._start_tag):
-            url = url[len(cls._start_tag):]
+        if url:
+            parsed = url.split(cls._sep, 1)
+            if len(parsed) > 1:
+                protocol, url = parsed
+        if protocol not in cls._protocols:
+            warnings.warn('Unusual protocol detected `{}`'.format(protocol))
         # QrSpecial.__init__(**locals())  # Py3-only
         kws = locals()
         kws.pop('self')
