@@ -1365,7 +1365,7 @@ def _png(code, version, file, scale=1, module_color=(0, 0, 0, 255),
                    transparent=transparent_color, palette=palette,
                    bitdepth=bitdepth)
     try:
-        w.write(f, code_rows)
+        w.write_passes(f, code_rows)
     finally:
         if autoclose:
             f.close()
