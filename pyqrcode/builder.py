@@ -26,14 +26,20 @@
 """This module does the actual generation of the QR codes. The QRCodeBuilder
 builds the code. While the various output methods draw the code into a file.
 """
-
-#Imports required for 2.x support
-from __future__ import absolute_import, division, print_function, with_statement, unicode_literals
-
+from __future__ import absolute_import, division, print_function, unicode_literals
 import pyqrcode.tables as tables
 import io
 import itertools
 import math
+try:
+    from itertools import zip_longest
+except ImportError:
+    # Py2
+    from itertools import izip_longest as zip_longest
+    range = xrange
+    str = unicode
+
+
 
 class QRCodeBuilder:
     """This class generates a QR code based on the standard. It is meant to
@@ -105,9 +111,7 @@ class QRCodeBuilder:
         itertools.
         """
         args = [iter(iterable)] * n
-        if hasattr(itertools, 'zip_longest'):
-            return itertools.zip_longest(*args, fillvalue=fillvalue)
-        return itertools.izip_longest(*args, fillvalue=fillvalue)
+        return zip_longest(*args, fillvalue=fillvalue)
 
     def binary_string(self, data, length):
         """This method returns a string of length n that is the binary
@@ -1058,11 +1062,6 @@ def _xbm(code, scale=1, quiet_zone=4):
     """This function will format the QR code as a X BitMap.
     This can be used to display the QR code with Tkinter.
     """
-    try:
-        str = unicode  # Python 2
-    except NameError:
-        str = __builtins__['str']
-        
     buf = io.StringIO()
     
     # Calculate the width in pixels
@@ -1274,7 +1273,7 @@ def _png(code, version, file, scale=1, module_color=(0, 0, 0, 255),
     def scale_code(size):
         """To perform the scaling we need to inflate the number of bits.
         The PNG library expects all of the bits when it draws the PNG.
-        Effectively, we double, tripple, etc. the number of columns and
+        Effectively, we double, triple, etc. the number of columns and
         the number of rows.
         """
         # This is one row's worth of each possible module
@@ -1290,40 +1289,21 @@ def _png(code, version, file, scale=1, module_color=(0, 0, 0, 255),
         # Whitespace added on the left and right side
         border_module = white * quiet_zone
         # This is the row to show up at the top and bottom border
-        border_row = [[1] * size] * scale * quiet_zone
+        border_row = [1] * size
 
-        # This will hold the final PNG's bits
-        bits = []
-
-        # Add scale rows before the code as a border,
-        # as per the standard
-        bits.extend(border_row)
-
+        # Add scale rows before the code as a border, as per the standard
+        for i in range(quiet_zone * scale):
+            yield border_row
         # Add each row of the to the final PNG bits
         for row in code:
-            tmp_row = []
-
-            # Add one all white module to the beginning
-            # to create the vertical border
-            tmp_row.extend(border_module)
-
-            # Go through each bit in the code
-            for bit in row:
-                # Use the standard color or the "debug" color
-                tmp_row.extend(colors[(bit if bit in (0, 1) else 2)])
-
-            # Add one all white module to the end
-            # to create the vertical border
-            tmp_row.extend(border_module)
-
-            # Copy each row scale times
-            for n in range(scale):
-                bits.append(tmp_row)
-
-        # Add the bottom border
-        bits.extend(border_row)
-
-        return bits
+            r = tuple(itertools.chain(border_module,
+                                      itertools.chain(*(colors[bit if bit in (0, 1) else 2] for bit in row)),
+                                      border_module))
+            for i in range(scale):
+                yield r
+        # Bottom quiet zone
+        for i in range(quiet_zone * scale):
+            yield border_row
 
     def png_pallete_color(color):
         """This creates a palette color from a list or tuple. The list or
