@@ -26,14 +26,35 @@
 """This module does the actual generation of the QR codes. The QRCodeBuilder
 builds the code. While the various output methods draw the code into a file.
 """
-
-#Imports required for 2.x support
-from __future__ import absolute_import, division, print_function, with_statement, unicode_literals
-
+from __future__ import absolute_import, division, print_function, unicode_literals
 import pyqrcode.tables as tables
 import io
 import itertools
 import math
+try:
+    from itertools import zip_longest
+except ImportError:
+    # Py2
+    from itertools import izip_longest as zip_longest
+    range = xrange
+    str = unicode
+_PYPNG_AVAILABLE = False
+try:
+    import png
+    _PYPNG_AVAILABLE = True
+except ImportError:
+    pass
+_PIL_AVAILABLE = False
+try:
+    from PIL import Image, ImageDraw
+    _PIL_AVAILABLE = True
+except ImportError:  # pragma: no cover
+    try:
+        import Image, ImageDraw
+        _PIL_AVAILABLE = True
+    except ImportError:  # pragma: no cover
+        pass
+
 
 class QRCodeBuilder:
     """This class generates a QR code based on the standard. It is meant to
@@ -105,9 +126,7 @@ class QRCodeBuilder:
         itertools.
         """
         args = [iter(iterable)] * n
-        if hasattr(itertools, 'zip_longest'):
-            return itertools.zip_longest(*args, fillvalue=fillvalue)
-        return itertools.izip_longest(*args, fillvalue=fillvalue)
+        return zip_longest(*args, fillvalue=fillvalue)
 
     def binary_string(self, data, length):
         """This method returns a string of length n that is the binary
@@ -1058,11 +1077,6 @@ def _xbm(code, scale=1, quiet_zone=4):
     """This function will format the QR code as a X BitMap.
     This can be used to display the QR code with Tkinter.
     """
-    try:
-        str = unicode  # Python 2
-    except NameError:
-        str = __builtins__['str']
-        
     buf = io.StringIO()
     
     # Calculate the width in pixels
@@ -1185,7 +1199,7 @@ def _svg(code, version, file, scale=1, module_color='#000', background=None,
     # Draw a background rectangle if necessary
     if background is not None:
         write('<path fill="{1}" d="M0 0h{0}v{0}h-{0}z"/>'
-                .format(size, background))
+              .format(size, background))
     write_bytes(b'<path')
     if scale != 1:
         write(' transform="scale({0})"'.format(scale))
@@ -1243,6 +1257,13 @@ def _svg(code, version, file, scale=1, module_color='#000', background=None,
 
 def _png(code, version, file, scale=1, module_color=(0, 0, 0, 255),
          background=(255, 255, 255, 255), quiet_zone=4, debug=False):
+    png_renderer = _png_pypng if not _PIL_AVAILABLE else _png_pil
+    png_renderer(code, version, file, scale, module_color, background,
+                 quiet_zone, debug)
+
+
+def _png_pypng(code, version, file, scale=1, module_color=(0, 0, 0, 255),
+               background=(255, 255, 255, 255), quiet_zone=4, debug=False):
     """See: pyqrcode.QRCode.png()
 
     This function was abstracted away from QRCode to allow for the output of
@@ -1263,8 +1284,8 @@ def _png(code, version, file, scale=1, module_color=(0, 0, 0, 255),
     :param debug: Inidicates if errors in the QR code should be added (as red
             modules) to the output (default: ``False``).
     """
-    import png
-    
+    if not _PYPNG_AVAILABLE:
+        raise Exception('Please install PyPNG or Pillow/PIL to serialize PNG images')
     # Coerce scale parameter into an integer
     try:
         scale = int(scale)
@@ -1274,7 +1295,7 @@ def _png(code, version, file, scale=1, module_color=(0, 0, 0, 255),
     def scale_code(size):
         """To perform the scaling we need to inflate the number of bits.
         The PNG library expects all of the bits when it draws the PNG.
-        Effectively, we double, tripple, etc. the number of columns and
+        Effectively, we double, triple, etc. the number of columns and
         the number of rows.
         """
         # This is one row's worth of each possible module
@@ -1290,40 +1311,21 @@ def _png(code, version, file, scale=1, module_color=(0, 0, 0, 255),
         # Whitespace added on the left and right side
         border_module = white * quiet_zone
         # This is the row to show up at the top and bottom border
-        border_row = [[1] * size] * scale * quiet_zone
+        border_row = [1] * size
 
-        # This will hold the final PNG's bits
-        bits = []
-
-        # Add scale rows before the code as a border,
-        # as per the standard
-        bits.extend(border_row)
-
+        # Add scale rows before the code as a border, as per the standard
+        for i in range(quiet_zone * scale):
+            yield border_row
         # Add each row of the to the final PNG bits
         for row in code:
-            tmp_row = []
-
-            # Add one all white module to the beginning
-            # to create the vertical border
-            tmp_row.extend(border_module)
-
-            # Go through each bit in the code
-            for bit in row:
-                # Use the standard color or the "debug" color
-                tmp_row.extend(colors[(bit if bit in (0, 1) else 2)])
-
-            # Add one all white module to the end
-            # to create the vertical border
-            tmp_row.extend(border_module)
-
-            # Copy each row scale times
-            for n in range(scale):
-                bits.append(tmp_row)
-
-        # Add the bottom border
-        bits.extend(border_row)
-
-        return bits
+            r = tuple(itertools.chain(border_module,
+                                      itertools.chain(*(colors[bit if bit in (0, 1) else 2] for bit in row)),
+                                      border_module))
+            for i in range(scale):
+                yield r
+        # Bottom quiet zone
+        for i in range(quiet_zone * scale):
+            yield border_row
 
     def png_pallete_color(color):
         """This creates a palette color from a list or tuple. The list or
@@ -1385,10 +1387,69 @@ def _png(code, version, file, scale=1, module_color=(0, 0, 0, 255),
                    transparent=transparent_color, palette=palette,
                    bitdepth=bitdepth)
     try:
-        w.write(f, code_rows)
+        w.write_passes(f, code_rows)
     finally:
         if autoclose:
             f.close()
+
+
+
+def _png_pil(code, version, file, scale=1, module_color=(0, 0, 0, 255),
+             background=(255, 255, 255, 255), quiet_zone=4, debug=False):
+    """\
+    See: pyqrcode.QRCode.png()
+    """
+    def png_pallete_color(color):
+        """This creates a palette color from a list or tuple. The list or
+        tuple must be of length 3 (for rgb) or 4 (for rgba). The values
+        must be between 0 and 255. Note rgb colors will be given an added
+        alpha component set to 255.
+
+        The pallete color is represented as a list, this is what is returned.
+        """
+        if color is None:
+            return ()
+        if not isinstance(color, (tuple, list)):
+            r, g, b = _hex_to_rgb(color)
+            return r, g, b, 255
+        rgba = []
+        if not (3 <= len(color) <= 4):
+            raise ValueError('Colors must be a list or tuple of length '
+                             ' 3 or 4. You passed in "{0}".'.format(color))
+        for c in color:
+            c = int(c)
+            if 0 <= c <= 255:
+                rgba.append(int(c))
+            else:
+                raise ValueError('Color components must be between 0 and 255')
+        # Make all colors have an alpha channel
+        if len(rgba) == 3:
+            rgba.append(255)
+        return tuple(rgba)
+
+    # Coerce scale parameter into an integer
+    try:
+        scale = int(scale)
+    except ValueError:
+        raise ValueError('The scale parameter must be an integer')
+    # The size of the PNG
+    size = _get_png_size(version, scale, quiet_zone)
+    mode = 'P'  #TODO: The mode should be changed to 1 or LA if appropriate
+    palette = []
+    palette.extend(png_pallete_color(module_color))
+    palette.extend(png_pallete_color(background))
+    img = Image.new(mode, (size, size), 1)
+    img.putpalette(palette)
+    drw = ImageDraw.Draw(img)
+    rect = drw.rectangle
+    for row_no, row in enumerate(code):
+        for col_no, bit in enumerate(row):
+            if not bit:
+                continue
+            x = (col_no + quiet_zone) * scale
+            y = (row_no + quiet_zone) * scale
+            rect([(x, y), (x + scale - 1, y + scale - 1)], fill=0)
+    img.save(file, format='png')
 
 
 def _eps(code, version, file_or_path, scale=1, module_color=(0, 0, 0),
