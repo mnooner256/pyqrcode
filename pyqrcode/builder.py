@@ -1257,8 +1257,9 @@ def _svg(code, version, file, scale=1, module_color='#000', background=None,
 
 def _png(code, version, file, scale=1, module_color=(0, 0, 0, 255),
          background=(255, 255, 255, 255), quiet_zone=4, debug=False):
-    png = _png_pypng if not _PIL_AVAILABLE else _png_pil
-    png(code, version, file, scale, module_color, background, quiet_zone, debug)
+    png_renderer = _png_pypng if not _PIL_AVAILABLE else _png_pil
+    png_renderer(code, version, file, scale, module_color, background,
+                 quiet_zone, debug)
 
 
 def _png_pypng(code, version, file, scale=1, module_color=(0, 0, 0, 255),
