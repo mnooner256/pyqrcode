@@ -1257,7 +1257,7 @@ def _svg(code, version, file, scale=1, module_color='#000', background=None,
 
 def _png(code, version, file, scale=1, module_color=(0, 0, 0, 255),
          background=(255, 255, 255, 255), quiet_zone=4, debug=False):
-    png = _png_pypng # if not _PIL_AVAILABLE else _png_pil
+    png = _png_pypng if not _PIL_AVAILABLE else _png_pil
     png(code, version, file, scale, module_color, background, quiet_zone, debug)
 
 
@@ -1434,7 +1434,9 @@ def _png_pil(code, version, file, scale=1, module_color=(0, 0, 0, 255),
     # The size of the PNG
     size = _get_png_size(version, scale, quiet_zone)
     mode = 'P'  #TODO: The mode should be changed to 1 or LA if appropriate
-    palette = (png_pallete_color(module_color), png_pallete_color(background))
+    palette = []
+    palette.extend(png_pallete_color(module_color))
+    palette.extend(png_pallete_color(background))
     img = Image.new(mode, (size, size), 1)
     img.putpalette(palette)
     drw = ImageDraw.Draw(img)
