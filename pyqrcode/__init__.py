@@ -459,8 +459,8 @@ class QRCode:
                          module_color=(0x66, 0x33, 0x0),      #Dark brown
                          background=(0xff, 0xff, 0xff, 0x88)) #50% transparent white
         """
-        builder._png(self.code, self.version, file, scale,
-                     module_color, background, quiet_zone)
+        builder._png(self.code, self.version, file, scale, module_color,
+                     background, quiet_zone)
 
     def png_as_base64_str(self, scale=1, module_color=(0, 0, 0, 255),
                           background=(255, 255, 255, 255), quiet_zone=4):

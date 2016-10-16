@@ -38,7 +38,22 @@ except ImportError:
     from itertools import izip_longest as zip_longest
     range = xrange
     str = unicode
-
+_PYPNG_AVAILABLE = False
+try:
+    import png
+    _PYPNG_AVAILABLE = True
+except ImportError:
+    pass
+_PIL_AVAILABLE = False
+try:
+    from PIL import Image, ImageDraw
+    _PIL_AVAILABLE = True
+except ImportError:  # pragma: no cover
+    try:
+        import Image, ImageDraw
+        _PIL_AVAILABLE = True
+    except ImportError:  # pragma: no cover
+        pass
 
 
 class QRCodeBuilder:
@@ -728,7 +743,7 @@ class QRCodeBuilder:
         #DEBUG CODE!!!
         #Save all of the masks as png files
         #for i, m in enumerate(masks):
-        #    _png(m, self.version, 'mask-{0}.png'.format(i), 5)
+        #    _png_pypng(m, self.version, 'mask-{0}.png'.format(i), 5)
 
         return masks
 
@@ -1184,7 +1199,7 @@ def _svg(code, version, file, scale=1, module_color='#000', background=None,
     # Draw a background rectangle if necessary
     if background is not None:
         write('<path fill="{1}" d="M0 0h{0}v{0}h-{0}z"/>'
-                .format(size, background))
+              .format(size, background))
     write_bytes(b'<path')
     if scale != 1:
         write(' transform="scale({0})"'.format(scale))
@@ -1242,6 +1257,12 @@ def _svg(code, version, file, scale=1, module_color='#000', background=None,
 
 def _png(code, version, file, scale=1, module_color=(0, 0, 0, 255),
          background=(255, 255, 255, 255), quiet_zone=4, debug=False):
+    png = _png_pypng # if not _PIL_AVAILABLE else _png_pil
+    png(code, version, file, scale, module_color, background, quiet_zone, debug)
+
+
+def _png_pypng(code, version, file, scale=1, module_color=(0, 0, 0, 255),
+               background=(255, 255, 255, 255), quiet_zone=4, debug=False):
     """See: pyqrcode.QRCode.png()
 
     This function was abstracted away from QRCode to allow for the output of
@@ -1262,8 +1283,8 @@ def _png(code, version, file, scale=1, module_color=(0, 0, 0, 255),
     :param debug: Inidicates if errors in the QR code should be added (as red
             modules) to the output (default: ``False``).
     """
-    import png
-    
+    if not _PYPNG_AVAILABLE:
+        raise Exception('Please install PyPNG or Pillow/PIL to serialize PNG images')
     # Coerce scale parameter into an integer
     try:
         scale = int(scale)
@@ -1369,6 +1390,63 @@ def _png(code, version, file, scale=1, module_color=(0, 0, 0, 255),
     finally:
         if autoclose:
             f.close()
+
+
+
+def _png_pil(code, version, file, scale=1, module_color=(0, 0, 0, 255),
+             background=(255, 255, 255, 255), quiet_zone=4, debug=False):
+    """\
+    See: pyqrcode.QRCode.png()
+    """
+    def png_pallete_color(color):
+        """This creates a palette color from a list or tuple. The list or
+        tuple must be of length 3 (for rgb) or 4 (for rgba). The values
+        must be between 0 and 255. Note rgb colors will be given an added
+        alpha component set to 255.
+
+        The pallete color is represented as a list, this is what is returned.
+        """
+        if color is None:
+            return ()
+        if not isinstance(color, (tuple, list)):
+            r, g, b = _hex_to_rgb(color)
+            return r, g, b, 255
+        rgba = []
+        if not (3 <= len(color) <= 4):
+            raise ValueError('Colors must be a list or tuple of length '
+                             ' 3 or 4. You passed in "{0}".'.format(color))
+        for c in color:
+            c = int(c)
+            if 0 <= c <= 255:
+                rgba.append(int(c))
+            else:
+                raise ValueError('Color components must be between 0 and 255')
+        # Make all colors have an alpha channel
+        if len(rgba) == 3:
+            rgba.append(255)
+        return tuple(rgba)
+
+    # Coerce scale parameter into an integer
+    try:
+        scale = int(scale)
+    except ValueError:
+        raise ValueError('The scale parameter must be an integer')
+    # The size of the PNG
+    size = _get_png_size(version, scale, quiet_zone)
+    mode = 'P'  #TODO: The mode should be changed to 1 or LA if appropriate
+    palette = (png_pallete_color(module_color), png_pallete_color(background))
+    img = Image.new(mode, (size, size), 1)
+    img.putpalette(palette)
+    drw = ImageDraw.Draw(img)
+    rect = drw.rectangle
+    for row_no, row in enumerate(code):
+        for col_no, bit in enumerate(row):
+            if not bit:
+                continue
+            x = (col_no + quiet_zone) * scale
+            y = (row_no + quiet_zone) * scale
+            rect([(x, y), (x + scale - 1, y + scale - 1)], fill=0)
+    img.save(file, format='png')
 
 
 def _eps(code, version, file_or_path, scale=1, module_color=(0, 0, 0),
