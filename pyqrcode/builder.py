@@ -743,7 +743,7 @@ class QRCodeBuilder:
         #DEBUG CODE!!!
         #Save all of the masks as png files
         #for i, m in enumerate(masks):
-        #    _png_pypng(m, self.version, 'mask-{0}.png'.format(i), 5)
+        #    _png(m, self.version, 'mask-{0}.png'.format(i), 5)
 
         return masks
 
