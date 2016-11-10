@@ -7,26 +7,22 @@ from nose.tools import eq_
 import pyqrcode
 
 
-class FakeString:
+class FakeString(str):
     '''
-    Create a mock class that *acts* like a string as far as needed for the QRCode constructor,
-    but raises an exception in case shiftjis encoding is used on its value.
+    Create a mock class that *acts* like a string as far as needed for the
+    QRCode constructor, but raises an exception in case shiftjis encoding is
+    used on its value.
 
-    This mimics the behaviour of Python on an environment where this codec is not installed.
+    This mimics the behaviour of Python on an environment where this codec is
+    not installed.
     '''
-    def __init__(self, value):
-        self.value = value
+    def __new__(cls, *more):
+        return str.__new__(cls, *more)
 
-    def __str__(self):
-        return self.value
-
-    def __len__(self):
-        return len(self.value)
-
-    def encode(self, encoding):
+    def encode(self, encoding=None, errors=None):
         if encoding == 'shiftjis':
             raise LookupError("unknown encoding: shiftjis")
-        return self.value.encode(encoding)
+        return self.encode(encoding, errors)
 
 
 def test_constructing_without_shiftjis_encoding_available():
