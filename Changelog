@@ -1,3 +1,6 @@
+# 1.2.2
+* Added `qrprint` as a CLI application to print QR codes to the terminal.
+
 # 1.2.1
 * Fixed issue #43. A debug print statement got left in by mistake. I altered
   The distribution script to check and make sure it does not happen again.

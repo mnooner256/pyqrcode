@@ -8,7 +8,7 @@
 #     * Redistributions in binary form must reproduce the above copyright
 #       notice, this list of conditions and the following disclaimer in the
 #       documentation and/or other materials provided with the distribution.
-#     * Neither the name of the copyright holder nor the names of its 
+#     * Neither the name of the copyright holder nor the names of its
 #       contributors may be used to endorse or promote products derived from
 #       this software without specific prior written permission
 #
@@ -25,7 +25,7 @@
 from setuptools import setup
 import sys, os.path, shutil
 
-version = '1.2.1'
+version = '1.2.2'
 
 if sys.version_info < (2, 6, 0) and sys.version_info < (3, 0, 0):
     sys.stderr.write("pyqrcode requires Python 2.6+ or 3.\n")
@@ -37,7 +37,7 @@ if sys.version_info < (2, 6, 0) and sys.version_info < (3, 0, 0):
 #source.
 if os.path.exists('docs/README.rst'):
     print('Reading README.rst file')
-    with open( 'docs/README.rst', 'r') as f:
+    with open('docs/README.rst', 'r') as f:
         longdesc = f.read()
     shutil.copyfile('docs/README.rst', 'README.rst')
 else:
@@ -52,10 +52,15 @@ setup(name='PyQRCode',
       url='https://github.com/mnooner256/pyqrcode',
       keywords=['qrcode', 'qr'],
       license='BSD',
-      extras_require = {
+      extras_require={
         'PNG':  ["pypng>=0.0.13"],
       },
-      classifiers = [
+      entry_points={
+        'console_scripts': [
+          'qrprint = pyqrcode.qrprint:main'
+        ]
+      },
+      classifier=[
         'Development Status :: 4 - Beta',
         'Environment :: Console',
         'Intended Audience :: Developers',
