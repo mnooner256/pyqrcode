@@ -65,7 +65,7 @@ This module supports all four encodings for data: numeric, alphanumeric, kanji,
 and binary.
 
 The numeric type is the most efficient way to encode digits. As the
-name implies it is designed to encode integers. Some numbers might be two
+name implies it is designed to encode integers. Some numbers might be too
 large, the object can use a string containing only digits instead of an
 actual number.
 
