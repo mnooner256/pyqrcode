@@ -32,12 +32,11 @@ if sys.version_info < (2, 6, 0) and sys.version_info < (3, 0, 0):
     sys.exit(1)
 
 
-#Make the README.rst file the long description
-#This only happens when we are building from the
-#source.
+# Make the README.rst file the long description
+# This only happens when we are building from the source.
 if os.path.exists('docs/README.rst'):
     print('Reading README.rst file')
-    with open( 'docs/README.rst', 'r') as f:
+    with open('docs/README.rst', 'r') as f:
         longdesc = f.read()
     shutil.copyfile('docs/README.rst', 'README.rst')
 else:
@@ -52,10 +51,10 @@ setup(name='PyQRCode',
       url='https://github.com/mnooner256/pyqrcode',
       keywords=['qrcode', 'qr'],
       license='BSD',
-      extras_require = {
+      extras_require={
         'PNG':  ["pypng>=0.0.13"],
       },
-      classifiers = [
+      classifiers=[
         'Development Status :: 4 - Beta',
         'Environment :: Console',
         'Intended Audience :: Developers',
