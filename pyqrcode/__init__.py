@@ -325,6 +325,11 @@ class QRCode:
             #characters. Hence, the resulting mode should not be kanji.
             #This is not an error.
             pass
+        except LookupError:
+            #This occurs if the host Python does not support Shift JIS kanji
+            #encoding. Hence, the resulting mode should not be kanji.
+            #This is not an error.
+            pass
 
         #All of the other attempts failed. The content can only be binary.
         return 'binary', encoding
