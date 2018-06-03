@@ -23,13 +23,25 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 from setuptools import setup
-import sys, os.path, shutil
+import os
+import shutil
+import re
+import io
 
-version = '1.2.1'
 
-if sys.version_info < (2, 6, 0) and sys.version_info < (3, 0, 0):
-    sys.stderr.write("pyqrcode requires Python 2.6+ or 3.\n")
-    sys.exit(1)
+def read(*filenames, **kwargs):
+    base_path = os.path.dirname(os.path.realpath(__file__))
+    encoding = kwargs.get('encoding', 'utf-8')
+    sep = kwargs.get('sep', '\n')
+    buf = []
+    for filename in filenames:
+        with io.open(os.path.join(base_path, filename), encoding=encoding) as f:
+            buf.append(f.read())
+    return sep.join(buf)
+
+
+version = re.search(r'''^__version__ = ["']([^'"]+)['"]''',
+                    read('pyqrcode/__init__.py'), flags=re.MULTILINE).group(1)
 
 
 # Make the README.rst file the long description

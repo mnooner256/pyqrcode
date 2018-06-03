@@ -39,7 +39,6 @@ Examples:
         >>> number = pyqrcode.create(123456789012345)
         >>> number.png('big-number.png')
 """
-
 #Imports required for 2.7 support
 from __future__ import absolute_import, division, print_function, with_statement, unicode_literals
 
@@ -50,6 +49,10 @@ try:
     str = unicode  # Python 2
 except NameError:
     pass
+
+
+__version__ = '1.3.0.dev0'
+
 
 def create(content, error='H', version=None, mode=None, encoding=None):
     """When creating a QR code only the content to be encoded is required,
