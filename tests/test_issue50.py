@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """\
-Tests against <https://github.com/mnooner256/pyqrcode/issues/51>
+Tests against <https://github.com/mnooner256/pyqrcode/issues/50>
 """
 from __future__ import unicode_literals
 import pyqrcode
