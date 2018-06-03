@@ -9,9 +9,9 @@ Unlike other generators, all of the helpers can be controlled manually. You are
 free to set any or all of the properties of your QR code.
 
 QR codes can be saved as SVG, XBM, EPS, PNG (by using the
-`pypng <https://pypi.python.org/pypi/pypng/>` module), or plain text. They can
+`pypng <https://pypi.org/project/pypng/>` module), or plain text. They can
 also be displayed directly in most Linux terminal emulators and Tkinter. PIL
-is not used to render the image files.
+or Pillow are not used to render the image files.
 
 The PyQRCode module attempts to follow the QR code standard as closely as
 possible. The terminology and the encodings used in pyqrcode come directly
@@ -98,7 +98,7 @@ over how the QR Code is generated. You can specify all the properties of your
 QR code through the *create* function. There are three main properties to a
 QR code.
 
-The _error_ parameter sets the error correction level of the code. Each level
+The *error* parameter sets the error correction level of the code. Each level
 has an associated name given by a letter: L, M, Q, or H; each level can
 correct up to 7, 15, 25, or 30 percent of the data respectively. There are
 several ways to specify the level, see pyqrcode.tables.modes for all the
@@ -106,7 +106,7 @@ possible values. By default this parameter is set to 'H' which is the highest
 possible error correction, but it has the smallest available data
 capacity.
 
-The _version_ parameter specifies the size and data capacity of the
+The *version* parameter specifies the size and data capacity of the
 code. Versions are any integer between 1 and 40, where version 1 is
 the smallest QR code, and version 40 is the largest. By default, the object
 uses the data's encoding and error correction level to calculate the smallest
@@ -114,7 +114,7 @@ possible version. You may want to specify this parameter for consistency when
 generating several QR codes with varying amounts of data. That way all of the
 generated codes would have the same size.
 
-Finally, the _mode_ parameter sets how the contents will be encoded. As
+Finally, the *mode* parameter sets how the contents will be encoded. As
 mentioned above, three of the five possible encodings have been written. By
 default the object uses the most efficient encoding for the contents. You can
 change this though. See qrcode.tables.modes for a list of possible values
