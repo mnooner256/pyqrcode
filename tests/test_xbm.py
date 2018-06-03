@@ -3,9 +3,8 @@
 XBM related tests.
 """
 from __future__ import unicode_literals, absolute_import
-from nose.tools import eq_, raises
-import nose
 import os
+import pytest
 import pyqrcode
 
 #Create by:
@@ -24,7 +23,8 @@ static unsigned char im_bits[] = {
    0xd0, 0xe5, 0x66, 0x00, 0xd0, 0x25, 0xe3, 0x01, 0x10, 0x64, 0x57, 0x00,
    0xf0, 0xa7, 0xd5, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };'''
-   
+
+
 def decompose_xbm(s):
     import re
     
@@ -33,6 +33,7 @@ def decompose_xbm(s):
     bits = re.findall(r'(0x[0-9][0-9])', s)
     
     return width, height, bits
+
 
 def test_xbm():
     """Test the xbm render against a known good.
@@ -46,24 +47,21 @@ def test_xbm():
     e_width, e_height, e_bits = decompose_xbm(expected)
     
     #Check the there is the same width and height
-    eq_(c_width, e_width)
-    eq_(c_height, e_height)
+    assert c_width == e_width
+    assert c_height == e_height
     
     #Check that there is the same number of bits
-    eq_(len(c_bits), len(e_bits))
+    assert len(c_bits) == len(e_bits)
     
     #Check the bit values
     for i in range(len(e_bits)):
-        eq_(c_bits[i], e_bits[i],
-            "Wrong value at {0}: {1} != {2}".format(i, c_bits[i], e_bits[i]))
+        assert c_bits[i] == e_bits[i], "Wrong value at {0}: {1} != {2}".format(i, c_bits[i], e_bits[i])
         
+
+@pytest.mark.skipif(not os.getenv('DISPLAY'), reason='No screen environment')
 def test_xbm_with_tkinter():
     """Test XBM renderer is compatible with Tkinter
     """
-    #Under TOX tkinter testing does not work, skip if tox environemnt
-    if not os.getenv('DISPLAY'):
-        raise nose.SkipTest()
-    
     #Python 2 vs 3
     try:
         import Tkinter as tkinter
@@ -77,9 +75,10 @@ def test_xbm_with_tkinter():
     top = tkinter.Tk()
     bitmap = tkinter.BitmapImage(data=code_xbm)
 
-    eq_(bitmap.width(), code_size)
-    eq_(bitmap.height(), code_size)
+    assert bitmap.width() == code_size
+    assert bitmap.height() == code_size
+
 
 if __name__ == '__main__':
-    import nose
-    nose.core.runmodule()
+    pytest.main([__file__])
+

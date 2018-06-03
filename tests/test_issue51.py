@@ -3,7 +3,6 @@
 Tests against <https://github.com/mnooner256/pyqrcode/issues/51>
 """
 from __future__ import unicode_literals
-from nose.tools import eq_
 import pyqrcode
 
 
@@ -28,4 +27,9 @@ class FakeString(str):
 def test_constructing_without_shiftjis_encoding_available():
     content = FakeString("t123456789")
     code = pyqrcode.create(content, error="Q")
-    eq_(code.mode, 'binary')
+    assert code.mode == 'binary'
+
+
+if __name__ == '__main__':
+    import pytest
+    pytest.main([__file__])
