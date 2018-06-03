@@ -1,9 +1,5 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""
-Generation of special-purpose text for Qr codes.
-"""
-
 # Copyright (c) 2016, Riccardo Metere
 # All rights reserved.
 #
@@ -28,17 +24,12 @@ Generation of special-purpose text for Qr codes.
 # ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-# ======================================================================
-# :: Future Imports
-from __future__ import division
-from __future__ import absolute_import
-from __future__ import print_function
-from __future__ import unicode_literals
-
-# ======================================================================
-# :: Python Standard Library Imports
-import warnings  # Warning control
+#
+"""
+Generation of special-purpose text for Qr codes.
+"""
+from __future__ import absolute_import, unicode_literals, print_function
+import warnings
 
 
 # ======================================================================
@@ -68,7 +59,6 @@ class QrSpecial(object):
 
     _is_simple = True
 
-    # ==================================
     def __init__(self, **kws):
         """
         Base class to encode/decode special-purpose text for QR codes.
@@ -96,7 +86,6 @@ class QrSpecial(object):
             else:
                 raise NameError('Invalid keyword argument ``'.format(field))
 
-    # ==================================
     def __str__(self):
         """
         Generate the human-friendly representation of the object.
@@ -128,10 +117,7 @@ class QrSpecial(object):
 
         return text
 
-    # ==================================
-    def __eq__(
-            self,
-            other):
+    def __eq__(self, other):
         """
         Generic implementation of equality.
 
@@ -146,10 +132,7 @@ class QrSpecial(object):
         else:
             return False
 
-    # ==================================
-    def __ne__(
-            self,
-            other):
+    def __ne__(self, other):
         """
         Generic implementation of inequality.
 
@@ -161,7 +144,6 @@ class QrSpecial(object):
         """
         return not self.__eq__(other)
 
-    # ==================================
     def to_str(self):
         """
         Generate QR-ready text, i.e. the text to be used in QR codes.
@@ -192,7 +174,6 @@ class QrSpecial(object):
                 cls._start_tag + cls._sep.join(tokens) + cls._end_tag)
         return text
 
-    # ==================================
     def is_empty(self):
         """
         Determines if the object contains data.
@@ -202,7 +183,6 @@ class QrSpecial(object):
         """
         return not len(self.data) > 0
 
-    # ==================================
     @classmethod
     def from_str(cls, text, strict=True, strip=True):
         """
@@ -255,7 +235,6 @@ class QrSpecial(object):
                             'Unknown field identifier `{}`'.format(tag))
         return cls(**kws)
 
-    # ==================================
     @staticmethod
     def _to_list(obj):
         """
@@ -278,7 +257,6 @@ class QrSpecial(object):
         else:
             return [obj]
 
-    # ==================================
     @staticmethod
     def parse(text):
         """
@@ -317,17 +295,14 @@ class QrSpecial(object):
         return obj
 
 
-# ======================================================================
 class QrPhone(QrSpecial):
     """
     QrSpecial-derived telephone number.
     """
     _start_tag = 'tel:'
 
-    # ==================================
-    def __init__(
-            self,
-            number=None):
+
+    def __init__(self, number=None):
         """
         Generate the QrSpecial-derived telephone number.
 
@@ -350,17 +325,13 @@ class QrPhone(QrSpecial):
         QrSpecial.__init__(self, **kws)
 
 
-# ======================================================================
 class QrEmail(QrSpecial):
     """
     QrSpecial-derived e-mail address.
     """
     _start_tag = 'mailto:'
 
-    # ==================================
-    def __init__(
-            self,
-            email=None):
+    def __init__(self, email=None):
         """
         Generate the QrSpecial-derived e-mail address.
 
@@ -383,7 +354,6 @@ class QrEmail(QrSpecial):
         QrSpecial.__init__(self, **kws)
 
 
-# ======================================================================
 class QrMessage(QrSpecial):
     """
     QrSpecial-derived short message (SMS).
@@ -391,11 +361,7 @@ class QrMessage(QrSpecial):
     _start_tag = 'smsto:'
     _sep = ':'
 
-    # ==================================
-    def __init__(
-            self,
-            number=None,
-            text=None):
+    def __init__(self, number=None, text=None):
         """
         Generate the QrSpecial-derived short message (SMS).
 
@@ -420,7 +386,6 @@ class QrMessage(QrSpecial):
         QrSpecial.__init__(self, **kws)
 
 
-# ======================================================================
 class QrGeolocation(QrSpecial):
     """
     QrSpecial-derived geolocation.
@@ -429,12 +394,8 @@ class QrGeolocation(QrSpecial):
     _query_tag = '?q='
     _sep = ','
 
-    # ==================================
-    def __init__(
-            self,
-            lat=None,
-            lon=None,
-            query=None):
+
+    def __init__(self, lat=None, lon=None, query=None):
         """
         Generate the QrSpecial-derived short message (SMS).
 
@@ -470,7 +431,6 @@ class QrGeolocation(QrSpecial):
         kws.pop('self')
         QrSpecial.__init__(self, **kws)
 
-    # ==================================
     def to_str(self):
         cls = type(self)
         text = QrSpecial.to_str(self)
@@ -482,7 +442,6 @@ class QrGeolocation(QrSpecial):
                 text[last_sep_pos + len(cls._sep):])
         return text
 
-    # ==================================
     @classmethod
     def from_str(cls, text, strict=True, strip=True):
         # replace only first occurrence of the query tag
@@ -490,7 +449,6 @@ class QrGeolocation(QrSpecial):
         return super(QrGeolocation, cls).from_str(text, strict, strip)
 
 
-# ======================================================================
 class QrUrl(QrSpecial):
     """
     QrSpecial-derived Uniform Resource Locator (URL).
@@ -499,11 +457,7 @@ class QrUrl(QrSpecial):
     _protocols = 'http', 'https', 'ftp', 'ftps'
     _fields = ('protocol', 'url')
 
-    # ==================================
-    def __init__(
-            self,
-            url=None,
-            protocol='http'):
+    def __init__(self, url=None, protocol='http'):
         """
         Generate the QrSpecial-derived Uniform Resource Locator (URL).
 
@@ -576,7 +530,6 @@ class QrUrl(QrSpecial):
         QrSpecial.__init__(self, **kws)
 
 
-# ======================================================================
 class QrContact(QrSpecial):
     """
     QrSpecial-derived contact information (MeCard).
@@ -599,20 +552,10 @@ class QrContact(QrSpecial):
     _multi_fields = {
         'tel', 'telav', 'email', 'address', 'url', 'nickname', 'company'}
 
-    # ==================================
-    def __init__(
-            self,
-            name=None,
-            reading=None,
-            tel=None,
-            telav=None,
-            email=None,
-            memo=None,
-            birthday=None,
-            address=None,
-            url=None,
-            nickname=None,
-            company=None):
+
+    def __init__(self, name=None, reading=None, tel=None, telav=None, email=None,
+                 memo=None, birthday=None, address=None, url=None, nickname=None,
+                 company=None):
         """
         Generate the QrSpecial-derived contact information (MeCard).
 
@@ -693,8 +636,6 @@ class QrContact(QrSpecial):
             https://zxingnet.codeplex.com/
             https://zxing.appspot.com/generator
         """
-        from dateutil.parser import parse
-
         if birthday:
             birthday = str(int(birthday))[:8]
         # QrSpecial.__init__(**locals())  # Py3-only
@@ -703,7 +644,6 @@ class QrContact(QrSpecial):
         QrSpecial.__init__(self, **kws)
 
 
-# ======================================================================
 class QrWifi(QrSpecial):
     """
     QrSpecial-derived WiFi network.
@@ -717,13 +657,7 @@ class QrWifi(QrSpecial):
     ))
     _modes = 'WEP', 'WPA', 'WPA2'
 
-    # ==================================
-    def __init__(
-            self,
-            ssid=None,
-            security=None,
-            password=None,
-            hidden=None):
+    def __init__(self, ssid=None, security=None, password=None, hidden=None):
         """
         Generate the QrSpecial-derived WiFi network.
 
@@ -791,15 +725,9 @@ class QrWifi(QrSpecial):
         QrSpecial.__init__(self, **kws)
 
 
-# ======================================================================
 # MeCard as an alias of QrContact
 MeCard = QrContact
 
-# ======================================================================
 if __name__ == '__main__':
-    print(__doc__.strip())
-
-    # perform doctests
-    import doctest  # Test interactive Python examples
-
+    import doctest
     doctest.testmod()
