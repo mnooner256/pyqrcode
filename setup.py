@@ -24,7 +24,6 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 from setuptools import setup
 import os
-import shutil
 import re
 import io
 
@@ -44,19 +43,10 @@ version = re.search(r'''^__version__ = ["']([^'"]+)['"]''',
                     read('pyqrcode/__init__.py'), flags=re.MULTILINE).group(1)
 
 
-# Make the README.rst file the long description
-# This only happens when we are building from the source.
-if os.path.exists('docs/README.rst'):
-    print('Reading README.rst file')
-    with open('docs/README.rst', 'r') as f:
-        longdesc = f.read()
-    shutil.copyfile('docs/README.rst', 'README.rst')
-else:
-    longdesc = None
-
 setup(name='PyQRCode',
       packages=['pyqrcode'],
       version=version,
+      long_description=read('README.rst', 'CHANGES.rst'),
       description='A QR code generator written purely in Python with SVG, EPS, PNG and terminal output.',
       author='Michael Nooner',
       author_email='mnooner256@gmail.com',
@@ -80,8 +70,4 @@ setup(name='PyQRCode',
         'Programming Language :: Python :: 2.6',
         'Programming Language :: Python :: 2.7',
         ],
-      long_description=longdesc,
 )
-
-if os.path.exists('docs/README.rst'):
-    os.remove('README.rst')

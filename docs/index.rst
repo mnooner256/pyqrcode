@@ -28,9 +28,6 @@ Contents:
    encoding
    rendering
    moddoc
-
-   PyPI Readme <README>
-
    glossary
 
 Requirements
