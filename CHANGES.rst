@@ -1,6 +1,19 @@
 Changes
 =======
 
+1.3.0 - 2018-mm-dd
+------------------
+* Added support for vCards, meCards etc. contributed by Riccardo Metere
+  Fixed <https://github.com/mnooner256/pyqrcode/pull/45>
+* Skip detecting content type if constructor mode is given to constructor.
+  Contributed by Martijn van Rheenen.
+  Fixed <https://github.com/mnooner256/pyqrcode/issues/50>
+* Faster PNG generation, fixed <https://github.com/mnooner256/pyqrcode/pull/47>
+* Moved tests from nose to pytest since nose is deprecated,
+  see <https://github.com/heuer/pyqrcode/issues/2>
+* Updated test environment: Added PyPy, PyPy3 and Python 3.6
+
+
 1.2.1 - 2016-06-20
 ------------------
 * Fixed issue #43. A debug print statement got left in by mistake. I altered
