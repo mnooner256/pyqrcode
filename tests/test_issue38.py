@@ -3,6 +3,7 @@
 Tests against <https://github.com/mnooner256/pyqrcode/issues/13>
 """
 from __future__ import unicode_literals
+import io
 import pyqrcode
 
 
@@ -13,7 +14,8 @@ def test_long_number_gives_version2():
 
 def test_version_1_max_numeric():
     code = pyqrcode.create("11111111111111111", error="H")
-    code.png('test.png', scale=13, quiet_zone=4)
+    out = io.BytesIO()
+    code.png(out, scale=13, quiet_zone=4)
     assert code.version == 1
 
 
