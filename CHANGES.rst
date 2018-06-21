@@ -15,7 +15,7 @@ Changes
 * QRCode.get_png_size() is deprecated, use QRCode.symbol_size(). The latter
   returns a (width, height) tuple, not an integer.
 * Deprecated QRCode.png_as_base64_str(), use QRCode.png_data_uri() which returns
-  a valid URI
+  a valid URI instead of a Base64 encoded string
 
 
 1.2.1 - 2016-06-20
