@@ -287,6 +287,7 @@ def svg(code, version, file, scale=1, module_color='#000', background=None,
         # .5 == stroke / 2
         return line(col_number + quiet_zone, row_number + quiet_zone + .5, 1, False)
 
+    width, height = _get_symbol_size(version, scale, quiet_zone)
     with _writable(file, 'wb') as f:
         write = partial(write_unicode, f.write)
         write_bytes = f.write
@@ -296,11 +297,10 @@ def svg(code, version, file, scale=1, module_color='#000', background=None,
         write_bytes(b'<svg')
         if svgns:
             write_bytes(b' xmlns="http://www.w3.org/2000/svg"')
-        size = tables.version_size[version] * scale + (2 * quiet_zone * scale)
         if not omithw:
-            write(' height="{0}" width="{0}"'.format(size))
+            write(' width="{0}" height="{1}"'.format(width, height))
         else:
-            write(' viewBox="0 0 {0} {0}"'.format(size))
+            write(' viewBox="0 0 {0} {1}"'.format(width, height))
         if svgclass is not None:
             write_bytes(b' class=')
             write(quoteattr(svgclass))
@@ -310,8 +310,8 @@ def svg(code, version, file, scale=1, module_color='#000', background=None,
 
         # Draw a background rectangle if necessary
         if background is not None:
-            write('<path fill="{1}" d="M0 0h{0}v{0}h-{0}z"/>'
-                    .format(size, background))
+            write('<path fill="{2}" d="M0 0h{0}v{1}h-{0}z"/>'
+                    .format(width, height, background))
         write_bytes(b'<path')
         if scale != 1:
             write(' transform="scale({0})"'.format(scale))
@@ -559,15 +559,15 @@ def eps(code, version, file_or_path, scale=1, module_color=(0, 0, 0),
             color = _hex_to_rgb(color)
         return tuple([to_float(i) for i in color])
 
+    width, height = _get_symbol_size(version, scale, quiet_zone)
     with _writable(file_or_path, 'w') as f:
         writeline = partial(write_line, f.write)
-        size = tables.version_size[version] * scale + (2 * quiet_zone * scale)
         # Write common header
         writeline('%!PS-Adobe-3.0 EPSF-3.0')
         writeline('%%Creator: PyQRCode <https://pypi.python.org/pypi/PyQRCode/>')
         writeline('%%CreationDate: {0}'.format(time.strftime("%Y-%m-%d %H:%M:%S")))
         writeline('%%DocumentData: Clean7Bit')
-        writeline('%%BoundingBox: 0 0 {0} {0}'.format(size))
+        writeline('%%BoundingBox: 0 0 {0} {1}'.format(width, height))
         # Write the shortcuts
         writeline('/M { moveto } bind def')
         writeline('/m { rmoveto } bind def')
