@@ -40,7 +40,6 @@ except ImportError:
     str = unicode
 
 
-
 class QRCodeBuilder:
     """This class generates a QR code based on the standard. It is meant to
     be used internally, not by users!!!
@@ -101,7 +100,8 @@ class QRCodeBuilder:
         #Create the actual QR code
         self.make_code()
 
-    def grouper(self, n, iterable, fillvalue=None):
+    @staticmethod
+    def grouper(n, iterable, fillvalue=None):
         """This generator yields a set of tuples, where the
         iterable is broken into n sized chunks. If the
         iterable is not evenly sized then fillvalue will
@@ -178,7 +178,7 @@ class QRCodeBuilder:
         
         #Now perform the algorithm that will make the ascii into bit fields
         with io.StringIO() as buf:
-            for (a,b) in self.grouper(2, ascii):
+            for (a,b) in QRCodeBuilder.grouper(2, ascii):
                 if b is not None:
                     buf.write(self.binary_string((45*a)+b, 11))
                 else:
@@ -195,7 +195,7 @@ class QRCodeBuilder:
         """
         with io.StringIO() as buf:
             #Break the number into groups of three digits
-            for triplet in self.grouper(3, self.data):
+            for triplet in QRCodeBuilder.grouper(3, self.data):
                 number = ''
                 for digit in triplet:
                     if isinstance(digit, int):
@@ -277,7 +277,6 @@ class QRCodeBuilder:
             #Return the binary string
             return buf.getvalue()
 
-
     def add_data(self):
         """This function properly constructs a QR code's data string. It takes
         into account the interleaving pattern required by the standard.
@@ -316,7 +315,7 @@ class QRCodeBuilder:
         
         #Get a numeric representation of the data
         data = [int(''.join(x),2)
-                    for x in self.grouper(8, self.buffer.getvalue())]
+                    for x in QRCodeBuilder.grouper(8, self.buffer.getvalue())]
 
         #This is the error information for the code
         error_info = tables.eccwbi[self.version][self.error]
@@ -510,7 +509,7 @@ class QRCodeBuilder:
         template = [deepcopy(row) for x in range(matrix_size)]
 
         #Add mandatory information to the template
-        self.add_detection_pattern(template)
+        QRCodeBuilder.add_detection_pattern(template)
         self.add_position_pattern(template)
         self.add_version_pattern(template)
 
@@ -520,7 +519,8 @@ class QRCodeBuilder:
         self.best_mask = self.choose_best_mask()
         self.code = self.masks[self.best_mask]
 
-    def add_detection_pattern(self, m):
+    @staticmethod
+    def add_detection_pattern(m):
         """This method add the detection patterns to the QR code. This lets
         the scanner orient the pattern. It is required for all QR codes.
         The detection pattern consists of three boxes located at the upper
@@ -672,7 +672,7 @@ class QRCodeBuilder:
             masks[n] = cur_mask
 
             #Add the type pattern bits to the code
-            self.add_type_pattern(cur_mask, tables.type_bits[self.error][n])
+            QRCodeBuilder.add_type_pattern(cur_mask, tables.type_bits[self.error][n])
 
             #Get the mask pattern
             pattern = tables.mask_patterns[n]
@@ -871,7 +871,8 @@ class QRCodeBuilder:
         #The lowest total wins
         return totals.index(min(totals))
 
-    def add_type_pattern(self, m, type_bits):
+    @staticmethod
+    def add_type_pattern(m, type_bits):
         """This will add the pattern to the QR code that represents the error
         level and the type of mask used to make the code.
         """
@@ -1017,6 +1018,7 @@ def _terminal(code, module_color='default', background='reverse', quiet_zone=4):
 
     return buf.getvalue()
 
+
 def _text(code, quiet_zone=4):
     """This method returns a text based representation of the QR code.
     This is useful for debugging purposes.
@@ -1057,6 +1059,7 @@ def _text(code, quiet_zone=4):
         buf.write('\n')
 
     return buf.getvalue()
+
 
 def _xbm(code, scale=1, quiet_zone=4):
     """This function will format the QR code as a X BitMap.
@@ -1102,6 +1105,7 @@ def _xbm(code, scale=1, quiet_zone=4):
     buf.write('};')
     
     return buf.getvalue()
+
 
 def _svg(code, version, file, scale=1, module_color='#000', background=None,
          quiet_zone=4, xmldecl=True, svgns=True, title=None, svgclass='pyqrcode',

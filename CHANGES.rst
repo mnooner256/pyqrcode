@@ -3,7 +3,7 @@ Changes
 
 1.3.0 - 2018-mm-dd
 ------------------
-* Added support for vCards, meCards etc. contributed by Riccardo Metere
+* Added support for meCards etc. contributed by Riccardo Metere
   Fixed <https://github.com/mnooner256/pyqrcode/pull/45>
 * Skip detecting content type if constructor mode is given to constructor.
   Contributed by Martijn van Rheenen.

@@ -39,7 +39,6 @@ Examples:
         >>> number = pyqrcode.create(123456789012345)
         >>> number.png('big-number.png')
 """
-#Imports required for 2.7 support
 from __future__ import absolute_import, division, print_function, with_statement, unicode_literals
 
 import pyqrcode.tables
@@ -113,6 +112,7 @@ def create(content, error='H', version=None, mode=None, encoding=None):
     """
     return QRCode(content, error, version, mode, encoding)
 
+
 class QRCode:
     """This class represents a QR code. To use this class simply give the
     constructor a string representing the data to be encoded, it will then
@@ -137,7 +137,7 @@ class QRCode:
                  encoding='iso-8859-1'):
         #Guess the mode of the code, this will also be used for
         #error checking
-        guessed_content_type, encoding = self._detect_content_type(content, encoding)
+        guessed_content_type, encoding = QRCode._detect_content_type(content, encoding)
         
         if encoding is None:
             encoding = 'iso-8859-1'
@@ -240,7 +240,8 @@ class QRCode:
         return "QRCode(content={0}, error='{1}', version={2}, mode='{3}')" \
                 .format(repr(self.data), self.error, self.version, self.mode)
 
-    def _detect_content_type(self, content, encoding):
+    @staticmethod
+    def _detect_content_type(content, encoding):
         """This method tries to auto-detect the type of the data. It first
         tries to see if the data is a valid integer, in which case it returns
         numeric. Next, it tests the data to see if it is 'alphanumeric.' QR
