@@ -1,4 +1,5 @@
 # Copyright (c) 2013, Michael Nooner
+# Copyright (c) 2018, Lars Heuer
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -48,9 +49,9 @@ setup(name='PyQRCode',
       version=version,
       long_description=read('README.rst', 'CHANGES.rst'),
       description='A QR code generator written purely in Python with SVG, EPS, PNG and terminal output.',
-      author='Michael Nooner',
-      author_email='mnooner256@gmail.com',
-      url='https://github.com/mnooner256/pyqrcode',
+      author='Michael Nooner, Lars Heuer',
+      author_email='heuer@semagia.com',
+      url='https://github.com/heuer/pyqrcode',
       keywords=['qrcode', 'qr'],
       license='BSD',
       extras_require={
