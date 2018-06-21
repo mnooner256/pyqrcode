@@ -511,14 +511,24 @@ class QRCode:
             PNG image.
 
         """
-        import io
-        import base64
-        
-        with io.BytesIO() as virtual_file:
-            self.png(file=virtual_file, scale=scale, module_color=module_color,
-                     background=background, quiet_zone=quiet_zone)
-            image_as_str = base64.b64encode(virtual_file.getvalue()).decode("ascii")
-        return image_as_str
+        import warnings
+        warnings.warn('This method is deprecated, use png_data_uri', category=DeprecationWarning)
+        return self.png_data_uri(scale=scale, module_color=module_color,
+                                 background=background,
+                                 quiet_zone=quiet_zone).replace('data:image/png;base64,', '')
+
+    def png_data_uri(self, scale=1, module_color=(0, 0, 0, 255),
+                          background=(255, 255, 255, 255), quiet_zone=4):
+        """\
+        Converts the QR Code into a PNG data URI.
+
+        Uses the same keyword parameters as the usual PNG serializer.
+
+        :rtype: str
+        """
+        return writers.as_png_data_uri(self.code, self.version, scale=scale,
+                                       module_color=module_color,
+                                       background=background, quiet_zone=quiet_zone)
         
     def xbm(self, scale=1, quiet_zone=4):
         """Returns a string representing an XBM image of the QR code.

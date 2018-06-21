@@ -14,6 +14,7 @@ import io
 import math
 import codecs
 import itertools
+import base64
 from pyqrcode.builder import _get_symbol_size
 from contextlib import contextmanager
 try:
@@ -511,6 +512,15 @@ def png(code, version, file, scale=1, module_color=(0, 0, 0, 255),
                        transparent=transparent_color, palette=palette,
                        bitdepth=bitdepth)
         w.write_passes(f, code_rows)
+
+
+def as_png_data_uri(code, version, scale=1, module_color=(0, 0, 0, 255),
+         background=(255, 255, 255, 255), quiet_zone=4, debug=False):
+    buff = io.BytesIO()
+    png(code, version, buff, scale=scale, quiet_zone=quiet_zone, module_color=module_color,
+              background=background)
+    return 'data:image/png;base64,{0}' \
+                .format(base64.b64encode(buff.getvalue()).decode('ascii'))
 
 
 def eps(code, version, file_or_path, scale=1, module_color=(0, 0, 0),
