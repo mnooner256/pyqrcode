@@ -422,7 +422,7 @@ class QRCode:
         """
         import warnings
         warnings.warn('This method is deprecated, use symbol_size', category=DeprecationWarning)
-        return self.symbol_size(scale, quiet_zone)[0]
+        return self.symbol_size(int(scale), quiet_zone)[0]
 
     def symbol_size(self, scale=1, quiet_zone=4):
         """\

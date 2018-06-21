@@ -15,7 +15,6 @@ import math
 import codecs
 import itertools
 from contextlib import contextmanager
-from pyqrcode import tables
 try:
     str = unicode
 except NameError:
@@ -53,16 +52,51 @@ def _writable(file_or_path, mode, encoding=None):
 
 
 def _get_symbol_size(version, scale, quiet_zone=4):
-    """See: QRCode.get_png_size
+    """See: QRCode.symbol_size()
 
     This function was abstracted away from QRCode to allow for the output of
     QR codes during the build process, i.e. for debugging. It works
     just the same except you must specify the code's version. This is needed
-    to calculate the PNG's size.
+    to calculate the symbol's size.
     """
     #Formula: scale times number of modules plus the border on each side
-    s = (int(scale) * tables.version_size[version]) + (2 * quiet_zone * int(scale))
-    return s, s
+    dim = version * 4 + 17
+    dim += 2 * quiet_zone
+    dim *= scale
+    return dim, dim
+
+#: This is a table of ASCII escape code for terminal colors. QR codes
+#: are drawn using a space with a colored background. Hence, only
+#: codes affecting background colors have been added.
+#: http://misc.flogisoft.com/bash/tip_colors_and_formatting
+_TERM_COLORS = {
+    'default': 49,
+    'background': 49,
+
+    'reverse': 7,
+    'reversed': 7,
+    'inverse': 7,
+    'inverted': 7,
+
+    'black': 40,
+    'red': 41,
+    'green': 42,
+    'yellow': 43,
+    'blue': 44,
+    'magenta': 45,
+    'cyan': 46,
+    'light gray': 47,
+    'light grey': 47,
+    'dark gray': 100,
+    'dark grey': 100,
+    'light red': 101,
+    'light green': 102,
+    'light blue': 103,
+    'light yellow': 104,
+    'light magenta': 105,
+    'light cyan': 106,
+    'white': 107
+}
 
 
 def terminal(code, module_color='default', background='reverse', quiet_zone=4):
@@ -84,9 +118,9 @@ def terminal(code, module_color='default', background='reverse', quiet_zone=4):
         for i in range(quiet_zone):
             buf.write(background)
 
-    if module_color in tables.term_colors:
+    if module_color in _TERM_COLORS:
         data = '\033[{0}m  \033[0m'.format(
-            tables.term_colors[module_color])
+            _TERM_COLORS[module_color])
     elif 0 <= module_color <= 256:
         data = '\033[48;5;{0}m  \033[0m'.format(module_color)
     else:
@@ -95,9 +129,9 @@ def terminal(code, module_color='default', background='reverse', quiet_zone=4):
                          'between 0 and 256.'.format(
                          module_color))
 
-    if background in tables.term_colors:
+    if background in _TERM_COLORS:
         background = '\033[{0}m  \033[0m'.format(
-            tables.term_colors[background])
+            _TERM_COLORS[background])
     elif 0 <= background <= 256:
         background = '\033[48;5;{0}m  \033[0m'.format(background)
     else:
@@ -611,6 +645,7 @@ def eps(code, version, file_or_path, scale=1, module_color=(0, 0, 0),
             writeline(coord)
         writeline('stroke')
         writeline('%%EOF')
+
 
 def _hex_to_rgb(color):
     """\

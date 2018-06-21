@@ -758,37 +758,3 @@ mask_patterns = [
     lambda row, col: ((row * col) % 2) + ((row * col) % 3) == 0,
     lambda row, col: (((row * col) % 2) + ((row * col) % 3)) % 2 == 0,
     lambda row, col: (((row + col) % 2) + ((row * col) % 3)) % 2 == 0]
-
-
-#: This is a table of ASCII escape code for terminal colors. QR codes
-#: are drawn using a space with a colored background. Hence, only
-#: codes affecting background colors have been added.
-#: http://misc.flogisoft.com/bash/tip_colors_and_formatting
-term_colors = {
-    'default': 49,
-    'background': 49,
-
-    'reverse': 7,
-    'reversed': 7,
-    'inverse': 7,
-    'inverted': 7,
-
-    'black': 40,
-    'red': 41,
-    'green': 42,
-    'yellow': 43,
-    'blue': 44,
-    'magenta': 45,
-    'cyan': 46,
-    'light gray': 47,
-    'light grey': 47,
-    'dark gray': 100,
-    'dark grey': 100,
-    'light red': 101,
-    'light green': 102,
-    'light blue': 103,
-    'light yellow': 104,
-    'light magenta': 105,
-    'light cyan': 106,
-    'white': 107
-}
