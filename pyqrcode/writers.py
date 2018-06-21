@@ -87,7 +87,7 @@ _TERM_COLORS = {
 }
 
 
-def terminal(code, module_color='default', background='reverse', quiet_zone=4):
+def write_terminal(code, module_color='default', background='reverse', quiet_zone=4):
     """This method returns a string containing ASCII escape codes,
     such that if printed to a terminal, it will display a vaild
     QR code. The module_color and the background color should be keys
@@ -164,7 +164,7 @@ def terminal(code, module_color='default', background='reverse', quiet_zone=4):
     return buf.getvalue()
 
 
-def text(code, quiet_zone=4):
+def write_text(code, quiet_zone=4):
     """This method returns a text based representation of the QR code.
     This is useful for debugging purposes.
     """
@@ -206,7 +206,7 @@ def text(code, quiet_zone=4):
     return buf.getvalue()
 
 
-def xbm(code, scale=1, quiet_zone=4):
+def write_xbm(code, scale=1, quiet_zone=4):
     """This function will format the QR code as a X BitMap.
     This can be used to display the QR code with Tkinter.
     """
@@ -252,9 +252,9 @@ def xbm(code, scale=1, quiet_zone=4):
     return buf.getvalue()
 
 
-def svg(code, version, file, scale=1, module_color='#000', background=None,
-         quiet_zone=4, xmldecl=True, svgns=True, title=None, svgclass='pyqrcode',
-         lineclass='pyqrline', omithw=False, debug=False):
+def write_svg(code, version, file, scale=1, module_color='#000', background=None,
+              quiet_zone=4, xmldecl=True, svgns=True, title=None, svgclass='pyqrcode',
+              lineclass='pyqrline', omithw=False, debug=False):
     """This function writes the QR code out as an SVG document. The
     code is drawn by drawing only the modules corresponding to a 1. They
     are drawn using a line, such that contiguous modules in a row
@@ -387,8 +387,8 @@ def svg(code, version, file, scale=1, module_color='#000', background=None,
         write_bytes(b'</svg>\n')
 
 
-def png(code, version, file, scale=1, module_color=(0, 0, 0, 255),
-         background=(255, 255, 255, 255), quiet_zone=4, debug=False):
+def write_png(code, version, file, scale=1, module_color=(0, 0, 0, 255),
+              background=(255, 255, 255, 255), quiet_zone=4, debug=False):
     """See: pyqrcode.QRCode.png()
 
     This function was abstracted away from QRCode to allow for the output of
@@ -517,14 +517,14 @@ def png(code, version, file, scale=1, module_color=(0, 0, 0, 255),
 def as_png_data_uri(code, version, scale=1, module_color=(0, 0, 0, 255),
          background=(255, 255, 255, 255), quiet_zone=4, debug=False):
     buff = io.BytesIO()
-    png(code, version, buff, scale=scale, quiet_zone=quiet_zone, module_color=module_color,
+    write_png(code, version, buff, scale=scale, quiet_zone=quiet_zone, module_color=module_color,
               background=background)
     return 'data:image/png;base64,{0}' \
                 .format(base64.b64encode(buff.getvalue()).decode('ascii'))
 
 
-def eps(code, version, file_or_path, scale=1, module_color=(0, 0, 0),
-         background=None, quiet_zone=4):
+def write_eps(code, version, file_or_path, scale=1, module_color=(0, 0, 0),
+              background=None, quiet_zone=4):
     """This function writes the QR code out as an EPS document. The
     code is drawn by drawing only the modules corresponding to a 1. They
     are drawn using a line, such that contiguous modules in a row

@@ -489,8 +489,8 @@ class QRCode:
                          module_color=(0x66, 0x33, 0x0),      #Dark brown
                          background=(0xff, 0xff, 0xff, 0x88)) #50% transparent white
         """
-        writers.png(self.code, self.version, file, scale,
-                     module_color, background, quiet_zone)
+        writers.write_png(self.code, self.version, file, scale,
+                          module_color, background, quiet_zone)
 
     def png_as_base64_str(self, scale=1, module_color=(0, 0, 0, 255),
                           background=(255, 255, 255, 255), quiet_zone=4):
@@ -566,7 +566,7 @@ class QRCode:
         left settable because such a wide quiet zone is unnecessary in many
         applications where the QR code is not being printed.
         """
-        return writers.xbm(self.code, scale, quiet_zone)
+        return writers.write_xbm(self.code, scale, quiet_zone)
 
     def svg(self, file, scale=1, module_color='#000', background=None,
             quiet_zone=4, xmldecl=True, svgns=True, title=None,
@@ -622,11 +622,11 @@ class QRCode:
             >>> code.svg('live-organ-transplants.svg', scale=4,
                          module_color='brown', background='0xFFFFFF')
         """
-        writers.svg(self.code, self.version, file, scale=scale,
-                     module_color=module_color, background=background,
-                     quiet_zone=quiet_zone, xmldecl=xmldecl, svgns=svgns, 
-                     title=title, svgclass=svgclass, lineclass=lineclass,
-                     omithw=omithw, debug=debug)
+        writers.write_svg(self.code, self.version, file, scale=scale,
+                          module_color=module_color, background=background,
+                          quiet_zone=quiet_zone, xmldecl=xmldecl, svgns=svgns,
+                          title=title, svgclass=svgclass, lineclass=lineclass,
+                          omithw=omithw, debug=debug)
 
     def eps(self, file, scale=1, module_color=(0, 0, 0),
             background=None, quiet_zone=4):
@@ -660,8 +660,8 @@ class QRCode:
             >>> out = io.StringIO()
             >>> qr.eps(out, module_color=(.4, .4, .4))
         """
-        writers.eps(self.code, self.version, file, scale, module_color,
-                     background, quiet_zone)
+        writers.write_eps(self.code, self.version, file, scale, module_color,
+                          background, quiet_zone)
 
     def terminal(self, module_color='default', background='reverse',
                  quiet_zone=4):
@@ -708,8 +708,8 @@ class QRCode:
             >>> text = code.terminal()
             >>> print(text)
         """
-        return writers.terminal(self.code, module_color, background,
-                                 quiet_zone)
+        return writers.write_terminal(self.code, module_color, background,
+                                      quiet_zone)
 
     def text(self, quiet_zone=4):
         """This method returns a string based representation of the QR code.
@@ -727,4 +727,4 @@ class QRCode:
             >>> text = code.text()
             >>> print(text)
         """
-        return writers.text(self.code, quiet_zone)
+        return writers.write_text(self.code, quiet_zone)
