@@ -9,7 +9,7 @@
 """\
 Standard serializers and utility functions for serializers.
 """
-from __future__ import absolute_import, unicode_literals
+from __future__ import absolute_import, unicode_literals, with_statement
 import io
 import math
 import itertools
@@ -18,7 +18,6 @@ try:
     str = unicode
 except NameError:
     pass
-
 
 def _get_writable(stream_or_path, mode):
     """This method returns a tuple containing the stream and a flag to indicate
@@ -41,7 +40,7 @@ def _get_writable(stream_or_path, mode):
     return stream_or_path, not is_stream
 
 
-def _get_png_size(version, scale, quiet_zone=4):
+def _get_symbol_size(version, scale, quiet_zone=4):
     """See: QRCode.get_png_size
 
     This function was abstracted away from QRCode to allow for the output of
@@ -50,7 +49,8 @@ def _get_png_size(version, scale, quiet_zone=4):
     to calculate the PNG's size.
     """
     #Formula: scale times number of modules plus the border on each side
-    return (int(scale) * tables.version_size[version]) + (2 * quiet_zone * int(scale))
+    s = (int(scale) * tables.version_size[version]) + (2 * quiet_zone * int(scale))
+    return s, s
 
 
 def terminal(code, module_color='default', background='reverse', quiet_zone=4):
@@ -385,7 +385,7 @@ def png(code, version, file, scale=1, module_color=(0, 0, 0, 255),
     except ValueError:
         raise ValueError('The scale parameter must be an integer')
 
-    def scale_code(size):
+    def scale_code(width, height):
         """To perform the scaling we need to inflate the number of bits.
         The PNG library expects all of the bits when it draws the PNG.
         Effectively, we double, triple, etc. the number of columns and
@@ -404,7 +404,7 @@ def png(code, version, file, scale=1, module_color=(0, 0, 0, 255),
         # Whitespace added on the left and right side
         border_module = white * quiet_zone
         # This is the row to show up at the top and bottom border
-        border_row = [1] * size
+        border_row = [1] * width
 
         # Add scale rows before the code as a border, as per the standard
         for i in range(quiet_zone * scale):
@@ -468,15 +468,15 @@ def png(code, version, file, scale=1, module_color=(0, 0, 0, 255),
         bitdepth = 2
 
     # The size of the PNG
-    size = _get_png_size(version, scale, quiet_zone)
+    width, height = _get_symbol_size(version, scale, quiet_zone)
 
     # We need to increase the size of the code to match up to the
     # scale parameter.
-    code_rows = scale_code(size)
+    code_rows = scale_code(width, height)
 
     # Write out the PNG
     f, autoclose = _get_writable(file, 'wb')
-    w = png.Writer(width=size, height=size, greyscale=greyscale,
+    w = png.Writer(width=width, height=height, greyscale=greyscale,
                    transparent=transparent_color, palette=palette,
                    bitdepth=bitdepth)
     try:

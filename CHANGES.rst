@@ -12,6 +12,8 @@ Changes
 * Moved tests from nose to pytest since nose is deprecated,
   see <https://github.com/heuer/pyqrcode/issues/2>
 * Updated test environment: Added PyPy, PyPy3 and Python 3.6
+* QRCode.get_png_size() is deprecated, use QRCode.symbol_size(). The latter
+  returns a (width, height) tuple, not an integer.
 
 
 1.2.1 - 2016-06-20

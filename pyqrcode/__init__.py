@@ -396,7 +396,7 @@ class QRCode:
         webbrowser.open_new_tab(urljoin('file:', pathname2url(f.name)))
         time.sleep(wait)
         os.unlink(f.name)
-        
+
     def get_png_size(self, scale=1, quiet_zone=4):
         """This is method helps users determine what *scale* to use when
         creating a PNG of this QR code. It is meant mostly to be used in the
@@ -415,12 +415,30 @@ class QRCode:
 
         Example:
             >>> code = pyqrcode.QRCode("I don't like spam!")
-            >>> print(code.get_png_size(1))
-            31
-            >>> print(code.get_png_size(5))
-            155
+            >>> print(code.symbol_size(1))
+            (31, 31)
+            >>> print(code.symbol_size(5))
+            (155, 155)
         """
-        return writers._get_png_size(self.version, scale, quiet_zone)
+        import warnings
+        warnings.warn('This method is deprecated, use symbol_size', category=DeprecationWarning)
+        return self.symbol_size(scale, quiet_zone)[0]
+
+    def symbol_size(self, scale=1, quiet_zone=4):
+        """\
+        Returns the symbol size (width x height) with the provided border and
+        scaling factor.
+
+        :param scale: Indicates the size of a single module (default: 1).
+                The size of a module depends on the used output format; i.e.
+                in a PNG context, a scaling factor of 2 indicates that a module
+                has a size of 2 x 2 pixel. Some outputs (i.e. SVG) accept
+                floating point values.
+        :type scale: int or float
+        :param int quiet_zone: The size of the quiet zone.
+        :rtype: tuple (width, height)
+        """
+        return writers._get_symbol_size(self.version, scale, quiet_zone)
 
     def png(self, file, scale=1, module_color=(0, 0, 0, 255),
             background=(255, 255, 255, 255), quiet_zone=4):
