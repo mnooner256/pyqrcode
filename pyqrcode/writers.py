@@ -14,6 +14,7 @@ import io
 import math
 import codecs
 import itertools
+from pyqrcode.builder import _get_symbol_size
 from contextlib import contextmanager
 try:
     str = unicode
@@ -50,20 +51,6 @@ def _writable(file_or_path, mode, encoding=None):
         if must_close:
             f.close()
 
-
-def _get_symbol_size(version, scale, quiet_zone=4):
-    """See: QRCode.symbol_size()
-
-    This function was abstracted away from QRCode to allow for the output of
-    QR codes during the build process, i.e. for debugging. It works
-    just the same except you must specify the code's version. This is needed
-    to calculate the symbol's size.
-    """
-    #Formula: scale times number of modules plus the border on each side
-    dim = version * 4 + 17
-    dim += 2 * quiet_zone
-    dim *= scale
-    return dim, dim
 
 #: This is a table of ASCII escape code for terminal colors. QR codes
 #: are drawn using a space with a colored background. Hence, only

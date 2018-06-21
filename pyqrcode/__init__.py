@@ -50,6 +50,8 @@ try:
 except NameError:
     pass
 
+# <https://wiki.python.org/moin/PortingToPy3k/BilingualQuickRef#New_Style_Classes>
+__metaclass__ = type
 
 __version__ = '1.3.0.dev0'
 
@@ -439,7 +441,7 @@ class QRCode:
         :param int quiet_zone: The size of the quiet zone.
         :rtype: tuple (width, height)
         """
-        return writers._get_symbol_size(self.version, scale, quiet_zone)
+        return builder._get_symbol_size(self.version, scale, quiet_zone)
 
     def png(self, file, scale=1, module_color=(0, 0, 0, 255),
             background=(255, 255, 255, 255), quiet_zone=4):

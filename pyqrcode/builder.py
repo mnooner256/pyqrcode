@@ -39,6 +39,9 @@ except ImportError:
     range = xrange
     str = unicode
 
+# <https://wiki.python.org/moin/PortingToPy3k/BilingualQuickRef#New_Style_Classes>
+__metaclass__ = type
+
 
 class QRCodeBuilder:
     """This class generates a QR code based on the standard. It is meant to
@@ -502,7 +505,7 @@ class QRCodeBuilder:
         from copy import deepcopy
 
         #Get the size of the underlying matrix
-        matrix_size = tables.version_size[self.version]
+        matrix_size = _get_symbol_size(self.version, scale=1, quiet_zone=0)[0]
 
         #Create a template matrix we will build the codes with
         row = [' ' for x in range(matrix_size)]
@@ -900,3 +903,18 @@ class QRCodeBuilder:
                 m[i][8] = bit
             else:
                 m[i-1][8] = bit
+
+
+def _get_symbol_size(version, scale, quiet_zone=4):
+    """See: QRCode.symbol_size()
+
+    This function was abstracted away from QRCode to allow for the output of
+    QR codes during the build process, i.e. for debugging. It works
+    just the same except you must specify the code's version. This is needed
+    to calculate the symbol's size.
+    """
+    #Formula: scale times number of modules plus the border on each side
+    dim = version * 4 + 17
+    dim += 2 * quiet_zone
+    dim *= scale
+    return dim, dim
