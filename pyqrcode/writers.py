@@ -12,32 +12,44 @@ Standard serializers and utility functions for serializers.
 from __future__ import absolute_import, unicode_literals, with_statement
 import io
 import math
+import codecs
 import itertools
+from contextlib import contextmanager
 from pyqrcode import tables
 try:
     str = unicode
 except NameError:
     pass
 
-def _get_writable(stream_or_path, mode):
-    """This method returns a tuple containing the stream and a flag to indicate
-    if the stream should be automatically closed.
 
-    The `stream_or_path` parameter is returned if it is an open writable stream.
-    Otherwise, it treats the `stream_or_path` parameter as a file path and
-    opens it with the given mode.
+@contextmanager
+def _writable(file_or_path, mode, encoding=None):
+    """\
+    Returns a writable file-like object.
 
-    It is used by the svg and png methods to interpret the file parameter.
+    Usage::
 
-    :type stream_or_path: str | io.BufferedIOBase
-    :type mode: str | unicode
-    :rtype: (io.BufferedIOBase, bool)
+        with writable(file_name_or_path, 'wb') as f:
+            ...
+
+
+    :param file_or_path: Either a file-like object or a filename.
+    :param str mode: String indicating the writing mode (i.e. ``'wb'``)
     """
-    is_stream = hasattr(stream_or_path, 'write')
-    if not is_stream:
-        # No stream provided, treat "stream_or_path" as path
-        stream_or_path = open(stream_or_path, mode)
-    return stream_or_path, not is_stream
+    f = file_or_path
+    must_close = False
+    try:
+        file_or_path.write
+        if encoding is not None:
+            f = codecs.getwriter(encoding)(file_or_path)
+    except AttributeError:
+        f = open(file_or_path, mode, encoding=encoding)
+        must_close = True
+    try:
+        yield f
+    finally:
+        if must_close:
+            f.close()
 
 
 def _get_symbol_size(version, scale, quiet_zone=4):
@@ -275,84 +287,82 @@ def svg(code, version, file, scale=1, module_color='#000', background=None,
         # .5 == stroke / 2
         return line(col_number + quiet_zone, row_number + quiet_zone + .5, 1, False)
 
-    f, autoclose = _get_writable(file, 'wb')
-    write = partial(write_unicode, f.write)
-    write_bytes = f.write
-    # Write the document header
-    if xmldecl:
-        write_bytes(b'<?xml version="1.0" encoding="UTF-8"?>\n')
-    write_bytes(b'<svg')
-    if svgns:
-        write_bytes(b' xmlns="http://www.w3.org/2000/svg"')
-    size = tables.version_size[version] * scale + (2 * quiet_zone * scale)
-    if not omithw:
-        write(' height="{0}" width="{0}"'.format(size))
-    else:
-        write(' viewBox="0 0 {0} {0}"'.format(size))
-    if svgclass is not None:
-        write_bytes(b' class=')
-        write(quoteattr(svgclass))
-    write_bytes(b'>')
-    if title is not None:
-        write('<title>{0}</title>'.format(title))
+    with _writable(file, 'wb') as f:
+        write = partial(write_unicode, f.write)
+        write_bytes = f.write
+        # Write the document header
+        if xmldecl:
+            write_bytes(b'<?xml version="1.0" encoding="UTF-8"?>\n')
+        write_bytes(b'<svg')
+        if svgns:
+            write_bytes(b' xmlns="http://www.w3.org/2000/svg"')
+        size = tables.version_size[version] * scale + (2 * quiet_zone * scale)
+        if not omithw:
+            write(' height="{0}" width="{0}"'.format(size))
+        else:
+            write(' viewBox="0 0 {0} {0}"'.format(size))
+        if svgclass is not None:
+            write_bytes(b' class=')
+            write(quoteattr(svgclass))
+        write_bytes(b'>')
+        if title is not None:
+            write('<title>{0}</title>'.format(title))
 
-    # Draw a background rectangle if necessary
-    if background is not None:
-        write('<path fill="{1}" d="M0 0h{0}v{0}h-{0}z"/>'
-                .format(size, background))
-    write_bytes(b'<path')
-    if scale != 1:
-        write(' transform="scale({0})"'.format(scale))
-    if module_color is not None:
-        write_bytes(b' stroke=')
-        write(quoteattr(module_color))
-    if lineclass is not None:
-        write_bytes(b' class=')
-        write(quoteattr(lineclass))
-    write_bytes(b' d="')
-    # Used to keep track of unknown/error coordinates.
-    debug_path = ''
-    # Current pen pointer position
-    x, y = -quiet_zone, quiet_zone - .5  # .5 == stroke-width / 2
-    wrote_bit = False
-    # Loop through each row of the code
-    for rnumber, row in enumerate(code):
-        start_column = 0  # Reset the starting column number
-        coord = ''  # Reset row coordinates
-        y += 1  # Pen position on y-axis
-        length = 0  # Reset line length
-        # Examine every bit in the row
-        for colnumber, bit in enumerate(row):
-            if bit == 1:
-                length += 1
-            else:
-                if length:
-                    x = start_column - x
-                    coord += line(x, y, length, relative=wrote_bit)
-                    x = start_column + length
-                    y = 0  # y-axis won't change unless the row changes
-                    length = 0
-                    wrote_bit = True
-                start_column = colnumber + 1
-                if debug and bit != 0:
-                    debug_path += errline(colnumber, rnumber)
-        if length:
-            x = start_column - x
-            coord += line(x, y, length, relative=wrote_bit)
-            x = start_column + length
-            wrote_bit = True
-        write(coord)
-    # Close path
-    write_bytes(b'"/>')
-    if debug and debug_path:
+        # Draw a background rectangle if necessary
+        if background is not None:
+            write('<path fill="{1}" d="M0 0h{0}v{0}h-{0}z"/>'
+                    .format(size, background))
         write_bytes(b'<path')
         if scale != 1:
             write(' transform="scale({0})"'.format(scale))
-        write(' class="pyqrerr" stroke="red" d="{0}"/>'.format(debug_path))
-    # Close document
-    write_bytes(b'</svg>\n')
-    if autoclose:
-        f.close()
+        if module_color is not None:
+            write_bytes(b' stroke=')
+            write(quoteattr(module_color))
+        if lineclass is not None:
+            write_bytes(b' class=')
+            write(quoteattr(lineclass))
+        write_bytes(b' d="')
+        # Used to keep track of unknown/error coordinates.
+        debug_path = ''
+        # Current pen pointer position
+        x, y = -quiet_zone, quiet_zone - .5  # .5 == stroke-width / 2
+        wrote_bit = False
+        # Loop through each row of the code
+        for rnumber, row in enumerate(code):
+            start_column = 0  # Reset the starting column number
+            coord = ''  # Reset row coordinates
+            y += 1  # Pen position on y-axis
+            length = 0  # Reset line length
+            # Examine every bit in the row
+            for colnumber, bit in enumerate(row):
+                if bit == 1:
+                    length += 1
+                else:
+                    if length:
+                        x = start_column - x
+                        coord += line(x, y, length, relative=wrote_bit)
+                        x = start_column + length
+                        y = 0  # y-axis won't change unless the row changes
+                        length = 0
+                        wrote_bit = True
+                    start_column = colnumber + 1
+                    if debug and bit != 0:
+                        debug_path += errline(colnumber, rnumber)
+            if length:
+                x = start_column - x
+                coord += line(x, y, length, relative=wrote_bit)
+                x = start_column + length
+                wrote_bit = True
+            write(coord)
+        # Close path
+        write_bytes(b'"/>')
+        if debug and debug_path:
+            write_bytes(b'<path')
+            if scale != 1:
+                write(' transform="scale({0})"'.format(scale))
+            write(' class="pyqrerr" stroke="red" d="{0}"/>'.format(debug_path))
+        # Close document
+        write_bytes(b'</svg>\n')
 
 
 def png(code, version, file, scale=1, module_color=(0, 0, 0, 255),
@@ -475,15 +485,11 @@ def png(code, version, file, scale=1, module_color=(0, 0, 0, 255),
     code_rows = scale_code(width, height)
 
     # Write out the PNG
-    f, autoclose = _get_writable(file, 'wb')
-    w = png.Writer(width=width, height=height, greyscale=greyscale,
-                   transparent=transparent_color, palette=palette,
-                   bitdepth=bitdepth)
-    try:
+    with _writable(file, 'wb') as f:
+        w = png.Writer(width=width, height=height, greyscale=greyscale,
+                       transparent=transparent_color, palette=palette,
+                       bitdepth=bitdepth)
         w.write_passes(f, code_rows)
-    finally:
-        if autoclose:
-            f.close()
 
 
 def eps(code, version, file_or_path, scale=1, module_color=(0, 0, 0),
@@ -553,61 +559,58 @@ def eps(code, version, file_or_path, scale=1, module_color=(0, 0, 0),
             color = _hex_to_rgb(color)
         return tuple([to_float(i) for i in color])
 
-    f, autoclose = _get_writable(file_or_path, 'w')
-    writeline = partial(write_line, f.write)
-    size = tables.version_size[version] * scale + (2 * quiet_zone * scale)
-    # Write common header
-    writeline('%!PS-Adobe-3.0 EPSF-3.0')
-    writeline('%%Creator: PyQRCode <https://pypi.python.org/pypi/PyQRCode/>')
-    writeline('%%CreationDate: {0}'.format(time.strftime("%Y-%m-%d %H:%M:%S")))
-    writeline('%%DocumentData: Clean7Bit')
-    writeline('%%BoundingBox: 0 0 {0} {0}'.format(size))
-    # Write the shortcuts
-    writeline('/M { moveto } bind def')
-    writeline('/m { rmoveto } bind def')
-    writeline('/l { rlineto } bind def')
-    mod_color = module_color if module_color == (0, 0, 0) else rgb_to_floats(module_color)
-    if background is not None:
-        writeline('{0:f} {1:f} {2:f} setrgbcolor clippath fill'
-                  .format(*rgb_to_floats(background)))
-        if mod_color == (0, 0, 0):
-            # Reset RGB color back to black iff module color is black
-            # In case module color != black set the module RGB color later
-            writeline('0 0 0 setrgbcolor')
-    if mod_color != (0, 0, 0):
-        writeline('{0:f} {1:f} {2:f} setrgbcolor'.format(*mod_color))
-    if scale != 1:
-        writeline('{0} {0} scale'.format(scale))
-    writeline('newpath')
-    # Current pen position y-axis
-    # Note: 0, 0 = lower left corner in PS coordinate system
-    y = tables.version_size[version] + quiet_zone + .5  # .5 = linewidth / 2
-    last_bit = 1
-    # Loop through each row of the code
-    for row in code:
-        offset = 0  # Set x-offset of the pen
-        length = 0
-        y -= 1  # Move pen along y-axis
-        coord = '{0} {1} M'.format(quiet_zone, y)  # Move pen to initial pos
-        for bit in row:
-            if bit != last_bit:
-                if length:
-                    coord += line(offset, length)
-                    offset = 0
-                    length = 0
-                last_bit = bit
-            if bit == 1:
-                length += 1
-            else:
-                offset += 1
-        if length:
-            coord += line(offset, length)
-        writeline(coord)
-    writeline('stroke')
-    writeline('%%EOF')
-    if autoclose:
-        f.close()
-
+    with _writable(file_or_path, 'w') as f:
+        writeline = partial(write_line, f.write)
+        size = tables.version_size[version] * scale + (2 * quiet_zone * scale)
+        # Write common header
+        writeline('%!PS-Adobe-3.0 EPSF-3.0')
+        writeline('%%Creator: PyQRCode <https://pypi.python.org/pypi/PyQRCode/>')
+        writeline('%%CreationDate: {0}'.format(time.strftime("%Y-%m-%d %H:%M:%S")))
+        writeline('%%DocumentData: Clean7Bit')
+        writeline('%%BoundingBox: 0 0 {0} {0}'.format(size))
+        # Write the shortcuts
+        writeline('/M { moveto } bind def')
+        writeline('/m { rmoveto } bind def')
+        writeline('/l { rlineto } bind def')
+        mod_color = module_color if module_color == (0, 0, 0) else rgb_to_floats(module_color)
+        if background is not None:
+            writeline('{0:f} {1:f} {2:f} setrgbcolor clippath fill'
+                      .format(*rgb_to_floats(background)))
+            if mod_color == (0, 0, 0):
+                # Reset RGB color back to black iff module color is black
+                # In case module color != black set the module RGB color later
+                writeline('0 0 0 setrgbcolor')
+        if mod_color != (0, 0, 0):
+            writeline('{0:f} {1:f} {2:f} setrgbcolor'.format(*mod_color))
+        if scale != 1:
+            writeline('{0} {0} scale'.format(scale))
+        writeline('newpath')
+        # Current pen position y-axis
+        # Note: 0, 0 = lower left corner in PS coordinate system
+        y = tables.version_size[version] + quiet_zone + .5  # .5 = linewidth / 2
+        last_bit = 1
+        # Loop through each row of the code
+        for row in code:
+            offset = 0  # Set x-offset of the pen
+            length = 0
+            y -= 1  # Move pen along y-axis
+            coord = '{0} {1} M'.format(quiet_zone, y)  # Move pen to initial pos
+            for bit in row:
+                if bit != last_bit:
+                    if length:
+                        coord += line(offset, length)
+                        offset = 0
+                        length = 0
+                    last_bit = bit
+                if bit == 1:
+                    length += 1
+                else:
+                    offset += 1
+            if length:
+                coord += line(offset, length)
+            writeline(coord)
+        writeline('stroke')
+        writeline('%%EOF')
 
 def _hex_to_rgb(color):
     """\
