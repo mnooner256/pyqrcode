@@ -31,8 +31,11 @@ Generation of special-purpose text for Qr codes.
 from __future__ import absolute_import, unicode_literals, print_function
 import warnings
 
+# <https://wiki.python.org/moin/PortingToPy3k/BilingualQuickRef#New_Style_Classes>
+__metaclass__ = type
 
-class QrSpecial(object):
+
+class QrSpecial:
     """
     Special-purpose text for QR codes.
 
@@ -85,7 +88,7 @@ class QrSpecial(object):
             else:
                 raise NameError('Invalid keyword argument ``'.format(field))
 
-    def __str__(self):
+    def __repr__(self):
         """
         Generate the human-friendly representation of the object.
 
@@ -113,37 +116,9 @@ class QrSpecial(object):
             text += '\n' + '\n'.join(lines)
         else:
             text += ': <EMPTY>'
-
         return text
 
-    def __eq__(self, other):
-        """
-        Generic implementation of equality.
-
-        Args:
-            other: The object to compare to.
-
-        Returns:
-            result (bool): True if contains the same data, False otherwise.
-        """
-        if isinstance(other, type(self)):
-            return self.__dict__ == other.__dict__
-        else:
-            return False
-
-    def __ne__(self, other):
-        """
-        Generic implementation of inequality.
-
-        Args:
-            other: The object to compare to.
-
-        Returns:
-            result (bool): False if contains the same data, True otherwise.
-        """
-        return not self.__eq__(other)
-
-    def to_str(self):
+    def __str__(self):
         """
         Generate QR-ready text, i.e. the text to be used in QR codes.
 
@@ -173,14 +148,44 @@ class QrSpecial(object):
                 cls._start_tag + cls._sep.join(tokens) + cls._end_tag)
         return text
 
-    def is_empty(self):
+    def __eq__(self, other):
+        """
+        Generic implementation of equality.
+
+        Args:
+            other: The object to compare to.
+
+        Returns:
+            result (bool): True if contains the same data, False otherwise.
+        """
+        if isinstance(other, type(self)):
+            return self.__dict__ == other.__dict__
+        else:
+            return False
+
+    def __ne__(self, other):
+        """
+        Generic implementation of inequality.
+
+        Args:
+            other: The object to compare to.
+
+        Returns:
+            result (bool): False if contains the same data, True otherwise.
+        """
+        return not self.__eq__(other)
+
+    def __bool__(self):
         """
         Determines if the object contains data.
 
         Returns:
             result (bool): True if the object contains data, False otherwise.
         """
-        return not len(self.data) > 0
+        return len(self.data) > 0
+
+    def __nonzero__(self):
+        return self.__bool__()
 
     @classmethod
     def from_str(cls, text, strict=True, strip=True):
@@ -271,25 +276,25 @@ class QrSpecial(object):
             obj (QrSpecial): The QrSpecial-derived object.
 
         Examples:
-            >>> print(QrSpecial.parse('tel:+39070653263'))
+            >>> print(repr(QrSpecial.parse('tel:+39070653263')))
             <QrPhone>
             number: +39070653263
-            >>> print(QrSpecial.parse('mailto:spam@python.org'))
+            >>> print(repr(QrSpecial.parse('mailto:spam@python.org')))
             <QrEmail>
             email: spam@python.org
 
         """
         # Construct a QrSpecial
-        subclss = (
+        subclasses = (
             QrPhone, QrEmail, QrMessage, QrGeolocation, QrUrl,
             QrContact, QrWifi)
         obj = QrSpecial()
-        for cls in subclss:
+        for cls in subclasses:
             try:
                 obj = cls.from_str(text)
             except ValueError:
                 pass
-            if obj is not None and not obj.is_empty():
+            if obj:
                 break
         return obj
 
@@ -300,7 +305,6 @@ class QrPhone(QrSpecial):
     """
     _start_tag = 'tel:'
 
-
     def __init__(self, number=None):
         """
         Generate the QrSpecial-derived telephone number.
@@ -310,12 +314,12 @@ class QrPhone(QrSpecial):
 
         Examples:
             >>> qrs = QrPhone('+39070653263')
-            >>> print(qrs)
+            >>> print(repr(qrs))
             <QrPhone>
             number: +39070653263
-            >>> print(qrs.to_str())
+            >>> print(qrs)
             tel:+39070653263
-            >>> qrs == QrPhone.from_str(qrs.to_str())
+            >>> qrs == QrPhone.from_str(str(qrs))
             True
         """
         # QrSpecial.__init__(**locals())  # Py3-only
@@ -339,12 +343,12 @@ class QrEmail(QrSpecial):
 
         Examples:
             >>> qrs = QrEmail('spam@python.org')
-            >>> print(qrs)
+            >>> print(repr(qrs))
             <QrEmail>
             email: spam@python.org
-            >>> print(qrs.to_str())
+            >>> print(qrs)
             mailto:spam@python.org
-            >>> qrs == QrEmail.from_str(qrs.to_str())
+            >>> qrs == QrEmail.from_str(str(qrs))
             True
         """
         # QrSpecial.__init__(**locals())  # Py3-only
@@ -370,13 +374,13 @@ class QrMessage(QrSpecial):
 
         Examples:
             >>> qrs = QrMessage('+39070653263', 'I like your code!')
-            >>> print(qrs)
+            >>> print(repr(qrs))
             <QrMessage>
             number: +39070653263
             text: I like your code!
-            >>> print(qrs.to_str())
+            >>> print(qrs)
             smsto:+39070653263:I like your code!
-            >>> qrs == QrMessage.from_str(qrs.to_str())
+            >>> qrs == QrMessage.from_str(str(qrs))
             True
         """
         # QrSpecial.__init__(**locals())  # Py3-only
@@ -393,7 +397,6 @@ class QrGeolocation(QrSpecial):
     _query_tag = '?q='
     _sep = ','
 
-
     def __init__(self, lat=None, lon=None, query=None):
         """
         Generate the QrSpecial-derived short message (SMS).
@@ -406,17 +409,17 @@ class QrGeolocation(QrSpecial):
                 well documented.
         Examples:
             >>> qrs = QrGeolocation(42.989, -71.465, 'www.python.org')
-            >>> print(qrs)
+            >>> print(repr(qrs))
             <QrGeolocation>
             lat: 42.989
             lon: -71.465
             query: www.python.org
-            >>> print(qrs.to_str())
+            >>> print(qrs)
             geo:42.989,-71.465?q=www.python.org
-            >>> qrs == QrGeolocation.from_str(qrs.to_str())
+            >>> qrs == QrGeolocation.from_str(str(qrs))
             True
 
-            >>> print(QrGeolocation(47.68, -122.121))
+            >>> print(repr(QrGeolocation(47.68, -122.121)))
             <QrGeolocation>
             lat: 47.68
             lon: -122.121
@@ -430,9 +433,9 @@ class QrGeolocation(QrSpecial):
         kws.pop('self')
         QrSpecial.__init__(self, **kws)
 
-    def to_str(self):
+    def __str__(self):
         cls = type(self)
-        text = QrSpecial.to_str(self)
+        text = QrSpecial.__str__(self)
         first_sep_pos = text.find(cls._sep)
         last_sep_pos = text.rfind(cls._sep)
         if first_sep_pos != last_sep_pos:
@@ -475,33 +478,33 @@ class QrUrl(QrSpecial):
 
         Examples:
             >>> qrs = QrUrl('https://www.python.org')
-            >>> print(qrs)
+            >>> print(repr(qrs))
             <QrUrl>
             protocol: https
             url: www.python.org
-            >>> print(qrs.to_str())
+            >>> print(str(qrs))
             https://www.python.org
-            >>> qrs == QrUrl.from_str(qrs.to_str())
+            >>> qrs == QrUrl.from_str(str(qrs))
             True
 
             >>> qrs = QrUrl('www.python.org')
-            >>> print(qrs)
+            >>> print(repr(qrs))
             <QrUrl>
             protocol: http
             url: www.python.org
-            >>> print(qrs.to_str())
+            >>> print(str(qrs))
             http://www.python.org
-            >>> qrs == QrUrl.from_str(qrs.to_str())
+            >>> qrs == QrUrl.from_str(str(qrs))
             True
 
             >>> qrs = QrUrl('www.python.org', 'https')
-            >>> print(qrs)
+            >>> print(repr(qrs))
             <QrUrl>
             protocol: https
             url: www.python.org
-            >>> print(qrs.to_str())
+            >>> print(str(qrs))
             https://www.python.org
-            >>> qrs == QrUrl.from_str(qrs.to_str())
+            >>> qrs == QrUrl.from_str(str(qrs))
             True
 
             >>> with warnings.catch_warnings(record=True) as w:
@@ -509,11 +512,11 @@ class QrUrl(QrSpecial):
             ...     assert(len(w) == 1)
             ...     'Unusual protocol detected' in str(w[-1].message)
             True
-            >>> print(qrs)
+            >>> print(repr(qrs))
             <QrUrl>
             protocol: mtp
             url: www.python.org
-            >>> print(qrs.to_str())
+            >>> print(str(qrs))
             mtp://www.python.org
         """
         cls = type(self)
@@ -550,7 +553,6 @@ class QrContact(QrSpecial):
 
     _multi_fields = {
         'tel', 'telav', 'email', 'address', 'url', 'nickname', 'company'}
-
 
     def __init__(self, name=None, reading=None, tel=None, telav=None, email=None,
                  memo=None, birthday=None, address=None, url=None, nickname=None,
@@ -610,22 +612,22 @@ class QrContact(QrSpecial):
 
         Examples:
             >>> qrs = QrContact('Py Thon', email=('py@py.org', 'thon@py.org'))
-            >>> print(qrs)
+            >>> print(repr(qrs))
             <QrContact>
             name: Py Thon
             email: py@py.org
             email: thon@py.org
-            >>> print(qrs.to_str())
+            >>> print(str(qrs))
             MECARD:N:Py Thon;EMAIL:py@py.org;EMAIL:thon@py.org;;
-            >>> qrs == QrContact.from_str(qrs.to_str())
+            >>> qrs == QrContact.from_str(str(qrs))
             True
 
             >>> qrs = QrContact('QrSpecial', birthday=20160904)
-            >>> print(qrs)
+            >>> print(repr(qrs))
             <QrContact>
             name: QrSpecial
             birthday: 20160904
-            >>> print(qrs.to_str())
+            >>> print(str(qrs))
             MECARD:N:QrSpecial;BDAY:20160904;;
 
         See Also:
@@ -676,24 +678,24 @@ class QrWifi(QrSpecial):
 
         Examples:
             >>> qrs = QrWifi('Python', 'WEP', 'Monty', True)
-            >>> print(qrs)
+            >>> print(repr(qrs))
             <QrWifi>
             ssid: Python
             security: WEP
             password: Monty
             hidden: true
-            >>> print(qrs.to_str())
+            >>> print(str(qrs))
             WIFI:S:Python;T:WEP;P:Monty;H:true;;
-            >>> qrs == QrWifi.from_str(qrs.to_str())
+            >>> qrs == QrWifi.from_str(str(qrs))
             True
 
             >>> qrs = QrWifi('Python', 'WEP', 'Monty')
-            >>> print(qrs)
+            >>> print(repr(qrs))
             <QrWifi>
             ssid: Python
             security: WEP
             password: Monty
-            >>> print(qrs.to_str())
+            >>> print(str(qrs))
             WIFI:S:Python;T:WEP;P:Monty;;
 
             >>> with warnings.catch_warnings(record=True) as w:
@@ -701,10 +703,10 @@ class QrWifi(QrSpecial):
             ...     assert(len(w) == 1)
             ...     'Unknown WiFi security' in str(w[-1].message)
             True
-            >>> print(qrs)
+            >>> print(repr(qrs))
             <QrWifi>
             ssid: Python
-            >>> print(qrs.to_str())
+            >>> print(str(qrs))
             WIFI:S:Python;;
         """
         if hidden:
