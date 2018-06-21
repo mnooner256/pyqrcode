@@ -587,7 +587,7 @@ def eps(code, version, file_or_path, scale=1, module_color=(0, 0, 0),
         writeline('newpath')
         # Current pen position y-axis
         # Note: 0, 0 = lower left corner in PS coordinate system
-        y = tables.version_size[version] + quiet_zone + .5  # .5 = linewidth / 2
+        y = _get_symbol_size(version, scale=1, quiet_zone=0)[1] + quiet_zone - .5  # .5 = linewidth / 2
         last_bit = 1
         # Loop through each row of the code
         for row in code:
