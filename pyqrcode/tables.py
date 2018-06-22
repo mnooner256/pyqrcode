@@ -623,8 +623,8 @@ galois_antilog = [
 #:
 #: http://www.thonky.com/qr-code-tutorial/part-3-mask-pattern/
 position_adjustment = [
-    None,               #There is not version 0
-    None,               #Version 1 does not need adjustment
+    None,               # There is not version 0
+    None,               # Version 1 does not need adjustment
     [6, 18, ],
     [6, 22, ],
     [6, 26, ],

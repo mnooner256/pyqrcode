@@ -130,21 +130,21 @@ def write_terminal(code, module_color='default', background='reverse', quiet_zon
                          'between 0 and 256.'.format(
                          background))
 
-    #This will be the beginning and ending row for the code.
+    # This will be the beginning and ending row for the code.
     border_row = background * (len(code[0]) + (2 * quiet_zone))
 
-    #Make sure we begin on a new line, and force the terminal back
-    #to normal
+    # Make sure we begin on a new line, and force the terminal back
+    # to normal
     buf.write('\n')
 
-    #QRCodes have a quiet zone consisting of background modules
+    # QRCodes have a quiet zone consisting of background modules
     for i in range(quiet_zone):
         buf.write(border_row)
         buf.write('\n')
 
     for row in code:
-        #Each code has a quiet zone on the left side, this is the left
-        #border for this code
+        # Each code has a quiet zone on the left side, this is the left
+        # border for this code
         draw_border()
 
         for bit in row:
@@ -153,12 +153,12 @@ def write_terminal(code, module_color='default', background='reverse', quiet_zon
             elif bit == 0:
                 buf.write(background)
 
-        #Each row ends with a quiet zone on the right side, this is the
-        #right hand border background modules
+        # Each row ends with a quiet zone on the right side, this is the
+        # right hand border background modules
         draw_border()
         buf.write('\n')
 
-    #QRCodes have a background quiet zone row following the code
+    # QRCodes have a background quiet zone row following the code
     for i in range(quiet_zone):
         buf.write(border_row)
         buf.write('\n')
@@ -174,33 +174,33 @@ def write_text(code, quiet_zone=4):
 
     border_row = '0' * (len(code[0]) + (quiet_zone*2))
 
-    #Every QR code start with a quiet zone at the top
+    # Every QR code start with a quiet zone at the top
     for b in range(quiet_zone):
         buf.write(border_row)
         buf.write('\n')
 
     for row in code:
-        #Draw the starting quiet zone
+        # Draw the starting quiet zone
         for b in range(quiet_zone):
             buf.write('0')
 
-        #Actually draw the QR code
+        # Actually draw the QR code
         for bit in row:
             if bit == 1:
                 buf.write('1')
             elif bit == 0:
                 buf.write('0')
-            #This is for debugging unfinished QR codes,
-            #unset pixels will be spaces.
+            # This is for debugging unfinished QR codes,
+            # unset pixels will be spaces.
             else:
                 buf.write(' ')
 
-        #Draw the ending quiet zone
+        # Draw the ending quiet zone
         for b in range(quiet_zone):
             buf.write('0')
         buf.write('\n')
 
-    #Every QR code ends with a quiet zone at the bottom
+    # Every QR code ends with a quiet zone at the bottom
     for b in range(quiet_zone):
         buf.write(border_row)
         buf.write('\n')

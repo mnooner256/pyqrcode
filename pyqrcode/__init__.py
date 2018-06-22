@@ -236,7 +236,7 @@ class QRCode:
         return repr(self)
 
     def __unicode__(self):
-        return self.__repr__()
+        return self.__str__()
 
     def __repr__(self):
         return "QRCode(content={0}, error='{1}', version={2}, mode='{3}')" \
@@ -307,19 +307,18 @@ class QRCode:
             if isinstance(content, bytes):
                 if encoding is None:
                     encoding = 'shiftjis'
-
                 c = content.decode(encoding).encode('shiftjis')
             else:
                 c = content.encode('shiftjis')
             
-            #All kanji characters must be two bytes long, make sure the
-            #string length is not odd.
+            # All kanji characters must be two bytes long, make sure the
+            # string length is not odd.
             if len(c) % 2 != 0:
                 return 'binary', encoding
 
-            #Make sure the characters are actually in range.
+            # Take sure the characters are actually in range.
             for asint in two_bytes(c):
-                #Shift the two byte value as indicated by the standard
+                # Shift the two byte value as indicated by the standard
                 if not (0x8140 <= asint <= 0x9FFC or
                         0xE040 <= asint <= 0xEBBF):
                     return 'binary', encoding
@@ -327,17 +326,17 @@ class QRCode:
             return 'kanji', encoding
 
         except UnicodeError:
-            #This occurs if the content does not contain Shift JIS kanji
-            #characters. Hence, the resulting mode should not be kanji.
-            #This is not an error.
+            # This occurs if the content does not contain Shift JIS kanji
+            # characters. Hence, the resulting mode should not be kanji.
+            # This is not an error.
             pass
         except LookupError:
-            #This occurs if the host Python does not support Shift JIS kanji
-            #encoding. Hence, the resulting mode should not be kanji.
-            #This is not an error.
+            # This occurs if the host Python does not support Shift JIS kanji
+            # encoding. Hence, the resulting mode should not be kanji.
+            # This is not an error.
             pass
 
-        #All of the other attempts failed. The content can only be binary.
+        # All of the other attempts failed. The content can only be binary.
         return 'binary', encoding
 
     def _pick_best_fit(self, content):
@@ -347,11 +346,11 @@ class QRCode:
         import math
         
         for version in range(1, 41):
-            #Get the maximum possible capacity
+            # Get the maximum possible capacity
             capacity = tables.data_capacity[version][self.error][self.mode_num]
             
-            #Check the capacity
-            #Kanji's count in the table is "characters" which are two bytes
+            # Check the capacity
+            # Kanji's count in the table is "characters" which are two bytes
             if (self.mode_num == tables.modes['kanji'] and
                 capacity >= math.ceil(len(content) / 2)):
                 return version
@@ -488,8 +487,8 @@ class QRCode:
             >>> code = pyqrcode.create('Are you suggesting coconuts migrate?')
             >>> code.png('swallow.png', scale=5)
             >>> code.png('swallow.png', scale=5,
-                         module_color=(0x66, 0x33, 0x0),      #Dark brown
-                         background=(0xff, 0xff, 0xff, 0x88)) #50% transparent white
+                         module_color=(0x66, 0x33, 0x0),      # Dark brown
+                         background=(0xff, 0xff, 0xff, 0x88)) # 50% transparent white
         """
         writers.write_png(self.code, self.version, file, scale,
                           module_color, background, quiet_zone)
