@@ -496,7 +496,8 @@ class QRCode:
 
     def png_as_base64_str(self, scale=1, module_color=(0, 0, 0, 255),
                           background=(255, 255, 255, 255), quiet_zone=4):
-        """This method uses the png render and returns the PNG image encoded as
+        """DEPRECATED, use png_data_uri()
+        This method uses the png render and returns the PNG image encoded as
         base64 string. This can be useful for creating dynamic PNG images for
         web development, since no file needs to be created.
         

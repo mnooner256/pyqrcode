@@ -35,7 +35,7 @@ import io
 import itertools
 try:  # pragma: no cover
     from itertools import zip_longest
-except ImportError:
+except ImportError:  # pragma: no cover
     # Py2
     from itertools import izip_longest as zip_longest
     range = xrange
