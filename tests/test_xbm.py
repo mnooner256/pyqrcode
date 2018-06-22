@@ -69,14 +69,14 @@ def test_xbm_with_tkinter():
         import tkinter
 
     code = pyqrcode.create('Test')
-    code_size = code.get_png_size(scale=1)
+    width, height = code.symbol_size(scale=1)
     code_xbm = code.xbm(scale=1)
     
     top = tkinter.Tk()
     bitmap = tkinter.BitmapImage(data=code_xbm)
 
-    assert bitmap.width() == code_size
-    assert bitmap.height() == code_size
+    assert bitmap.width() == width
+    assert bitmap.height() == height
 
 
 if __name__ == '__main__':

@@ -401,7 +401,10 @@ class QRCode:
         os.unlink(f.name)
 
     def get_png_size(self, scale=1, quiet_zone=4):
-        """This is method helps users determine what *scale* to use when
+        """
+        DEPRECATED, use symbol_size()
+
+        This is method helps users determine what *scale* to use when
         creating a PNG of this QR code. It is meant mostly to be used in the
         console to help the user determine the pixel size of the code
         using various scales.
@@ -424,7 +427,7 @@ class QRCode:
             (155, 155)
         """
         import warnings
-        warnings.warn('This method is deprecated, use symbol_size', category=DeprecationWarning)
+        warnings.warn('This method is deprecated, use symbol_size()', category=DeprecationWarning)
         return self.symbol_size(int(scale), quiet_zone)[0]
 
     def symbol_size(self, scale=1, quiet_zone=4):

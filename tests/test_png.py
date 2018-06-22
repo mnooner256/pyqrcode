@@ -25,26 +25,49 @@ def test_get_png_size():
     assert (qr_size + 2 * quiet_zone) * 4 == code.get_png_size(4, quiet_zone=quiet_zone)
 
 
-def test_get_png_size_scale_int():
+def test_symbol_size():
+    code = pyqrcode.create('Hello world')
+    dim = 25
+    quiet_zone = 0
+    assert (dim, dim) == code.symbol_size(1, quiet_zone=quiet_zone)
+    quiet_zone = 1
+    d = (dim + 2 * quiet_zone) * quiet_zone
+    assert (d, d) == code.symbol_size(1, quiet_zone=quiet_zone)
+    quiet_zone = 4  # (default quiet_zone)
+    d = (dim + 2 * quiet_zone) * 1
+    assert (d, d) == code.symbol_size()
+    assert (d, d) ==  code.symbol_size(1)
+    d = (dim + 2 * quiet_zone) * 4
+    assert d, d == code.symbol_size(4)
+    quiet_zone = 0
+    d = (dim + 2 * quiet_zone) * 4
+    assert (d, d) == code.symbol_size(4, quiet_zone=quiet_zone)
+
+
+def test_symbol_size_scale_int():
     qr = pyqrcode.create('test')
-    assert 21 == qr.get_png_size(scale=1, quiet_zone=0)
+    dim = 21
+    assert (dim, dim) == qr.symbol_size(scale=1, quiet_zone=0)
 
 
-def test_get_png_size_scale_int2():
+def test_symbol_size_scale_int2():
     qr = pyqrcode.create('test')
     quiet_zone = 2
-    assert 21 + 2 * quiet_zone == qr.get_png_size(scale=1, quiet_zone=quiet_zone)
+    dim = 21 + 2 * quiet_zone
+    assert (dim, dim) == qr.symbol_size(scale=1, quiet_zone=quiet_zone)
 
 
-def test_get_png_size_scale_float():
+def test_symbol_size_scale_float():
     qr = pyqrcode.create('test')
-    assert 21 == qr.get_png_size(scale=1.5, quiet_zone=0)
+    dim = 21 * 1.5
+    assert (dim, dim) == qr.symbol_size(scale=1.5, quiet_zone=0)
 
 
-def test_get_png_size_scale_float2():
+def test_symbol_size_scale_float2():
     qr = pyqrcode.create('test')
     quiet_zone = 2
-    assert 21 + 2 * quiet_zone == qr.get_png_size(scale=1.5, quiet_zone=quiet_zone)
+    dim = (21 + 2 * quiet_zone) * 1.5
+    assert (dim, dim) == qr.symbol_size(scale=1.5, quiet_zone=quiet_zone)
 
 
 def test_png_as_base64_str():
