@@ -34,6 +34,12 @@ def test_wifi():
     assert q == qrs.QrWifi.from_str(str(q))
 
 
+def test_wifi2():
+    q = qrs.QrWifi('Python', 'WEP', 'Monty')
+    assert 'WIFI:S:Python;T:WEP;P:Monty;;' == str(q)
+    assert q == qrs.QrWifi.from_str(str(q))
+
+
 if __name__ == '__main__':
     import pytest
     pytest.main([__file__])
