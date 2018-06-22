@@ -26,6 +26,8 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """This module does the actual generation of the QR codes. The QRCodeBuilder
 builds the code. While the various output methods draw the code into a file.
+
+This module does not belong to the public API.
 """
 from __future__ import absolute_import, division, print_function, unicode_literals
 import pyqrcode.tables as tables
@@ -116,7 +118,8 @@ class QRCodeBuilder:
         args = [iter(iterable)] * n
         return zip_longest(*args, fillvalue=fillvalue)
 
-    def binary_string(self, data, length):
+    @staticmethod
+    def binary_string(data, length):
         """This method returns a string of length n that is the binary
         representation of the given data. This function is used to
         basically create bit fields of a given size.
@@ -141,9 +144,9 @@ class QRCodeBuilder:
         data_length = tables.data_length_field[max_version][self.mode]
 
         if self.mode != tables.modes['kanji']:
-            length_string = self.binary_string(len(self.data), data_length)
+            length_string = QRCodeBuilder.binary_string(len(self.data), data_length)
         else:
-            length_string = self.binary_string(len(self.data) / 2, data_length)
+            length_string = QRCodeBuilder.binary_string(len(self.data) / 2, data_length)
 
         if len(length_string) > data_length:
             raise ValueError('The supplied data will not fit '
@@ -183,11 +186,11 @@ class QRCodeBuilder:
         with io.StringIO() as buf:
             for (a,b) in QRCodeBuilder.grouper(2, ascii):
                 if b is not None:
-                    buf.write(self.binary_string((45*a)+b, 11))
+                    buf.write(QRCodeBuilder.binary_string((45*a)+b, 11))
                 else:
                     #This occurs when there is an odd number
                     #of characters in the data
-                    buf.write(self.binary_string(a, 6))
+                    buf.write(QRCodeBuilder.binary_string(a, 6))
 
             #Return the binary string
             return buf.getvalue()
@@ -212,15 +215,11 @@ class QRCodeBuilder:
 
                 #If the number is one digits, make a 4 bit field
                 if len(number) == 1:
-                    bin = self.binary_string(number, 4)
-
-                #If the number is two digits, make a 7 bit field
-                elif len(number) == 2:
-                    bin = self.binary_string(number, 7)
-
-                #Three digit numbers use a 10 bit field
-                else:
-                    bin = self.binary_string(number, 10)
+                    bin = QRCodeBuilder.binary_string(number, 4)
+                elif len(number) == 2:  # If the number is two digits, make a 7 bit field
+                    bin = QRCodeBuilder.binary_string(number, 7)
+                else:  # Three digit numbers use a 10 bit field
+                    bin = QRCodeBuilder.binary_string(number, 10)
 
                 buf.write(bin)
             return buf.getvalue()
@@ -285,7 +284,7 @@ class QRCodeBuilder:
         into account the interleaving pattern required by the standard.
         """
         #Encode the data into a QR code
-        self.buffer.write(self.binary_string(self.mode, 4))
+        self.buffer.write(QRCodeBuilder.binary_string(self.mode, 4))
         self.buffer.write(self.get_data_length())
         self.buffer.write(self.encode())
 
@@ -372,13 +371,13 @@ class QRCodeBuilder:
         for i in range(largest_block):
             for block in data_blocks:
                 if i < len(block):
-                    data_buffer.write(self.binary_string(block[i], 8))
+                    data_buffer.write(QRCodeBuilder.binary_string(block[i], 8))
 
         #Add the error code blocks.
         #Write the buffer such that: block 1 byte 1, block 2 byte 2, etc.
         for i in range(error_info[0]):
             for block in error_blocks:
-                data_buffer.write(self.binary_string(block[i], 8))
+                data_buffer.write(QRCodeBuilder.binary_string(block[i], 8))
 
         self.buffer = data_buffer
 
@@ -398,10 +397,10 @@ class QRCodeBuilder:
         if len(payload) == data_capacity:
             return None
         elif len(payload) <= data_capacity-4:
-            bits = self.binary_string(0,4)
+            bits = QRCodeBuilder.binary_string(0,4)
         else:
             #Make up any shortfall need with less than 4 zeros
-            bits = self.binary_string(0, data_capacity - len(payload))
+            bits = QRCodeBuilder.binary_string(0, data_capacity - len(payload))
 
         return bits
 
@@ -416,7 +415,7 @@ class QRCodeBuilder:
         if bits_short == 0 or bits_short == 8:
             return None
         else:
-            return self.binary_string(0, bits_short)
+            return QRCodeBuilder.binary_string(0, bits_short)
 
     def add_words(self):
         """The data block must fill the entire data capacity of the QR code.

@@ -8,6 +8,8 @@
 #
 """\
 Standard serializers and utility functions for serializers.
+
+This module does not belong to the public API.
 """
 from __future__ import absolute_import, unicode_literals, with_statement
 import io
