@@ -132,37 +132,30 @@ def write_terminal(code, module_color='default', background='reverse', quiet_zon
 
     # This will be the beginning and ending row for the code.
     border_row = background * (len(code[0]) + (2 * quiet_zone))
-
     # Make sure we begin on a new line, and force the terminal back
     # to normal
     buf.write('\n')
-
     # QRCodes have a quiet zone consisting of background modules
     for i in range(quiet_zone):
         buf.write(border_row)
         buf.write('\n')
-
     for row in code:
         # Each code has a quiet zone on the left side, this is the left
         # border for this code
         draw_border()
-
         for bit in row:
             if bit == 1:
                 buf.write(data)
             elif bit == 0:
                 buf.write(background)
-
         # Each row ends with a quiet zone on the right side, this is the
         # right hand border background modules
         draw_border()
         buf.write('\n')
-
     # QRCodes have a background quiet zone row following the code
     for i in range(quiet_zone):
         buf.write(border_row)
         buf.write('\n')
-
     return buf.getvalue()
 
 
@@ -171,19 +164,15 @@ def write_text(code, quiet_zone=4):
     This is useful for debugging purposes.
     """
     buf = io.StringIO()
-
     border_row = '0' * (len(code[0]) + (quiet_zone*2))
-
     # Every QR code start with a quiet zone at the top
     for b in range(quiet_zone):
         buf.write(border_row)
         buf.write('\n')
-
     for row in code:
         # Draw the starting quiet zone
         for b in range(quiet_zone):
             buf.write('0')
-
         # Actually draw the QR code
         for bit in row:
             if bit == 1:
@@ -194,17 +183,14 @@ def write_text(code, quiet_zone=4):
             # unset pixels will be spaces.
             else:
                 buf.write(' ')
-
         # Draw the ending quiet zone
         for b in range(quiet_zone):
             buf.write('0')
         buf.write('\n')
-
     # Every QR code ends with a quiet zone at the bottom
     for b in range(quiet_zone):
         buf.write(border_row)
         buf.write('\n')
-
     return buf.getvalue()
 
 
@@ -213,10 +199,8 @@ def write_xbm(code, scale=1, quiet_zone=4):
     This can be used to display the QR code with Tkinter.
     """
     buf = io.StringIO()
-
     # Calculate the width in pixels
     pixel_width = (len(code[0]) + quiet_zone * 2) * scale
-
     # Add the size information and open the pixel data section
     buf.write('#define im_width ')
     buf.write(str(pixel_width))
@@ -225,10 +209,8 @@ def write_xbm(code, scale=1, quiet_zone=4):
     buf.write(str(pixel_width))
     buf.write('\n')
     buf.write('static char im_bits[] = {\n')
-
     # Calculate the number of bytes per row
     byte_width = int(math.ceil(pixel_width / 8.0))
-
     # Add the top quiet zone
     buf.write(('0x00,' * byte_width + '\n') * quiet_zone * scale)
     for row in code:
@@ -250,7 +232,6 @@ def write_xbm(code, scale=1, quiet_zone=4):
     # Add the bottom quiet zone and close the pixel data section
     buf.write(('0x00,' * byte_width + '\n') * quiet_zone * scale)
     buf.write('};')
-
     return buf.getvalue()
 
 
@@ -331,7 +312,6 @@ def write_svg(code, version, file, scale=1, module_color='#000', background=None
         write_bytes(b'>')
         if title is not None:
             write('<title>{0}</title>'.format(title))
-
         # Draw a background rectangle if necessary
         if background is not None:
             write('<path fill="{2}" d="M0 0h{0}v{1}h-{0}z"/>'
@@ -430,16 +410,13 @@ def write_png(code, version, file, scale=1, module_color=(0, 0, 0, 255),
         # reverse of the QR standard
         black = [0] * scale
         white = [1] * scale
-
         # Tuple to lookup colors
         # The 3rd color is the module_color unless "debug" is enabled
         colors = (white, black, (([2] * scale) if debug else black))
-
         # Whitespace added on the left and right side
         border_module = white * quiet_zone
         # This is the row to show up at the top and bottom border
         border_row = [1] * width
-
         # Add scale rows before the code as a border, as per the standard
         for i in range(quiet_zone * scale):
             yield border_row
@@ -484,7 +461,6 @@ def write_png(code, version, file, scale=1, module_color=(0, 0, 0, 255),
 
     if module_color is None:
         raise ValueError('The module_color must not be None')
-
     bitdepth = 1
     # foreground aka module color
     fg_col = png_pallete_color(module_color)
@@ -500,14 +476,11 @@ def write_png(code, version, file, scale=1, module_color=(0, 0, 0, 255),
         # Add "red" as color for error modules
         palette.append((255, 0, 0, 255))
         bitdepth = 2
-
     # The size of the PNG
     width, height = _get_symbol_size(version, scale, quiet_zone)
-
     # We need to increase the size of the code to match up to the
     # scale parameter.
     code_rows = scale_code(width, height)
-
     # Write out the PNG
     with _writable(file, 'wb') as f:
         w = png.Writer(width=width, height=height, greyscale=greyscale,

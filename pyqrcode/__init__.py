@@ -228,7 +228,6 @@ class QRCode:
                                              version=self.version,
                                              mode=self.mode,
                                              error=self.error)
-
         # Save the code for easier reference
         self.code = self.builder.code
 
@@ -322,9 +321,7 @@ class QRCode:
                 if not (0x8140 <= asint <= 0x9FFC or
                         0xE040 <= asint <= 0xEBBF):
                     return 'binary', encoding
-
             return 'kanji', encoding
-
         except UnicodeError:
             # This occurs if the content does not contain Shift JIS kanji
             # characters. Hence, the resulting mode should not be kanji.
@@ -335,7 +332,6 @@ class QRCode:
             # encoding. Hence, the resulting mode should not be kanji.
             # This is not an error.
             pass
-
         # All of the other attempts failed. The content can only be binary.
         return 'binary', encoding
 
@@ -356,7 +352,6 @@ class QRCode:
                 return version
             if capacity >= len(content):
                 return version
-
         raise ValueError('The data will not fit in any QR code version '
                          'with the given encoding and error level.')
 
