@@ -137,14 +137,14 @@ class QRCode:
     """
     def __init__(self, content, error='H', version=None, mode=None,
                  encoding='iso-8859-1'):
-        #Guess the mode of the code, this will also be used for
-        #error checking
+        # Guess the mode of the code, this will also be used for
+        # error checking
         guessed_content_type, encoding = QRCode._detect_content_type(content, encoding)
         
         if encoding is None:
             encoding = 'iso-8859-1'
 
-        #Store the encoding for use later
+        # Store the encoding for use later
         if guessed_content_type == 'kanji':
             self.encoding = 'shiftjis'
         else:
@@ -157,63 +157,63 @@ class QRCode:
                 raise ValueError("Illegal version {0}, version must be between "
                                  "1 and 40.".format(version))
 
-        #Decode a 'byte array' contents into a string format
+        # Decode a 'byte array' contents into a string format
         if isinstance(content, bytes):
             self.data = content.decode(encoding)
 
-        #Give a string an encoding
+        # Give a string an encoding
         elif hasattr(content, 'encode'):
             self.data = content.encode(self.encoding)
 
-        #The contents are not a byte array or string, so
-        #try naively converting to a string representation.
+        # The contents are not a byte array or string, so
+        # try naively converting to a string representation.
         else:
             self.data = str(content)  # str == unicode in Py 2.x, see file head
 
-        #Force a passed in mode to be lowercase
+        # Force a passed in mode to be lowercase
         if hasattr(mode, 'lower'):
             mode = mode.lower()
 
-        #Check that the mode parameter is compatible with the contents
+        # Check that the mode parameter is compatible with the contents
         if mode is None:
-            #Use the guessed mode
+            # Use the guessed mode
             self.mode = guessed_content_type
             self.mode_num = tables.modes[self.mode]
         elif mode not in tables.modes.keys():
-            #Unknown mode
+            # Unknown mode
             raise ValueError('{0} is not a valid mode.'.format(mode))
         elif guessed_content_type == 'binary' and \
              tables.modes[mode] != tables.modes['binary']:
-            #Binary is only guessed as a last resort, if the
-            #passed in mode is not binary the data won't encode
+            # Binary is only guessed as a last resort, if the
+            # passed in mode is not binary the data won't encode
             raise ValueError('The content provided cannot be encoded with '
                              'the mode {}, it can only be encoded as '
                              'binary.'.format(mode))
         elif tables.modes[mode] == tables.modes['numeric'] and \
              guessed_content_type != 'numeric':
-            #If numeric encoding is requested make sure the data can
-            #be encoded in that format
+            # If numeric encoding is requested make sure the data can
+            # be encoded in that format
             raise ValueError('The content cannot be encoded as numeric.')
         elif tables.modes[mode] == tables.modes['kanji'] and \
              guessed_content_type != 'kanji':
             raise ValueError('The content cannot be encoded as kanji.')
         else:
-            #The data should encode with the passed in mode
+            # The data should encode with the passed in mode
             self.mode = mode
             self.mode_num = tables.modes[self.mode]
 
-        #Check that the user passed in a valid error level
+        # Check that the user passed in a valid error level
         if error in tables.error_level.keys():
             self.error = tables.error_level[error]
         else:
             raise ValueError('{0} is not a valid error '
                              'level.'.format(error))
 
-        #Guess the "best" version
+        # Guess the "best" version
         self.version = self._pick_best_fit(self.data)
 
-        #If the user supplied a version, then check that it has
-        #sufficient data capacity for the contents passed in
+        # If the user supplied a version, then check that it has
+        # sufficient data capacity for the contents passed in
         if version:
             if version >= self.version:
                 self.version = version
@@ -223,13 +223,13 @@ class QRCode:
                                  'level (the code must be at least a '
                                  'version {}).'.format(version, self.version))
 
-        #Build the QR code
+        # Build the QR code
         self.builder = builder.QRCodeBuilder(data=self.data,
                                              version=self.version,
                                              mode=self.mode,
                                              error=self.error)
 
-        #Save the code for easier reference
+        # Save the code for easier reference
         self.code = self.builder.code
 
     def __str__(self):
@@ -267,22 +267,22 @@ class QRCode:
                 else:
                     return b
 
-            #Go through the data by looping to every other character
+            # Go through the data by looping to every other character
             for i in range(0, len(c), 2):
                 yield (next_byte(c[i]) << 8) | next_byte(c[i+1])
 
-        #See if the data is a number
+        # See if the data is a number
         try:
             if str(content).isdigit():
                 return 'numeric', encoding
         except (TypeError, UnicodeError):
             pass
 
-        #See if that data is alphanumeric based on the standards
-        #special ASCII table
+        # See if that data is alphanumeric based on the standards
+        # special ASCII table
         valid_characters = ''.join(tables.ascii_codes.keys())
         
-        #Force the characters into a byte array
+        # Force the characters into a byte array
         valid_characters = valid_characters.encode('ASCII')
 
         try:
@@ -294,10 +294,10 @@ class QRCode:
             if all(map(lambda x: x in valid_characters, c)):
                 return 'alphanumeric', 'ASCII'
 
-        #This occurs if the content does not contain ASCII characters.
-        #Since the whole point of the if statement is to look for ASCII
-        #characters, the resulting mode should not be alphanumeric.
-        #Hence, this is not an error.
+        # This occurs if the content does not contain ASCII characters.
+        # Since the whole point of the if statement is to look for ASCII
+        # characters, the resulting mode should not be alphanumeric.
+        # Hence, this is not an error.
         except TypeError:
             pass
         except UnicodeError:
