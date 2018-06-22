@@ -275,20 +275,9 @@ class QrSpecial:
 
         Returns:
             obj (QrSpecial): The QrSpecial-derived object.
-
-        Examples:
-            >>> print(repr(QrSpecial.parse('tel:+39070653263')))
-            <QrPhone>
-            number: +39070653263
-            >>> print(repr(QrSpecial.parse('mailto:spam@python.org')))
-            <QrEmail>
-            email: spam@python.org
-
         """
         # Construct a QrSpecial
-        subclasses = (
-            QrPhone, QrEmail, QrMessage, QrGeolocation, QrUrl,
-            QrContact, QrWifi)
+        subclasses = (QrShortMessage, QrGeolocation, QrContact, QrWifi)
         obj = QrSpecial()
         for cls in subclasses:
             try:
@@ -300,65 +289,7 @@ class QrSpecial:
         return obj
 
 
-class QrPhone(QrSpecial):
-    """
-    QrSpecial-derived telephone number.
-    """
-    _start_tag = 'tel:'
-
-    def __init__(self, number=None):
-        """
-        Generate the QrSpecial-derived telephone number.
-
-        Args:
-            number (str|unicode|int): The telephone number.
-
-        Examples:
-            >>> qrs = QrPhone('+39070653263')
-            >>> print(repr(qrs))
-            <QrPhone>
-            number: +39070653263
-            >>> print(qrs)
-            tel:+39070653263
-            >>> qrs == QrPhone.from_str(str(qrs))
-            True
-        """
-        # QrSpecial.__init__(**locals())  # Py3-only
-        kws = locals()
-        kws.pop('self')
-        QrSpecial.__init__(self, **kws)
-
-
-class QrEmail(QrSpecial):
-    """
-    QrSpecial-derived e-mail address.
-    """
-    _start_tag = 'mailto:'
-
-    def __init__(self, email=None):
-        """
-        Generate the QrSpecial-derived e-mail address.
-
-        Args:
-            email (str|unicode): The e-mail address.
-
-        Examples:
-            >>> qrs = QrEmail('spam@python.org')
-            >>> print(repr(qrs))
-            <QrEmail>
-            email: spam@python.org
-            >>> print(qrs)
-            mailto:spam@python.org
-            >>> qrs == QrEmail.from_str(str(qrs))
-            True
-        """
-        # QrSpecial.__init__(**locals())  # Py3-only
-        kws = locals()
-        kws.pop('self')
-        QrSpecial.__init__(self, **kws)
-
-
-class QrMessage(QrSpecial):
+class QrShortMessage(QrSpecial):
     """
     QrSpecial-derived short message (SMS).
     """
@@ -374,14 +305,14 @@ class QrMessage(QrSpecial):
             text (str|unicode): The text to send.
 
         Examples:
-            >>> qrs = QrMessage('+39070653263', 'I like your code!')
+            >>> qrs = QrShortMessage('+39070653263', 'I like your code!')
             >>> print(repr(qrs))
             <QrMessage>
             number: +39070653263
             text: I like your code!
             >>> print(qrs)
             smsto:+39070653263:I like your code!
-            >>> qrs == QrMessage.from_str(str(qrs))
+            >>> qrs == QrShortMessage.from_str(str(qrs))
             True
         """
         # QrSpecial.__init__(**locals())  # Py3-only
@@ -450,87 +381,6 @@ class QrGeolocation(QrSpecial):
         # replace only first occurrence of the query tag
         text = text.replace(cls._query_tag, cls._sep, 1)
         return super(QrGeolocation, cls).from_str(text, strict, strip)
-
-
-class QrUrl(QrSpecial):
-    """
-    QrSpecial-derived Uniform Resource Locator (URL).
-    """
-    _sep = '://'
-    _protocols = 'http', 'https', 'ftp', 'ftps'
-    _fields = ('protocol', 'url')
-
-    def __init__(self, url=None, protocol='http'):
-        """
-        Generate the QrSpecial-derived Uniform Resource Locator (URL).
-
-        This assumes that the HTTP protocol will be used.
-
-        Only the protocols requiring the '://' sequence of characters are
-        supported.
-
-        Args:
-            url (str|unicode): The Uniform Resource Locator (URL).
-                If the protocol is specified directly in the URL, the
-                `protocol` keyword argument is ignored.
-            protocol (str|unicode): The protocol of the URL.
-                It should be one of: [http|https|ftp|ftps].
-                Otherwise a warning is issued.
-
-        Examples:
-            >>> qrs = QrUrl('https://www.python.org')
-            >>> print(repr(qrs))
-            <QrUrl>
-            protocol: https
-            url: www.python.org
-            >>> print(str(qrs))
-            https://www.python.org
-            >>> qrs == QrUrl.from_str(str(qrs))
-            True
-
-            >>> qrs = QrUrl('www.python.org')
-            >>> print(repr(qrs))
-            <QrUrl>
-            protocol: http
-            url: www.python.org
-            >>> print(str(qrs))
-            http://www.python.org
-            >>> qrs == QrUrl.from_str(str(qrs))
-            True
-
-            >>> qrs = QrUrl('www.python.org', 'https')
-            >>> print(repr(qrs))
-            <QrUrl>
-            protocol: https
-            url: www.python.org
-            >>> print(str(qrs))
-            https://www.python.org
-            >>> qrs == QrUrl.from_str(str(qrs))
-            True
-
-            >>> with warnings.catch_warnings(record=True) as w:
-            ...     qrs = QrUrl(url='mtp://www.python.org')
-            ...     assert(len(w) == 1)
-            ...     'Unusual protocol detected' in str(w[-1].message)
-            True
-            >>> print(repr(qrs))
-            <QrUrl>
-            protocol: mtp
-            url: www.python.org
-            >>> print(str(qrs))
-            mtp://www.python.org
-        """
-        cls = type(self)
-        if url:
-            parsed = url.split(cls._sep, 1)
-            if len(parsed) > 1:
-                protocol, url = parsed
-        if protocol not in cls._protocols:
-            warnings.warn('Unusual protocol detected `{}`'.format(protocol))
-        # QrSpecial.__init__(**locals())  # Py3-only
-        kws = locals()
-        kws.pop('self')
-        QrSpecial.__init__(self, **kws)
 
 
 class QrContact(QrSpecial):
