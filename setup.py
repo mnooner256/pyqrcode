@@ -55,7 +55,7 @@ setup(name='PyQRCode',
       keywords=['qrcode', 'qr'],
       license='BSD',
       extras_require={
-        'PNG':  ["pypng>=0.0.13"],
+        'PNG':  ["segno>=0.2.0"],
       },
       classifiers=[
         'Development Status :: 4 - Beta',
