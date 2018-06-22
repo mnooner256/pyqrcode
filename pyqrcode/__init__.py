@@ -44,8 +44,7 @@ from __future__ import absolute_import, division, print_function, with_statement
 import pyqrcode.tables
 import pyqrcode.builder as builder
 from pyqrcode import writers
-
-try:
+try:  # pragma: no cover
     str = unicode  # Python 2
 except NameError:
     pass
@@ -363,7 +362,7 @@ class QRCode:
                          'with the given encoding and error level.')
 
     def show(self, wait=1.2, scale=10, module_color=(0, 0, 0, 255),
-            background=(255, 255, 255, 255), quiet_zone=4):
+            background=(255, 255, 255, 255), quiet_zone=4):  # pragma: no cover
         """Displays this QR code.
 
         This method is mainly intended for debugging purposes.

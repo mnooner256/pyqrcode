@@ -8,6 +8,8 @@
 #
 """\
 Standard serializers and utility functions for serializers.
+
+This module does not belong to the public API.
 """
 from __future__ import absolute_import, unicode_literals, with_statement
 import io
@@ -17,7 +19,7 @@ import itertools
 import base64
 from pyqrcode.builder import _get_symbol_size
 from contextlib import contextmanager
-try:
+try:  # pragma: no cover
     str = unicode
 except NameError:
     pass
