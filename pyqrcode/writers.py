@@ -373,43 +373,6 @@ def write_svg(code, version, file, scale=1, module_color='#000', background=None
         write_bytes(b'</svg>\n')
 
 
-def write_png(code, version, file, scale=1, module_color=(0, 0, 0, 255),
-              background=(255, 255, 255, 255), quiet_zone=4):
-    """See: pyqrcode.QRCode.png()
-
-    This function was abstracted away from QRCode to allow for the output of
-    QR codes during the build process, i.e. for debugging. It works
-    just the same except you must specify the code's version. This is needed
-    to calculate the PNG's size.
-
-    This method will write the given file out as a PNG file. Note, it
-    depends on the PyPNG module to do this.
-
-    :param module_color: Color of the QR code (default: ``(0, 0, 0, 255)`` (black))
-    :param background: Optional background color. If set to ``None`` the PNG
-            will have a transparent background.
-            (default: ``(255, 255, 255, 255)`` (white))
-    :param quiet_zone: Border around the QR code (also known as quiet zone)
-            (default: ``4``). Set to zero (``0``) if the code shouldn't
-            have a border.
-    :param debug: Inidicates if errors in the QR code should be added (as red
-            modules) to the output (default: ``False``).
-    """
-    import segno
-    segno.writers.write_png(code, version=version, out=file, scale=scale,
-                            color=module_color, background=background,
-                            border=quiet_zone)
-
-
-def as_png_data_uri(code, version, scale=1, module_color=(0, 0, 0, 255),
-         background=(255, 255, 255, 255), quiet_zone=4, debug=False):
-    buff = io.BytesIO()
-    write_png(code, version, buff, scale=scale, quiet_zone=quiet_zone, module_color=module_color,
-              background=background)
-    return 'data:image/png;base64,{0}' \
-                .format(base64.b64encode(buff.getvalue()).decode('ascii'))
-
-
 def write_eps(code, version, file_or_path, scale=1, module_color=(0, 0, 0),
               background=None, quiet_zone=4):
     """This function writes the QR code out as an EPS document. The

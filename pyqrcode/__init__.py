@@ -447,8 +447,7 @@ class QRCode:
         file path.
 
         .. note::
-            This method depends on the pypng module to actually create the
-            PNG file.
+            This method depends on Segno to actually create the PNG file.
 
         This method will write the given *file* out as a PNG file. The file
         can be either a string file path, or a writable stream. The file
@@ -485,8 +484,10 @@ class QRCode:
                          module_color=(0x66, 0x33, 0x0),      # Dark brown
                          background=(0xff, 0xff, 0xff, 0x88)) # 50% transparent white
         """
-        writers.write_png(self.code, self.version, file, scale,
-                          module_color, background, quiet_zone)
+        import segno
+        segno.writers.write_png(self.code, version=self.version, out=file,
+                                scale=scale, color=module_color,
+                                background=background, border=quiet_zone)
 
     def png_as_base64_str(self, scale=1, module_color=(0, 0, 0, 255),
                           background=(255, 255, 255, 255), quiet_zone=4):
@@ -523,9 +524,11 @@ class QRCode:
 
         :rtype: str
         """
-        return writers.as_png_data_uri(self.code, self.version, scale=scale,
-                                       module_color=module_color,
-                                       background=background, quiet_zone=quiet_zone)
+        import segno
+        return segno.writers.as_png_data_uri(self.code, version=self.version,
+                                             scale=scale, color=module_color,
+                                             background=background,
+                                             border=quiet_zone)
         
     def xbm(self, scale=1, quiet_zone=4):
         """Returns a string representing an XBM image of the QR code.
