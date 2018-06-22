@@ -33,7 +33,7 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 import pyqrcode.tables as tables
 import io
 import itertools
-try:
+try:  # pragma: no cover
     from itertools import zip_longest
 except ImportError:
     # Py2

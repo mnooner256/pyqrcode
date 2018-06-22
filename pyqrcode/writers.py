@@ -19,7 +19,7 @@ import itertools
 import base64
 from pyqrcode.builder import _get_symbol_size
 from contextlib import contextmanager
-try:
+try:  # pragma: no cover
     str = unicode
 except NameError:
     pass
