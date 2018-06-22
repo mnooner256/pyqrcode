@@ -23,9 +23,9 @@ def test_geo():
 
 
 def test_mecard():
-    q =  qrs.QrContact('Py Thon', email=('py@py.org', 'thon@py.org'))
+    q =  qrs.QrMeCard('Py Thon', email=('py@py.org', 'thon@py.org'))
     assert 'MECARD:N:Py Thon;EMAIL:py@py.org;EMAIL:thon@py.org;;' == str(q)
-    assert q == qrs.QrContact.from_str(str(q))
+    assert q == qrs.QrMeCard.from_str(str(q))
 
 
 def test_wifi():

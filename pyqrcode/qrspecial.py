@@ -277,7 +277,7 @@ class QrSpecial:
             obj (QrSpecial): The QrSpecial-derived object.
         """
         # Construct a QrSpecial
-        subclasses = (QrShortMessage, QrGeolocation, QrContact, QrWifi)
+        subclasses = (QrShortMessage, QrGeolocation, QrMeCard, QrWifi)
         obj = QrSpecial()
         for cls in subclasses:
             try:
@@ -383,7 +383,7 @@ class QrGeolocation(QrSpecial):
         return super(QrGeolocation, cls).from_str(text, strict, strip)
 
 
-class QrContact(QrSpecial):
+class QrMeCard(QrSpecial):
     """
     QrSpecial-derived contact information (MeCard).
     """
@@ -462,7 +462,7 @@ class QrContact(QrSpecial):
                 NTT Docomo v.N/A.
 
         Examples:
-            >>> qrs = QrContact('Py Thon', email=('py@py.org', 'thon@py.org'))
+            >>> qrs = QrMeCard('Py Thon', email=('py@py.org', 'thon@py.org'))
             >>> print(repr(qrs))
             <QrContact>
             name: Py Thon
@@ -470,10 +470,10 @@ class QrContact(QrSpecial):
             email: thon@py.org
             >>> print(str(qrs))
             MECARD:N:Py Thon;EMAIL:py@py.org;EMAIL:thon@py.org;;
-            >>> qrs == QrContact.from_str(str(qrs))
+            >>> qrs == QrMeCard.from_str(str(qrs))
             True
 
-            >>> qrs = QrContact('QrSpecial', birthday=20160904)
+            >>> qrs = QrMeCard('QrSpecial', birthday=20160904)
             >>> print(repr(qrs))
             <QrContact>
             name: QrSpecial
@@ -576,9 +576,6 @@ class QrWifi(QrSpecial):
         kws.pop('self')
         QrSpecial.__init__(self, **kws)
 
-
-# MeCard as an alias of QrContact
-MeCard = QrContact
 
 if __name__ == '__main__':
     import doctest
