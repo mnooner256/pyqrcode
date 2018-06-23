@@ -74,22 +74,21 @@ def test_png_as_base64_str():
     """\
     Test PNG to Base64 converions using a known Base64 string.
     """
-    expected_str = "iVBORw0KGgoAAAANSUhEUgAAAOEAAADhAQAAAAAWyO/XAAACIklEQVR4n"\
-                   "O2YMXKrQBBER6WAkCPsTaSLUbVU6WLmJhyBkIDSuLtXxtgu/8DBbwUiQMB"\
-                   "TMMzsdM8S+Y9jjBd90b/SJSJOS831upyzu/e3zDc86sy0Zk7LUPKtHyMu/"\
-                   "RbdhIDddMAtws17REH0Q8FtlGeguZX10ufcMYn5PDSQSSRR9X0Gqvqec2U"\
-                   "S1xOe/ay+gaoXVNWP049O+f9UB9KJ0znjmre5+64qDsqWREERZzCTG35Za"\
-                   "TNlkE3IkkJWZ572mE2U637iWuMDLL06U0bmzkwRZFJj78gf6ptzC9xLkUk"\
-                   "2J8uLSCG0sbLSnZmOAYOsLYkSD5jSba++jZZ81PeW6wVJXIMeYKZb7AoyB"\
-                   "00JHpB7fU2Ui58tidOAnDKxgavOS9mXV7mQTAnplIKYKTQCLSkrOiOTqu/"\
-                   "hjVwULXnpR81csTa/zKN3eyi88bRoHAzOOePjyk4RMyRN4oHmpIHv/eGi1"\
-                   "A32AiQjPlrj4N0mSpdsVsQ5DMMEZotPNXPRFnM0jaWaJSW3mCmnB6w1Chk"\
-                   "kg9NhnKQmXspZXt7N/E34C3Zodc+zi3LBAdAg24ZDs0WaKfSU9dXmJx+T9"\
-                   "BBmqkPPtIdVc3Kj7aXal2lnzcD1gWRavu7aHLS2lsR0gw5tBrkcV52H6tu"\
-                   "IbrfHK8Rhh2ulQxtXIR7JwOunbngpp5vCj0mRx+nLRVVfDcz6YqNeqHaqX"\
-                   "hBN+tFYvs2EFvr78aIv+kf6Dm6Pdk09JdaJAAAAAElFTkSuQmCC"
+    expected_str = 'iVBORw0KGgoAAAANSUhEUgAAALkAA' \
+                   'AC5AQAAAABc1qPxAAABZUlEQVR42u1XMW7DMBCj60GjnqCf2B8z' \
+                   'YAP+mP0TP8GjBsNXUk07tVvBAG00CEluoO6Ox2MQ358Fr8AfDpw' \
+                   'AunMqGPKCtPFbYuANP5xfDAh8jtgFPvKKnU9ygk9Iu2pw54vgJ4' \
+                   'ob/JwPXn08BTzWI7Ychx1cPY8LdWTtk7vnD7Ynsc7N9nbO/ki6v' \
+                   'mbQ1/MKtruObHeo+9aylzpgKrUj5fnL7ASPNUizq4hwvKQ0RvAF' \
+                   'dciN43yBGmAm3JYvyXrfuObMnHPOnUJl1ZTVzjvnLDY6Nh4jlYY' \
+                   'v8BJuAQZWPG0f6fdW8EvFXkqjPJ8xO0Um4mDFQ4uFbGf3YSXcwc' \
+                   'yZNDLTvwHrnF+EJC5HfMGn5zISrs25KC95nYp9q8lCaKU+Vpt3n' \
+                   '88hGyUvBS/hmnvl5ybwNHJ2D0fcO1Pm1PNwu1dC3tSXtlKfYJ2l' \
+                   '7aWlb3evEVrlLHte/WxX2TXsgxf89d/5nwXeAQ4lThIyLqhcAAA' \
+                   'ANHRFWHRTb2Z0d2FyZQBTZWdubyA8aHR0cHM6Ly9weXBpLnB5dG' \
+                   'hvbi5vcmcvcHlwaS9zZWduby8+6uNDygAAAABJRU5ErkJggg=='
                    
-    qr = pyqrcode.create('Are you suggesting coconuts migrate?')
+    qr = pyqrcode.create('Are you suggesting coconuts migrate?', error='m')
     generated_str = qr.png_as_base64_str(scale=5)
     assert expected_str == generated_str
 
@@ -98,24 +97,24 @@ def test_png_uri():
     """\
     Test PNG to Base64 converions using a known Base64 string.
     """
-    expected_str = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAOEAAADhAQAAAAAWyO/XAAACIklEQVR4n"\
-                   "O2YMXKrQBBER6WAkCPsTaSLUbVU6WLmJhyBkIDSuLtXxtgu/8DBbwUiQMB"\
-                   "TMMzsdM8S+Y9jjBd90b/SJSJOS831upyzu/e3zDc86sy0Zk7LUPKtHyMu/"\
-                   "RbdhIDddMAtws17REH0Q8FtlGeguZX10ufcMYn5PDSQSSRR9X0Gqvqec2U"\
-                   "S1xOe/ay+gaoXVNWP049O+f9UB9KJ0znjmre5+64qDsqWREERZzCTG35Za"\
-                   "TNlkE3IkkJWZ572mE2U637iWuMDLL06U0bmzkwRZFJj78gf6ptzC9xLkUk"\
-                   "2J8uLSCG0sbLSnZmOAYOsLYkSD5jSba++jZZ81PeW6wVJXIMeYKZb7AoyB"\
-                   "00JHpB7fU2Ui58tidOAnDKxgavOS9mXV7mQTAnplIKYKTQCLSkrOiOTqu/"\
-                   "hjVwULXnpR81csTa/zKN3eyi88bRoHAzOOePjyk4RMyRN4oHmpIHv/eGi1"\
-                   "A32AiQjPlrj4N0mSpdsVsQ5DMMEZotPNXPRFnM0jaWaJSW3mCmnB6w1Chk"\
-                   "kg9NhnKQmXspZXt7N/E34C3Zodc+zi3LBAdAg24ZDs0WaKfSU9dXmJx+T9"\
-                   "BBmqkPPtIdVc3Kj7aXal2lnzcD1gWRavu7aHLS2lsR0gw5tBrkcV52H6tu"\
-                   "IbrfHK8Rhh2ulQxtXIR7JwOunbngpp5vCj0mRx+nLRVVfDcz6YqNeqHaqX"\
-                   "hBN+tFYvs2EFvr78aIv+kf6Dm6Pdk09JdaJAAAAAElFTkSuQmCC"
+    expected_str = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAALkAA' \
+                   'AC5AQAAAABc1qPxAAABZUlEQVR42u1XMW7DMBCj60GjnqCf2B8z' \
+                   'YAP+mP0TP8GjBsNXUk07tVvBAG00CEluoO6Ox2MQ358Fr8AfDpw' \
+                   'AunMqGPKCtPFbYuANP5xfDAh8jtgFPvKKnU9ygk9Iu2pw54vgJ4' \
+                   'ob/JwPXn08BTzWI7Ychx1cPY8LdWTtk7vnD7Ynsc7N9nbO/ki6v' \
+                   'mbQ1/MKtruObHeo+9aylzpgKrUj5fnL7ASPNUizq4hwvKQ0RvAF' \
+                   'dciN43yBGmAm3JYvyXrfuObMnHPOnUJl1ZTVzjvnLDY6Nh4jlYY' \
+                   'v8BJuAQZWPG0f6fdW8EvFXkqjPJ8xO0Um4mDFQ4uFbGf3YSXcwc' \
+                   'yZNDLTvwHrnF+EJC5HfMGn5zISrs25KC95nYp9q8lCaKU+Vpt3n' \
+                   '88hGyUvBS/hmnvl5ybwNHJ2D0fcO1Pm1PNwu1dC3tSXtlKfYJ2l' \
+                   '7aWlb3evEVrlLHte/WxX2TXsgxf89d/5nwXeAQ4lThIyLqhcAAA' \
+                   'ANHRFWHRTb2Z0d2FyZQBTZWdubyA8aHR0cHM6Ly9weXBpLnB5dG' \
+                   'hvbi5vcmcvcHlwaS9zZWduby8+6uNDygAAAABJRU5ErkJggg=='
 
-    qr = pyqrcode.create('Are you suggesting coconuts migrate?')
+    qr = pyqrcode.create('Are you suggesting coconuts migrate?', error='m')
     generated_str = qr.png_data_uri(scale=5)
     assert expected_str == generated_str
+
 
 _REF_DATA = (
     # Input string, error level, encoding, mode, reference file

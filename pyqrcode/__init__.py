@@ -505,7 +505,7 @@ class QRCode:
         to that method's documentation for the meaning behind the parameters.
         
         .. note::
-            This method depends on the pypng module to actually create the
+            This method depends on the Segno package to actually create the
             PNG image.
 
         """

@@ -8,7 +8,6 @@ Changes
 * Skip detecting content type if constructor mode is given to constructor.
   Contributed by Martijn van Rheenen.
   Fixed <https://github.com/mnooner256/pyqrcode/issues/50>
-* Faster PNG generation, fixed <https://github.com/mnooner256/pyqrcode/pull/47>
 * Moved tests from nose to pytest since nose is deprecated,
   see <https://github.com/heuer/pyqrcode/issues/2>
 * Updated test environment: Added PyPy, PyPy3 and Python 3.6
@@ -16,6 +15,9 @@ Changes
   returns a (width, height) tuple, not an integer.
 * Deprecated QRCode.png_as_base64_str(), use QRCode.png_data_uri() which returns
   a valid URI instead of a Base64 encoded string
+* Faster PNG generation, fixed <https://github.com/mnooner256/pyqrcode/pull/47>
+* Replaced PyPNG with Segno's PNG generator to improve PNG generation further
+  (speed and file size)
 
 
 1.2.1 - 2016-06-20
