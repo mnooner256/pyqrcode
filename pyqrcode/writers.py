@@ -15,7 +15,6 @@ from __future__ import absolute_import, unicode_literals, with_statement
 import io
 import math
 import codecs
-import base64
 from pyqrcode.builder import _get_symbol_size
 from contextlib import contextmanager
 _PY2 = False
