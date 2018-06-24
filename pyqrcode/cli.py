@@ -141,6 +141,9 @@ def main(args=sys.argv[1:]):
         sys.stderr.writelines([msg, os.linesep])
         return sys.exit(1)
 
+    def terminal_color(clr):
+        return clr if not clr.isdigit() else int(clr)
+
     config = parse(args)
     output = config.pop('output')
     ext = None
@@ -152,11 +155,17 @@ def main(args=sys.argv[1:]):
         qr = make_code(config)
     except ValueError as ex:
         return error_msg(str(ex))
-    if output is None:
-        print(qr.terminal(quiet_zone=config['quiet_zone']))
-    else:
-        meth = getattr(qr, ext)
-        meth(output, **build_config(config, output))
+    try:
+        if output is None:
+            clr = terminal_color(config.pop('module_color') or 'default')
+            bg_clr = terminal_color(config.pop('background') or 'reverse')
+            print(qr.terminal(module_color=clr, background=bg_clr,
+                              quiet_zone=config['quiet_zone']))
+        else:
+            meth = getattr(qr, ext)
+            meth(output, **build_config(config, output))
+    except ValueError as ex:
+        return error_msg(str(ex))
     return 0
 
 
