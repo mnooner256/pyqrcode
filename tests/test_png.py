@@ -161,11 +161,11 @@ def test_write_png(s, error_level, encoding, expected_mode, reference):
     qr.png(out, scale=scale, quiet_zone=quiet_zone)
     out.seek(0)
     # Excpected width/height
-    expected_width = qr.get_png_size(scale, quiet_zone)
+    expected_width, expected_height = qr.symbol_size(scale, quiet_zone)
     # Read created image
     width, height, pixels = _get_png_info(file=out)
     assert expected_width == ref_width
-    assert expected_width == ref_height
+    assert expected_height == ref_height
     assert ref_width == width
     assert ref_height == height
     assert len(ref_pixels) == len(pixels)
