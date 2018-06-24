@@ -56,7 +56,7 @@ setup(
     keywords=['qrcode', 'qr'],
     license='BSD',
     extras_require={
-      'PNG':  ["segno>=0.2.0"],
+      'PNG':  ['segno>=0.2.7'],
     },
     entry_points = {'console_scripts': ['pyqr = pyqrcode.cli:main']},
     classifiers=[
