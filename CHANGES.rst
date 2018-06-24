@@ -18,6 +18,8 @@ Changes
 * Faster PNG generation, fixed <https://github.com/mnooner256/pyqrcode/pull/47>
 * Replaced PyPNG with Segno's PNG generator to improve PNG generation further
   (speed and file size)
+* Added CLI
+  Fixed #4 and <https://github.com/mnooner256/pyqrcode/pull/53>
 
 
 1.2.1 - 2016-06-20
