@@ -904,9 +904,9 @@ def _text(code, quiet_zone=4):
                 buf.write('1')
             elif bit == 0:
                 buf.write('0')
-            # This is for debugging unfinished QR codes,
-            # unset pixels will be spaces.
             else:
+                # This is for debugging unfinished QR codes,
+                # unset pixels will be spaces.
                 buf.write(' ')
         # Draw the ending quiet zone
         for b in range(quiet_zone):

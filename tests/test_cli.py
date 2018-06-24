@@ -140,6 +140,7 @@ def test_scale_shortcut():
 def test_color():
     args = cli.parse(['--color', 'green', ''])
     assert args.module_color == 'green'
+    assert cli.build_config(args)['module_color'] == 'green'
 
 
 def test_color_transparent():
@@ -173,7 +174,21 @@ def test_background_transparent2():
 
 def test_error_code():
     with pytest.raises(SystemExit) as e:
-        cli.main(['--version=M1', '--seq', '"This is a test"'])
+        cli.main(['--version=41', '"This is a test"'])
+        assert 1 == e.exception.code
+        assert e.exception.message
+
+
+def test_unsupported_fileformat():
+    with pytest.raises(SystemExit) as e:
+        cli.main(['--output=test.pdf', '"This is a test"'])
+        assert 1 == e.exception.code
+        assert e.exception.message
+
+
+def test_unsupported_color():
+    with pytest.raises(SystemExit) as e:
+        cli.main(['--color=test', '--output=test.png', '"This is a test"'])
         assert 1 == e.exception.code
         assert e.exception.message
 
