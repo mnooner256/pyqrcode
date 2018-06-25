@@ -141,9 +141,6 @@ def main(args=sys.argv[1:]):
         sys.stderr.writelines([msg, os.linesep])
         return sys.exit(1)
 
-    def terminal_color(clr):
-        return clr if not clr.isdigit() else int(clr)
-
     config = parse(args)
     output = config.pop('output')
     ext = None
