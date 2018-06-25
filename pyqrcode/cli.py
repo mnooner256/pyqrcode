@@ -157,10 +157,7 @@ def main(args=sys.argv[1:]):
         return error_msg(str(ex))
     try:
         if output is None:
-            clr = terminal_color(config.pop('module_color') or 'default')
-            bg_clr = terminal_color(config.pop('background') or 'reverse')
-            print(qr.terminal(module_color=clr, background=bg_clr,
-                              quiet_zone=config['quiet_zone']))
+            _write_to_terminal(qr, quiet_zone=config['quiet_zone'])
         else:
             meth = getattr(qr, ext)
             meth(output, **build_config(config, output))
@@ -173,6 +170,83 @@ class _AttrDict(dict):
     def __init__(self, *args, **kwargs):
         super(_AttrDict, self).__init__(*args, **kwargs)
         self.__dict__ = self
+
+
+def _write_to_terminal(qrcode, quiet_zone):
+    """
+    Prints the QR Code to the terminal.
+
+    :param qrcode: The QR Code.
+    :param quiet_zone: The quiet zone (may be zero)
+    """
+    if sys.platform == 'win32':
+        _write_terminal_win(qrcode, quiet_zone=quiet_zone)
+    else:
+        print(qrcode.terminal(quiet_zone=quiet_zone))
+
+
+#
+# Taken and adapted from segno.writers
+#
+def _write_terminal_win(qr, quiet_zone=None):  # pragma: no cover
+    """\
+    Function to write a QR Code to a MS Windows terminal.
+    """
+    def matrix_iter(matrix):
+        """\
+        Returns an interator / generator over the provided matrix which includes
+        the border and the scaling factor.
+
+        If either the `scale` or `border` value is invalid, a py:exc:`ValueError`
+        is raised.
+
+        :param matrix: An iterable of bytearrays.
+        :param int version: A version constant.
+        :param int scale: The scaling factor (default: ``1``).
+        :param int border: The border size or ``None`` to specify the
+                default quiet zone (4 for QR Codes, 2 for Micro QR Codes).
+        :raises: py:exc:`ValueError` if an illegal scale or border value is provided
+        """
+        width, height = qr.symbol_size(scale=1, quiet_zone=0)
+
+        def get_bit(i, j):
+            return 0x1 if (0 <= i < height and 0 <= j < width and matrix[i][j]) else 0x0
+
+        for i in range(-quiet_zone, height + quiet_zone):
+            yield chain.from_iterable(([get_bit(i, j)] for j in range(-quiet_zone, width + quiet_zone)))
+
+    import sys
+    import struct
+    import ctypes
+    from itertools import chain
+    from functools import partial
+    write = sys.stdout.write
+    std_out = ctypes.windll.kernel32.GetStdHandle(-11)
+    csbi = ctypes.create_string_buffer(22)
+    res = ctypes.windll.kernel32.GetConsoleScreenBufferInfo(std_out, csbi)
+    if not res:
+        raise OSError('Cannot find information about the console. '
+                      'Not running on the command line?')
+    default_color = struct.unpack(b'hhhhHhhhhhh', csbi.raw)[4]
+    set_color = partial(ctypes.windll.kernel32.SetConsoleTextAttribute, std_out)
+    colours = (240, default_color)
+    for row in matrix_iter(qr.code):
+        prev_bit = -1
+        cnt = 0
+        for bit in row:
+            if bit == prev_bit:
+                cnt += 1
+            else:
+                if cnt:
+                    set_color(colours[prev_bit])
+                    write('  ' * cnt)
+                prev_bit = bit
+                cnt = 1
+        if cnt:
+            set_color(colours[prev_bit])
+            write('  ' * cnt)
+        set_color(default_color)  # reset color
+        write('\n')
 
 
 if __name__ == '__main__':  # pragma: no cover
