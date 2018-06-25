@@ -177,7 +177,10 @@ def _write_to_terminal(qrcode, quiet_zone):
     :param quiet_zone: The quiet zone (may be zero)
     """
     if sys.platform == 'win32':
-        _write_terminal_win(qrcode, quiet_zone=quiet_zone)
+        try:
+            _write_terminal_win(qrcode, quiet_zone=quiet_zone)
+        except OSError:
+            print(qrcode.terminal(quiet_zone=quiet_zone))
     else:
         print(qrcode.terminal(quiet_zone=quiet_zone))
 
