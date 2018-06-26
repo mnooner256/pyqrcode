@@ -1,7 +1,7 @@
 Changes
 =======
 
-1.3.0 - 2018-mm-dd
+1.3.0 - 2018-06-26
 ------------------
 * Added support for meCards etc. contributed by Riccardo Metere
   Fixed <https://github.com/mnooner256/pyqrcode/pull/45>
