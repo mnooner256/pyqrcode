@@ -1282,12 +1282,12 @@ def _hex_to_rgb(color):
     return [int(n, 16) for n in (color[:2], color[2:4], color[4:])]
 
 
-def _matrix_iter(matrix, version, scale=1, quiet_zone=4):
+def _matrix_iter(code, version, scale=1, quiet_zone=4):
     """\
     Returns an iterator / generator over the provided matrix which includes
     the border and the scaling factor.
 
-    :param matrix: An iterable of bytearrays.
+    :param code: An iterable of integer lists
     :param int version: A version constant.
     :param int scale: The scaling factor (default: ``1``).
     :param int quiet_zone: The border size.
@@ -1295,18 +1295,18 @@ def _matrix_iter(matrix, version, scale=1, quiet_zone=4):
     width, height = _get_symbol_size(version, scale=1, quiet_zone=0)  # scale=1, quiet_zone=0 is used by intention!
 
     def get_bit(i, j):
-        return 0x1 if (0 <= i < height and 0 <= j < width and matrix[i][j]) else 0x0
+        return 0x1 if (0 <= i < height and 0 <= j < width and code[i][j]) else 0x0
 
     for i in range(-quiet_zone, height + quiet_zone):
         for s in range(scale):
             yield chain.from_iterable(([get_bit(i, j)] * scale for j in range(-quiet_zone, width + quiet_zone)))
 
 
-def _terminal(matrix, version, out, quiet_zone=None):
+def _terminal(code, version, out, quiet_zone=None):
     """\
     Function to write to a terminal which supports ANSI escape codes.
 
-    :param matrix: The matrix to serialize.
+    :param code: The matrix to serialize.
     :param int version: The (Micro) QR code version.
     :param out: Filename or a file-like object supporting to write text.
     :param int quiet_zone: Integer indicating the size of the quiet zone.
@@ -1316,7 +1316,7 @@ def _terminal(matrix, version, out, quiet_zone=None):
     with _writable(out, 'wt') as f:
         write = f.write
         colours = ['\033[{0}m'.format(i) for i in (7, 49)]
-        for row in _matrix_iter(matrix, version, scale=1, quiet_zone=quiet_zone):
+        for row in _matrix_iter(code, version, scale=1, quiet_zone=quiet_zone):
             prev_bit = -1
             cnt = 0
             for bit in row:
