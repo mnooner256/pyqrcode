@@ -718,6 +718,10 @@ class QRCode:
     def term(self, file=None, quiet_zone=4):
         """This method prints the QR code to the terminal.
 
+        The *file* parameter is used to specify where to write the document
+        to. It can either be a writable (text) stream or a file path.
+        If ``file`` is ``None`` (default) the code is written to ``sys.stdout``.
+
         The *quiet_zone* parameter sets how wide the quiet zone around the code
         should be. According to the standard this should be 4 modules. It is
         left settable because such a wide quiet zone is unnecessary in many
@@ -725,7 +729,7 @@ class QRCode:
 
         Example:
             >>> code = pyqrcode.create('Example')
-            >>> code.terminal()
+            >>> code.term()
         """
         if file is None and sys.platform == 'win32':  # pragma: no cover
             # Windows < 10 does not support ANSI escape sequences, try to
@@ -735,7 +739,7 @@ class QRCode:
                 builder._terminal_win(self.code, self.version, quiet_zone)
             except OSError:
                 # Use the standard output even if it may print garbage
-                builder._terminal(self.code, self.version, file or sys.stdout,
+                builder._terminal(self.code, self.version, sys.stdout,
                                    quiet_zone)
         else:
             builder._terminal(self.code, self.version, file or sys.stdout,
