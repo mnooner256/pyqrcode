@@ -395,36 +395,6 @@ class QRCode:
         time.sleep(wait)
         os.unlink(f.name)
 
-    def get_png_size(self, scale=1, quiet_zone=4):
-        """
-        DEPRECATED, use symbol_size()
-
-        This is method helps users determine what *scale* to use when
-        creating a PNG of this QR code. It is meant mostly to be used in the
-        console to help the user determine the pixel size of the code
-        using various scales.
-
-        This method will return an integer representing the width and height of
-        the QR code in pixels, as if it was drawn using the given *scale*.
-        Because QR codes are square, the number represents both the width
-        and height dimensions.
-
-        The *quiet_zone* parameter sets how wide the quiet zone around the code
-        should be. According to the standard this should be 4 modules. It is
-        left settable because such a wide quiet zone is unnecessary in many
-        applications where the QR code is not being printed.
-
-        Example:
-            >>> code = pyqrcode.QRCode("I don't like spam!")
-            >>> print(code.symbol_size(1))
-            (31, 31)
-            >>> print(code.symbol_size(5))
-            (155, 155)
-        """
-        import warnings
-        warnings.warn('This method is deprecated, use symbol_size()', category=DeprecationWarning)
-        return self.symbol_size(int(scale), quiet_zone)[0]
-
     def symbol_size(self, scale=1, quiet_zone=4):
         """\
         Returns the symbol size (width x height) with the provided border and
@@ -489,32 +459,6 @@ class QRCode:
         builder._png(self.code, self.version, file, scale=scale,
                      module_color=module_color, background=background,
                      quiet_zone=quiet_zone)
-
-    def png_as_base64_str(self, scale=1, module_color=(0, 0, 0, 255),
-                          background=(255, 255, 255, 255), quiet_zone=4):
-        """DEPRECATED, use png_data_uri()
-        This method uses the png render and returns the PNG image encoded as
-        base64 string. This can be useful for creating dynamic PNG images for
-        web development, since no file needs to be created.
-        
-        Example:
-            >>> code = pyqrcode.create('Are you suggesting coconuts migrate?')
-            >>> image_as_str = code.png_as_base64_str(scale=5)
-            >>> html_img = '<img src="data:image/png;base64,{}">'.format(image_as_str)
-
-        The parameters are passed directly to the :py:meth:`png` method. Refer
-        to that method's documentation for the meaning behind the parameters.
-        
-        .. note::
-            This method depends on the Segno package to actually create the
-            PNG image.
-
-        """
-        import warnings
-        warnings.warn('This method is deprecated, use png_data_uri', category=DeprecationWarning)
-        return self.png_data_uri(scale=scale, module_color=module_color,
-                                 background=background,
-                                 quiet_zone=quiet_zone).replace('data:image/png;base64,', '')
 
     def png_data_uri(self, scale=1, module_color=(0, 0, 0, 255),
                           background=(255, 255, 255, 255), quiet_zone=4):
@@ -663,57 +607,6 @@ class QRCode:
         """
         builder._eps(self.code, self.version, file, scale, module_color,
                      background, quiet_zone)
-
-    def terminal(self, module_color='default', background='reverse',
-                 quiet_zone=4):
-        """DEPRECATED, use term()
-
-        This method returns a string containing ASCII escape codes,
-        such that if printed to a compatible terminal, it will display
-        a vaild QR code. The code is printed using ASCII escape
-        codes that alter the coloring of the background.
-
-        The *module_color* parameter sets what color to
-        use for the data modules (the black part on most QR codes).
-        Likewise, the *background* parameter sets what color to use
-        for the background (the white part on most QR codes).
-
-        There are two options for colors. The first, and most widely
-        supported, is to use the 8 or 16 color scheme. This scheme uses
-        eight to sixteen named colors. The following colors are
-        supported the most widely supported: black, red, green,
-        yellow, blue, magenta, and cyan. There are an some additional
-        named colors that are supported by most terminals: light gray,
-        dark gray, light red, light green, light blue, light yellow,
-        light magenta, light cyan, and white.
-
-        There are two special named colors. The first is the
-        "default" color. This color is the color the background of
-        the terminal is set to. The next color is the "reverse"
-        color. This is not really a color at all but a special
-        property that will reverse the current color. These two colors
-        are the default values for *module_color* and *background*
-        respectively. These values should work on most terminals.
-
-        Finally, there is one more way to specify the color. Some
-        terminals support 256 colors. The actual colors displayed in the
-        terminal is system dependent. This is the least transportable option.
-        To use the 256 color scheme set *module_color* and/or
-        *background* to a number between 0 and 256.
-
-        The *quiet_zone* parameter sets how wide the quiet zone around the code
-        should be. According to the standard this should be 4 modules. It is
-        left settable because such a wide quiet zone is unnecessary in many
-        applications.
-
-        Example:
-            >>> code = pyqrcode.create('Example')
-            >>> text = code.terminal()
-            >>> print(text)
-        """
-        import warnings
-        warnings.warn('This method is deprecated, use term()', category=DeprecationWarning)
-        return builder._terminal_deprecated(self.code, module_color, background, quiet_zone)
 
     def term(self, file=None, quiet_zone=4):
         """This method prints the QR code to the terminal.
