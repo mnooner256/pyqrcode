@@ -30,13 +30,12 @@ builds the code. While the various output methods draw the code into a file.
 This module does not belong to the public API.
 """
 from __future__ import absolute_import, division, print_function, unicode_literals
-import math
 import io
 import codecs
 import itertools
 from itertools import chain
 from contextlib import contextmanager
-from functools import partial
+from functools import partial, reduce
 from xml.sax.saxutils import quoteattr
 import pyqrcode.tables as tables
 try:  # pragma: no cover
