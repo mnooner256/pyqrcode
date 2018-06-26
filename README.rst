@@ -9,12 +9,12 @@ Unlike other generators, all of the helpers can be controlled manually. You are
 free to set any or all of the properties of your QR code.
 
 QR codes can be saved as SVG, XBM, EPS, PNG (by using the
-`pypng <https://pypi.org/project/pypng/>` module), or plain text. They can
+`Segno <https://pypi.org/project/segno/>` module), or plain text. They can
 also be displayed directly in most Linux terminal emulators and Tkinter. PIL
 or Pillow are not used to render the image files.
 
 The PyQRCode module attempts to follow the QR code standard as closely as
-possible. The terminology and the encodings used in pyqrcode come directly
+possible. The terminology and the encodings used in PyQRCode come directly
 from the standard. This module also follows the algorithm laid out in the
 standard.
 
@@ -175,3 +175,7 @@ string of 1's and 0's, with each row of the code on a new line.
 
     >>> print(number.text())
 
+
+Documentation
+-------------
+Read the online documentation at <https://pyqrcode.readthedocs.io/>
