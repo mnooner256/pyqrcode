@@ -711,6 +711,8 @@ class QRCode:
             >>> text = code.terminal()
             >>> print(text)
         """
+        import warnings
+        warnings.warn('This method is deprecated, use term()', category=DeprecationWarning)
         return builder._terminal_deprecated(self.code, module_color, background, quiet_zone)
 
     def term(self, file=None, quiet_zone=4):
