@@ -21,6 +21,7 @@ Changes
 * Added term() method to QRCode which prints the QR Code to the terminal.
   This works with Windows and Unix.
 * Deprecated QRCode.terminal() in favor of QRCode.term()
+* Added "scale" parameter to QRCode.text
 
 
 1.2.1 - 2016-06-20

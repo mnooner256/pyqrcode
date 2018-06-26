@@ -745,11 +745,15 @@ class QRCode:
             builder._terminal(self.code, self.version, file or sys.stdout,
                                    quiet_zone)
 
-    def text(self, quiet_zone=4):
+    def text(self, scale=1, quiet_zone=4):
         """This method returns a string based representation of the QR code.
         The data modules are represented by 1's and the background modules are
         represented by 0's. The main purpose of this method is to act a
         starting point for users to create their own renderers.
+
+        The *scale* parameter sets how large to draw a single module. By
+        default one value ("0" for a light module or "1" for a dark module)
+        is used to draw a single module.
 
         The *quiet_zone* parameter sets how wide the quiet zone around the code
         should be. According to the standard this should be 4 modules. It is
@@ -761,4 +765,5 @@ class QRCode:
             >>> text = code.text()
             >>> print(text)
         """
-        return builder._text(self.code, quiet_zone)
+        return builder._text(self.code, self.version, scale=scale,
+                             quiet_zone=quiet_zone)

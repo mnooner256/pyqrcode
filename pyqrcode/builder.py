@@ -887,20 +887,12 @@ def _terminal_deprecated(code, module_color='default', background='reverse', qui
     return buf.getvalue()
 
 
-def _text(code, quiet_zone=4):
+def _text(code, version, scale=1, quiet_zone=4):
     """This method returns a text based representation of the QR code.
     This is useful for debugging purposes.
     """
     buf = io.StringIO()
-    border_row = '0' * (len(code[0]) + (quiet_zone*2))
-    # Every QR code start with a quiet zone at the top
-    for b in range(quiet_zone):
-        buf.write(border_row)
-        buf.write('\n')
-    for row in code:
-        # Draw the starting quiet zone
-        for b in range(quiet_zone):
-            buf.write('0')
+    for row in _matrix_iter(code, version, scale=scale, quiet_zone=quiet_zone):
         # Actually draw the QR code
         for bit in row:
             if bit == 1:
@@ -911,13 +903,6 @@ def _text(code, quiet_zone=4):
                 # This is for debugging unfinished QR codes,
                 # unset pixels will be spaces.
                 buf.write(' ')
-        # Draw the ending quiet zone
-        for b in range(quiet_zone):
-            buf.write('0')
-        buf.write('\n')
-    # Every QR code ends with a quiet zone at the bottom
-    for b in range(quiet_zone):
-        buf.write(border_row)
         buf.write('\n')
     return buf.getvalue()
 
