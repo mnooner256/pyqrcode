@@ -90,7 +90,7 @@ the there is no way to tell what color will be actually displayed.
 Image Rendering
 ===============
 
-There are three ways to get an image of the generated QR code. All of the
+There are four ways to get an image of the generated QR code. All of the
 renderers have a few things in common.
 
 Each renderer takes a file path or writable stream and draws the QR
@@ -200,7 +200,7 @@ the :py:meth:`pyqrcode.QRCode.png` method.
 
 .. note::
 
-  This renderer requires the `pypng <https://pypi.python.org/pypi/pypng/>`_
+  This renderer requires the `segno <https://pypi.org/project/segno/>`_
   module.
 
 .. code-block:: python
