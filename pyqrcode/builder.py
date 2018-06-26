@@ -1094,6 +1094,127 @@ def _svg(code, version, file, scale=1, module_color='#000', background=None,
         write_bytes(b'</svg>\n')
 
 
+def _png(code, version, file, scale=1, module_color=(0, 0, 0, 255),
+         background=(255, 255, 255, 255), quiet_zone=4, debug=False):
+    """See: pyqrcode.QRCode.png()
+    This function was abstracted away from QRCode to allow for the output of
+    QR codes during the build process, i.e. for debugging. It works
+    just the same except you must specify the code's version. This is needed
+    to calculate the PNG's size.
+    This method will write the given file out as a PNG file. Note, it
+    depends on the PyPNG module to do this.
+    :param module_color: Color of the QR code (default: ``(0, 0, 0, 255)`` (black))
+    :param background: Optional background color. If set to ``None`` the PNG
+            will have a transparent background.
+            (default: ``(255, 255, 255, 255)`` (white))
+    :param quiet_zone: Border around the QR code (also known as quiet zone)
+            (default: ``4``). Set to zero (``0``) if the code shouldn't
+            have a border.
+    :param debug: Inidicates if errors in the QR code should be added (as red
+            modules) to the output (default: ``False``).
+    """
+    import png
+
+    # Coerce scale parameter into an integer
+    try:
+        scale = int(scale)
+    except ValueError:
+        raise ValueError('The scale parameter must be an integer')
+
+    def scale_code(size):
+        """To perform the scaling we need to inflate the number of bits.
+        The PNG library expects all of the bits when it draws the PNG.
+        Effectively, we double, triple, etc. the number of columns and
+        the number of rows.
+        """
+        # This is one row's worth of each possible module
+        # PNG's use 0 for black and 1 for white, this is the
+        # reverse of the QR standard
+        black = [0] * scale
+        white = [1] * scale
+
+        # Tuple to lookup colors
+        # The 3rd color is the module_color unless "debug" is enabled
+        colors = (white, black, (([2] * scale) if debug else black))
+
+        # Whitespace added on the left and right side
+        border_module = white * quiet_zone
+        # This is the row to show up at the top and bottom border
+        border_row = [1] * size
+
+        # Add scale rows before the code as a border, as per the standard
+        for i in range(quiet_zone * scale):
+            yield border_row
+        # Add each row of the to the final PNG bits
+        for row in code:
+            r = tuple(itertools.chain(border_module,
+                                      itertools.chain(*(colors[bit if bit in (0, 1) else 2] for bit in row)),
+                                      border_module))
+            for i in range(scale):
+                yield r
+        # Bottom quiet zone
+        for i in range(quiet_zone * scale):
+            yield border_row
+
+    def png_pallete_color(color):
+        """This creates a palette color from a list or tuple. The list or
+        tuple must be of length 3 (for rgb) or 4 (for rgba). The values
+        must be between 0 and 255. Note rgb colors will be given an added
+        alpha component set to 255.
+        The pallete color is represented as a list, this is what is returned.
+        """
+        if color is None:
+            return ()
+        if not isinstance(color, (tuple, list)):
+            r, g, b = _hex_to_rgb(color)
+            return r, g, b, 255
+        rgba = []
+        if not (3 <= len(color) <= 4):
+            raise ValueError('Colors must be a list or tuple of length '
+                             ' 3 or 4. You passed in "{0}".'.format(color))
+        for c in color:
+            c = int(c)
+            if 0 <= c <= 255:
+                rgba.append(int(c))
+            else:
+                raise ValueError('Color components must be between 0 and 255')
+        # Make all colors have an alpha channel
+        if len(rgba) == 3:
+            rgba.append(255)
+        return tuple(rgba)
+
+    if module_color is None:
+        raise ValueError('The module_color must not be None')
+
+    bitdepth = 1
+    # foreground aka module color
+    fg_col = png_pallete_color(module_color)
+    transparent = background is None
+    # If background color is set to None, the inverse color of the
+    # foreground color is calculated
+    bg_col = png_pallete_color(background) if background is not None else tuple([255 - c for c in fg_col])
+    # Assume greyscale if module color is black and background color is white
+    greyscale = fg_col[:3] == (0, 0, 0) and (not debug and transparent or bg_col == (255, 255, 255, 255))
+    transparent_color = 1 if transparent and greyscale else None
+    palette = [fg_col, bg_col] if not greyscale else None
+    if debug:
+        # Add "red" as color for error modules
+        palette.append((255, 0, 0, 255))
+        bitdepth = 2
+
+    # The size of the PNG
+    width, height = _get_symbol_size(version, scale, quiet_zone)
+    # We need to increase the size of the code to match up to the
+    # scale parameter.
+    code_rows = scale_code(width)
+    # Write out the PNG
+    with _writable(file, 'wb') as f:
+        w = png.Writer(width=width, height=height, greyscale=greyscale,
+                       transparent=transparent_color, palette=palette,
+                       bitdepth=bitdepth)
+        w.write_passes(f, code_rows)
+
+
 def _eps(code, version, file_or_path, scale=1, module_color=(0, 0, 0),
               background=None, quiet_zone=4):
     """This function writes the QR code out as an EPS document. The

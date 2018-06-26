@@ -41,6 +41,8 @@ Examples:
         >>> number.png('big-number.png')
 """
 from __future__ import absolute_import, division, print_function, with_statement, unicode_literals
+import io
+import base64
 import pyqrcode.tables
 import pyqrcode.builder as builder
 try:  # pragma: no cover
@@ -483,10 +485,9 @@ class QRCode:
                          module_color=(0x66, 0x33, 0x0),      # Dark brown
                          background=(0xff, 0xff, 0xff, 0x88)) # 50% transparent white
         """
-        import segno
-        segno.writers.write_png(self.code, version=self.version, out=file,
-                                scale=scale, color=module_color,
-                                background=background, border=quiet_zone)
+        builder._png(self.code, self.version, file, scale=scale,
+                     module_color=module_color, background=background,
+                     quiet_zone=quiet_zone)
 
     def png_as_base64_str(self, scale=1, module_color=(0, 0, 0, 255),
                           background=(255, 255, 255, 255), quiet_zone=4):
@@ -523,12 +524,12 @@ class QRCode:
 
         :rtype: str
         """
-        import segno
-        return segno.writers.as_png_data_uri(self.code, version=self.version,
-                                             scale=scale, color=module_color,
-                                             background=background,
-                                             border=quiet_zone)
-        
+        buff = io.BytesIO()
+        self.png(file=buff, scale=scale, module_color=module_color,
+                 background=background, quiet_zone=quiet_zone)
+        return 'data:image/png;base64,{0}' \
+                .format(base64.b64encode(buff.getvalue()).decode('ascii'))
+
     def xbm(self, scale=1, quiet_zone=4):
         """Returns a string representing an XBM image of the QR code.
         The XBM format is a black and white image format that looks like a

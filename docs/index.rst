@@ -10,7 +10,7 @@ Unlike many other generators, all of the automation can be controlled manually.
 You are free to set any or all of the properties of your QR code.
 
 QR codes can be saved as SVG, EPS, PNG (by using the
-`pypng <https://pypi.python.org/pypi/pypng/>`_ module), and plain text. PIL is
+`pypng <https://pypi.org/project/pypng/>`_ module), and plain text. PIL is
 not used to render the image files. You can also display a QR code directly in
 a compatible terminal.
 
@@ -34,7 +34,7 @@ Requirements
 ============
 
 The pyqrcode module only requires Python 2.6, 2.7, 3.x. You may want to
-install `pypng <https://pypi.python.org/pypi/pypng/>`_ in order to render PNG
+install `pypng <https://pypi.org/project/pypng/>`_ in order to render PNG
 files, but it is optional. Note, pypng is a pure python PNG writer which does
 not require any other libraries.
 

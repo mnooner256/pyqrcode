@@ -16,8 +16,6 @@ Changes
 * Deprecated QRCode.png_as_base64_str(), use QRCode.png_data_uri() which returns
   a valid URI instead of a Base64 encoded string
 * Faster PNG generation, fixed <https://github.com/mnooner256/pyqrcode/pull/47>
-* Replaced PyPNG with Segno's PNG generator to improve PNG generation further
-  (speed and file size)
 * Added CLI
   Fixed #4 and <https://github.com/mnooner256/pyqrcode/pull/53>
 
