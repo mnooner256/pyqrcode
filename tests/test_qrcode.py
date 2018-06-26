@@ -3,8 +3,8 @@
 Different tests against the PyQRCode package.
 """
 from __future__ import unicode_literals
-from nose.tools import eq_, raises, ok_
 import pyqrcode
+import pytest
 
 
 _DATA_AUTODETECT = (
@@ -27,20 +27,16 @@ _DATA_AUTODETECT = (
 )
 
 
-def test_valid_mode_autodetection():
-    def check(data, expected_mode):
-        qr = pyqrcode.create(data)
-        eq_(expected_mode, qr.mode)
-    for data, mode in _DATA_AUTODETECT:
-        yield check, data, mode
+@pytest.mark.parametrize('data, expected_mode', _DATA_AUTODETECT)
+def test_valid_mode_autodetection(data, expected_mode):
+    qr = pyqrcode.create(data)
+    assert expected_mode == qr.mode
 
 
-def test_valid_mode_provided():
-    def check(data, mode):
-        qr = pyqrcode.create(data, mode=mode)
-        eq_(mode, qr.mode)
-    for data, mode in _DATA_AUTODETECT:
-        yield check, data, mode
+@pytest.mark.parametrize('data, expected_mode', _DATA_AUTODETECT)
+def test_valid_mode_provided(data, expected_mode):
+    qr = pyqrcode.create(data, mode=expected_mode)
+    assert expected_mode == qr.mode
 
 
 _DATA_INVALID_MODE = (
@@ -55,18 +51,16 @@ _DATA_INVALID_MODE = (
 )
 
 
-def test_invalid_mode_provided():
-    @raises(ValueError)
-    def check(data, mode):
+@pytest.mark.parametrize('data, mode', _DATA_INVALID_MODE)
+def test_invalid_mode_provided(data, mode):
+    with pytest.raises(ValueError):
         pyqrcode.create(data, mode=mode)
-    for data, mode in _DATA_INVALID_MODE:
-        yield check, data, mode
 
 
 def test_binary_data():
     qr = pyqrcode.create('Märchenbuch'.encode('utf-8'), encoding='utf-8')
-    eq_('Märchenbuch', qr.data)
-    eq_('binary', qr.mode)
+    assert 'Märchenbuch' == qr.data
+    assert 'binary' == qr.mode
 
 
 def test_unicode_utf8():
@@ -77,13 +71,15 @@ def test_unicode_utf8():
     except ValueError:
         pass
     qr = pyqrcode.create(s, encoding='utf-8')
-    eq_('binary', qr.mode)
+    assert 'binary' == qr.mode
+
 
 def test_kanji_detection():
     s = '点茗' #Characters directly from the standard
     qr = pyqrcode.create(s)
-    eq_('kanji', qr.mode)
-    eq_(s.encode('shiftjis'), qr.builder.data)
+    assert 'kanji' == qr.mode
+    assert s.encode('shiftjis') == qr.builder.data
+
 
 def test_kanji_encoding():
     s = '点茗' #Characters directly from the standard
@@ -99,10 +95,10 @@ def test_kanji_encoding():
 
     #Convert the data into integer bytes
     b = [int(bin_words[i:i+8], base=2) for i in range(0, len(bin_words), 8)]
-
     #See if the calculated code matches the known code
-    eq_(b, codewords)
-    
+    assert b == codewords
+
+
 def test_kanji_tranform_encoding():
     """Test the encoding can be set to shiftjis for utf-8 encoding.
     """
@@ -111,73 +107,73 @@ def test_kanji_tranform_encoding():
     
     #Encode the string as utf-8 *not* shiftjis
     utf8 = s.encode('utf-8')
-    
     qr = pyqrcode.create(utf8, encoding='utf-8')
-    
-    eq_(qr.mode, 'kanji')
-    eq_(qr.encoding, 'shiftjis')
+    assert qr.mode == 'kanji'
+    assert qr.encoding == 'shiftjis'
     
 
 def test_kanji_enforce_binary():
     data = '点'
     # 1. Try usual mode --> kanji
     qr = pyqrcode.create(data)
-    eq_('kanji', qr.mode)
+    assert 'kanji' == qr.mode
     # 2. Try another encoding --> binary
     qr = pyqrcode.create(data, mode='binary', encoding='utf-8')
-    eq_('binary', qr.mode)
+    assert 'binary' == qr.mode
 
 
 def test_kanji_enforce_binary2():
     data = '点'
     qr = pyqrcode.create(data.encode('utf-8'))
-    eq_('binary', qr.mode)
+    assert 'binary' == qr.mode
 
 
 def test_kanji_bytes():
     data = '外来語'
     qr = pyqrcode.create(data.encode('shift_jis'))
-    eq_('kanji', qr.mode)
+    assert 'kanji' == qr.mode
+
 
 def test_to_str():
     s = 'Märchen'
-    ok_(str(pyqrcode.create(s)))
+    assert str(pyqrcode.create(s))
 
     s = '外来語'
     qr = pyqrcode.create(s)
-    ok_(str(pyqrcode.create(s)))
+    assert str(pyqrcode.create(s))
 
 
-@raises(ValueError)
 def test_invalid_version():
-    pyqrcode.create('test', version=41)
+    with pytest.raises(ValueError):
+        pyqrcode.create('test', version=41)
 
 
-@raises(ValueError)
 def test_invalid_version2():
-    pyqrcode.create('test', version=0)
+    with pytest.raises(ValueError):
+        pyqrcode.create('test', version=0)
 
 
-@raises(ValueError)
 def test_invalid_mode():
-    pyqrcode.create('test', mode='alpha')
+    with pytest.raises(ValueError):
+        pyqrcode.create('test', mode='alpha')
 
 
-@raises(ValueError)
 def test_invalid_mode2():
-    pyqrcode.create('test', mode='')
+    with pytest.raises(ValueError):
+        pyqrcode.create('test', mode='')
 
 
-@raises(ValueError)
 def test_kanji_not_supported():
-    pyqrcode.create('test', mode='kanji')
+    with pytest.raises(ValueError):
+        pyqrcode.create('test', mode='kanji')
 
 
-@raises(ValueError)
 def test_invalid_ecc():
-    pyqrcode.create('test', error='R')
+    with pytest.raises(ValueError):
+        pyqrcode.create('test', error='R')
 
 
 if __name__ == '__main__':
-    import nose
-    nose.core.runmodule()
+    import pytest
+    pytest.main([__file__])
+

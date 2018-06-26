@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 # Copyright (c) 2013, Michael Nooner
+# Copyright (c) 2018, Lars Heuer
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -62,16 +63,6 @@ ascii_codes = {'0': 0, '1': 1, '2': 2, '3': 3, '4': 4, '5': 5, '6': 6, '7': 7,
                'T': 29, 'U': 30, 'V': 31, 'W': 32, 'X': 33, 'Y': 34, 'Z': 35,
                ' ': 36, '$': 37, '%': 38, '*': 39, '+': 40, '-': 41, '.': 42,
                '/': 43, ':': 44}
-
-#: This array specifies the size of a QR Code in pixels. These numbers are
-#: defined in the standard. The indexes correspond to the QR Code's
-#: version number. This array was taken from:
-#:
-#: http://www.denso-wave.com/qrcode/vertable1-e.html
-version_size = [None, 21, 25, 29, 33, 37, 41, 45, 49, 53, 57,
-                61, 65, 69, 73, 77, 81, 85, 89, 93, 97,
-                101, 105, 109, 113, 117, 121, 125, 129, 133, 137,
-                141, 145, 149, 153, 157, 161, 165, 169, 173, 177]
 
 #: This dictionary lists the data capacity for all possible QR Codes.
 #: This dictionary is organized where the first key corresponds to the
@@ -632,8 +623,8 @@ galois_antilog = [
 #:
 #: http://www.thonky.com/qr-code-tutorial/part-3-mask-pattern/
 position_adjustment = [
-    None,               #There is not version 0
-    None,               #Version 1 does not need adjustment
+    None,               # There is not version 0
+    None,               # Version 1 does not need adjustment
     [6, 18, ],
     [6, 22, ],
     [6, 26, ],

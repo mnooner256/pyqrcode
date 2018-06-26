@@ -5,54 +5,54 @@ Tests against EPS generation.
 from __future__ import absolute_import, unicode_literals
 import re
 import io
-from nose.tools import ok_, raises
+import pytest
 import pyqrcode
 
 
-@raises(ValueError)
 def test_illegal_color_float():
     color = (.1, 1.1, .1)
     qr = pyqrcode.create('test')
     out = io.StringIO()
-    qr.eps(out, module_color=color)
+    with pytest.raises(ValueError):
+        qr.eps(out, module_color=color)
 
 
-@raises(ValueError)
 def test_illegal_color_float2():
     color = (-.1, 1.0, .1)
     qr = pyqrcode.create('test')
     out = io.StringIO()
-    qr.eps(out, module_color=color)
+    with pytest.raises(ValueError):
+        qr.eps(out, module_color=color)
 
 
-@raises(ValueError)
 def test_illegal_color_int():
     color = (255, 255, 256)
     qr = pyqrcode.create('test')
     out = io.StringIO()
-    qr.eps(out, module_color=color)
+    with pytest.raises(ValueError):
+        qr.eps(out, module_color=color)
 
 
-@raises(ValueError)
 def test_illegal_color_int2():
     color = (-1, 1, 1)
     qr = pyqrcode.create('test')
     out = io.StringIO()
-    qr.eps(out, module_color=color)
+    with pytest.raises(ValueError):
+        qr.eps(out, module_color=color)
 
 
 def test_default_color():
     qr = pyqrcode.create('test')
     out = io.StringIO()
     qr.eps(out)
-    ok_('setrgbcolor' not in out.getvalue())
+    assert 'setrgbcolor' not in out.getvalue()
 
 
 def test_module_color():
     qr = pyqrcode.create('test')
     out = io.StringIO()
     qr.eps(out, module_color='#195805')
-    ok_('setrgbcolor' in out.getvalue())
+    assert 'setrgbcolor' in out.getvalue()
 
 
 def test_module_color_omit_black():
@@ -60,29 +60,29 @@ def test_module_color_omit_black():
     out = io.StringIO()
     # Black does not need setrgbcolor since it is the default stroke color
     qr.eps(out, module_color='#000')
-    ok_('setrgbcolor' not in out.getvalue())
+    assert 'setrgbcolor' not in out.getvalue()
 
 
 def test_background():
     qr = pyqrcode.create('test')
     out = io.StringIO()
     qr.eps(out, background='#EEE')
-    ok_('setrgbcolor' in out.getvalue())
-    ok_('clippath' in out.getvalue())
+    assert 'setrgbcolor' in out.getvalue()
+    assert 'clippath' in out.getvalue()
 
 
 def test_default_scale():
     qr = pyqrcode.create('test')
     out = io.StringIO()
     qr.eps(out)
-    ok_('scale' not in out.getvalue())
+    assert 'scale' not in out.getvalue()
 
 
 def test_scale():
     qr = pyqrcode.create('test')
     out = io.StringIO()
     qr.eps(out, scale=2)
-    ok_('2 2 scale' in out.getvalue())
+    assert '2 2 scale' in out.getvalue()
 
 
 def test_scale_float():
@@ -90,7 +90,7 @@ def test_scale_float():
     out = io.StringIO()
     scale = 1.34
     qr.eps(out, scale=scale)
-    ok_('{0} {0} scale'.format(scale) in out.getvalue())
+    assert '{0} {0} scale'.format(scale) in out.getvalue()
 
 
 def eps_as_matrix(buff, quiet_zone):
@@ -126,5 +126,5 @@ def eps_as_matrix(buff, quiet_zone):
 
 
 if __name__ == '__main__':
-    import nose
-    nose.core.runmodule()
+    import pytest
+    pytest.main([__file__])

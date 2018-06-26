@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 # Copyright (c) 2013, Michael Nooner
+# Copyright (c) 2018, Lars Heuer
 # All rights reserved.
 
 # Redistribution and use in source and binary forms, with or without
@@ -39,17 +40,22 @@ Examples:
         >>> number = pyqrcode.create(123456789012345)
         >>> number.png('big-number.png')
 """
-
-#Imports required for 2.7 support
 from __future__ import absolute_import, division, print_function, with_statement, unicode_literals
-
+import sys
+import io
+import base64
 import pyqrcode.tables
 import pyqrcode.builder as builder
-
-try:
+try:  # pragma: no cover
     str = unicode  # Python 2
 except NameError:
     pass
+
+# <https://wiki.python.org/moin/PortingToPy3k/BilingualQuickRef#New_Style_Classes>
+__metaclass__ = type
+
+__version__ = '1.3.0'
+
 
 def create(content, error='H', version=None, mode=None, encoding=None):
     """When creating a QR code only the content to be encoded is required,
@@ -110,6 +116,7 @@ def create(content, error='H', version=None, mode=None, encoding=None):
     """
     return QRCode(content, error, version, mode, encoding)
 
+
 class QRCode:
     """This class represents a QR code. To use this class simply give the
     constructor a string representing the data to be encoded, it will then
@@ -132,14 +139,14 @@ class QRCode:
     """
     def __init__(self, content, error='H', version=None, mode=None,
                  encoding='iso-8859-1'):
-        #Guess the mode of the code, this will also be used for
-        #error checking
-        guessed_content_type, encoding = self._detect_content_type(content, encoding)
+        # Guess the mode of the code, this will also be used for
+        # error checking
+        guessed_content_type, encoding = QRCode._detect_content_type(content, encoding)
         
         if encoding is None:
             encoding = 'iso-8859-1'
 
-        #Store the encoding for use later
+        # Store the encoding for use later
         if guessed_content_type == 'kanji':
             self.encoding = 'shiftjis'
         else:
@@ -152,63 +159,63 @@ class QRCode:
                 raise ValueError("Illegal version {0}, version must be between "
                                  "1 and 40.".format(version))
 
-        #Decode a 'byte array' contents into a string format
+        # Decode a 'byte array' contents into a string format
         if isinstance(content, bytes):
             self.data = content.decode(encoding)
 
-        #Give a string an encoding
+        # Give a string an encoding
         elif hasattr(content, 'encode'):
             self.data = content.encode(self.encoding)
 
-        #The contents are not a byte array or string, so
-        #try naively converting to a string representation.
+        # The contents are not a byte array or string, so
+        # try naively converting to a string representation.
         else:
             self.data = str(content)  # str == unicode in Py 2.x, see file head
 
-        #Force a passed in mode to be lowercase
+        # Force a passed in mode to be lowercase
         if hasattr(mode, 'lower'):
             mode = mode.lower()
 
-        #Check that the mode parameter is compatible with the contents
+        # Check that the mode parameter is compatible with the contents
         if mode is None:
-            #Use the guessed mode
+            # Use the guessed mode
             self.mode = guessed_content_type
             self.mode_num = tables.modes[self.mode]
         elif mode not in tables.modes.keys():
-            #Unknown mode
+            # Unknown mode
             raise ValueError('{0} is not a valid mode.'.format(mode))
         elif guessed_content_type == 'binary' and \
              tables.modes[mode] != tables.modes['binary']:
-            #Binary is only guessed as a last resort, if the
-            #passed in mode is not binary the data won't encode
+            # Binary is only guessed as a last resort, if the
+            # passed in mode is not binary the data won't encode
             raise ValueError('The content provided cannot be encoded with '
                              'the mode {}, it can only be encoded as '
                              'binary.'.format(mode))
         elif tables.modes[mode] == tables.modes['numeric'] and \
              guessed_content_type != 'numeric':
-            #If numeric encoding is requested make sure the data can
-            #be encoded in that format
+            # If numeric encoding is requested make sure the data can
+            # be encoded in that format
             raise ValueError('The content cannot be encoded as numeric.')
         elif tables.modes[mode] == tables.modes['kanji'] and \
              guessed_content_type != 'kanji':
             raise ValueError('The content cannot be encoded as kanji.')
         else:
-            #The data should encode with the passed in mode
+            # The data should encode with the passed in mode
             self.mode = mode
             self.mode_num = tables.modes[self.mode]
 
-        #Check that the user passed in a valid error level
+        # Check that the user passed in a valid error level
         if error in tables.error_level.keys():
             self.error = tables.error_level[error]
         else:
             raise ValueError('{0} is not a valid error '
                              'level.'.format(error))
 
-        #Guess the "best" version
+        # Guess the "best" version
         self.version = self._pick_best_fit(self.data)
 
-        #If the user supplied a version, then check that it has
-        #sufficient data capacity for the contents passed in
+        # If the user supplied a version, then check that it has
+        # sufficient data capacity for the contents passed in
         if version:
             if version >= self.version:
                 self.version = version
@@ -218,26 +225,26 @@ class QRCode:
                                  'level (the code must be at least a '
                                  'version {}).'.format(version, self.version))
 
-        #Build the QR code
+        # Build the QR code
         self.builder = builder.QRCodeBuilder(data=self.data,
                                              version=self.version,
                                              mode=self.mode,
                                              error=self.error)
-
-        #Save the code for easier reference
+        # Save the code for easier reference
         self.code = self.builder.code
 
     def __str__(self):
         return repr(self)
 
     def __unicode__(self):
-        return self.__repr__()
+        return self.__str__()
 
     def __repr__(self):
         return "QRCode(content={0}, error='{1}', version={2}, mode='{3}')" \
                 .format(repr(self.data), self.error, self.version, self.mode)
 
-    def _detect_content_type(self, content, encoding):
+    @staticmethod
+    def _detect_content_type(content, encoding):
         """This method tries to auto-detect the type of the data. It first
         tries to see if the data is a valid integer, in which case it returns
         numeric. Next, it tests the data to see if it is 'alphanumeric.' QR
@@ -261,22 +268,22 @@ class QRCode:
                 else:
                     return b
 
-            #Go through the data by looping to every other character
+            # Go through the data by looping to every other character
             for i in range(0, len(c), 2):
                 yield (next_byte(c[i]) << 8) | next_byte(c[i+1])
 
-        #See if the data is a number
+        # See if the data is a number
         try:
             if str(content).isdigit():
                 return 'numeric', encoding
         except (TypeError, UnicodeError):
             pass
 
-        #See if that data is alphanumeric based on the standards
-        #special ASCII table
+        # See if that data is alphanumeric based on the standards
+        # special ASCII table
         valid_characters = ''.join(tables.ascii_codes.keys())
         
-        #Force the characters into a byte array
+        # Force the characters into a byte array
         valid_characters = valid_characters.encode('ASCII')
 
         try:
@@ -288,10 +295,10 @@ class QRCode:
             if all(map(lambda x: x in valid_characters, c)):
                 return 'alphanumeric', 'ASCII'
 
-        #This occurs if the content does not contain ASCII characters.
-        #Since the whole point of the if statement is to look for ASCII
-        #characters, the resulting mode should not be alphanumeric.
-        #Hence, this is not an error.
+        # This occurs if the content does not contain ASCII characters.
+        # Since the whole point of the if statement is to look for ASCII
+        # characters, the resulting mode should not be alphanumeric.
+        # Hence, this is not an error.
         except TypeError:
             pass
         except UnicodeError:
@@ -301,32 +308,33 @@ class QRCode:
             if isinstance(content, bytes):
                 if encoding is None:
                     encoding = 'shiftjis'
-
                 c = content.decode(encoding).encode('shiftjis')
             else:
                 c = content.encode('shiftjis')
             
-            #All kanji characters must be two bytes long, make sure the
-            #string length is not odd.
+            # All kanji characters must be two bytes long, make sure the
+            # string length is not odd.
             if len(c) % 2 != 0:
                 return 'binary', encoding
 
-            #Make sure the characters are actually in range.
+            # Take sure the characters are actually in range.
             for asint in two_bytes(c):
-                #Shift the two byte value as indicated by the standard
+                # Shift the two byte value as indicated by the standard
                 if not (0x8140 <= asint <= 0x9FFC or
                         0xE040 <= asint <= 0xEBBF):
                     return 'binary', encoding
-
             return 'kanji', encoding
-
         except UnicodeError:
-            #This occurs if the content does not contain Shift JIS kanji
-            #characters. Hence, the resulting mode should not be kanji.
-            #This is not an error.
+            # This occurs if the content does not contain Shift JIS kanji
+            # characters. Hence, the resulting mode should not be kanji.
+            # This is not an error.
             pass
-
-        #All of the other attempts failed. The content can only be binary.
+        except LookupError:
+            # This occurs if the host Python does not support Shift JIS kanji
+            # encoding. Hence, the resulting mode should not be kanji.
+            # This is not an error.
+            pass
+        # All of the other attempts failed. The content can only be binary.
         return 'binary', encoding
 
     def _pick_best_fit(self, content):
@@ -336,22 +344,21 @@ class QRCode:
         import math
         
         for version in range(1, 41):
-            #Get the maximum possible capacity
+            # Get the maximum possible capacity
             capacity = tables.data_capacity[version][self.error][self.mode_num]
             
-            #Check the capacity
-            #Kanji's count in the table is "characters" which are two bytes
+            # Check the capacity
+            # Kanji's count in the table is "characters" which are two bytes
             if (self.mode_num == tables.modes['kanji'] and
                 capacity >= math.ceil(len(content) / 2)):
                 return version
             if capacity >= len(content):
                 return version
-
         raise ValueError('The data will not fit in any QR code version '
                          'with the given encoding and error level.')
 
     def show(self, wait=1.2, scale=10, module_color=(0, 0, 0, 255),
-            background=(255, 255, 255, 255), quiet_zone=4):
+            background=(255, 255, 255, 255), quiet_zone=4):  # pragma: no cover
         """Displays this QR code.
 
         This method is mainly intended for debugging purposes.
@@ -387,9 +394,12 @@ class QRCode:
         webbrowser.open_new_tab(urljoin('file:', pathname2url(f.name)))
         time.sleep(wait)
         os.unlink(f.name)
-        
+
     def get_png_size(self, scale=1, quiet_zone=4):
-        """This is method helps users determine what *scale* to use when
+        """
+        DEPRECATED, use symbol_size()
+
+        This is method helps users determine what *scale* to use when
         creating a PNG of this QR code. It is meant mostly to be used in the
         console to help the user determine the pixel size of the code
         using various scales.
@@ -406,12 +416,30 @@ class QRCode:
 
         Example:
             >>> code = pyqrcode.QRCode("I don't like spam!")
-            >>> print(code.get_png_size(1))
-            31
-            >>> print(code.get_png_size(5))
-            155
+            >>> print(code.symbol_size(1))
+            (31, 31)
+            >>> print(code.symbol_size(5))
+            (155, 155)
         """
-        return builder._get_png_size(self.version, scale, quiet_zone)
+        import warnings
+        warnings.warn('This method is deprecated, use symbol_size()', category=DeprecationWarning)
+        return self.symbol_size(int(scale), quiet_zone)[0]
+
+    def symbol_size(self, scale=1, quiet_zone=4):
+        """\
+        Returns the symbol size (width x height) with the provided border and
+        scaling factor.
+
+        :param scale: Indicates the size of a single module (default: 1).
+                The size of a module depends on the used output format; i.e.
+                in a PNG context, a scaling factor of 2 indicates that a module
+                has a size of 2 x 2 pixel. Some outputs (i.e. SVG) accept
+                floating point values.
+        :type scale: int or float
+        :param int quiet_zone: The size of the quiet zone.
+        :rtype: tuple (width, height)
+        """
+        return builder._get_symbol_size(self.version, scale, quiet_zone)
 
     def png(self, file, scale=1, module_color=(0, 0, 0, 255),
             background=(255, 255, 255, 255), quiet_zone=4):
@@ -421,8 +449,7 @@ class QRCode:
         file path.
 
         .. note::
-            This method depends on the pypng module to actually create the
-            PNG file.
+            This method depends on Segno to actually create the PNG file.
 
         This method will write the given *file* out as a PNG file. The file
         can be either a string file path, or a writable stream. The file
@@ -456,15 +483,17 @@ class QRCode:
             >>> code = pyqrcode.create('Are you suggesting coconuts migrate?')
             >>> code.png('swallow.png', scale=5)
             >>> code.png('swallow.png', scale=5,
-                         module_color=(0x66, 0x33, 0x0),      #Dark brown
-                         background=(0xff, 0xff, 0xff, 0x88)) #50% transparent white
+                         module_color=(0x66, 0x33, 0x0),      # Dark brown
+                         background=(0xff, 0xff, 0xff, 0x88)) # 50% transparent white
         """
-        builder._png(self.code, self.version, file, scale,
-                     module_color, background, quiet_zone)
+        builder._png(self.code, self.version, file, scale=scale,
+                     module_color=module_color, background=background,
+                     quiet_zone=quiet_zone)
 
     def png_as_base64_str(self, scale=1, module_color=(0, 0, 0, 255),
                           background=(255, 255, 255, 255), quiet_zone=4):
-        """This method uses the png render and returns the PNG image encoded as
+        """DEPRECATED, use png_data_uri()
+        This method uses the png render and returns the PNG image encoded as
         base64 string. This can be useful for creating dynamic PNG images for
         web development, since no file needs to be created.
         
@@ -477,19 +506,31 @@ class QRCode:
         to that method's documentation for the meaning behind the parameters.
         
         .. note::
-            This method depends on the pypng module to actually create the
+            This method depends on the Segno package to actually create the
             PNG image.
 
         """
-        import io
-        import base64
-        
-        with io.BytesIO() as virtual_file:
-            self.png(file=virtual_file, scale=scale, module_color=module_color,
-                     background=background, quiet_zone=quiet_zone)
-            image_as_str = base64.b64encode(virtual_file.getvalue()).decode("ascii")
-        return image_as_str
-        
+        import warnings
+        warnings.warn('This method is deprecated, use png_data_uri', category=DeprecationWarning)
+        return self.png_data_uri(scale=scale, module_color=module_color,
+                                 background=background,
+                                 quiet_zone=quiet_zone).replace('data:image/png;base64,', '')
+
+    def png_data_uri(self, scale=1, module_color=(0, 0, 0, 255),
+                          background=(255, 255, 255, 255), quiet_zone=4):
+        """\
+        Converts the QR Code into a PNG data URI.
+
+        Uses the same keyword parameters as the usual PNG serializer.
+
+        :rtype: str
+        """
+        buff = io.BytesIO()
+        self.png(file=buff, scale=scale, module_color=module_color,
+                 background=background, quiet_zone=quiet_zone)
+        return 'data:image/png;base64,{0}' \
+                .format(base64.b64encode(buff.getvalue()).decode('ascii'))
+
     def xbm(self, scale=1, quiet_zone=4):
         """Returns a string representing an XBM image of the QR code.
         The XBM format is a black and white image format that looks like a
@@ -526,7 +567,7 @@ class QRCode:
         left settable because such a wide quiet zone is unnecessary in many
         applications where the QR code is not being printed.
         """
-        return builder._xbm(self.code, scale, quiet_zone)
+        return builder._xbm(self.code, self.version, scale, quiet_zone)
 
     def svg(self, file, scale=1, module_color='#000', background=None,
             quiet_zone=4, xmldecl=True, svgns=True, title=None,
@@ -582,9 +623,9 @@ class QRCode:
             >>> code.svg('live-organ-transplants.svg', scale=4,
                          module_color='brown', background='0xFFFFFF')
         """
-        builder._svg(self.code, self.version, file, scale=scale, 
+        builder._svg(self.code, self.version, file, scale=scale,
                      module_color=module_color, background=background,
-                     quiet_zone=quiet_zone, xmldecl=xmldecl, svgns=svgns, 
+                     quiet_zone=quiet_zone, xmldecl=xmldecl, svgns=svgns,
                      title=title, svgclass=svgclass, lineclass=lineclass,
                      omithw=omithw, debug=debug)
 
@@ -625,7 +666,9 @@ class QRCode:
 
     def terminal(self, module_color='default', background='reverse',
                  quiet_zone=4):
-        """This method returns a string containing ASCII escape codes,
+        """DEPRECATED, use term()
+
+        This method returns a string containing ASCII escape codes,
         such that if printed to a compatible terminal, it will display
         a vaild QR code. The code is printed using ASCII escape
         codes that alter the coloring of the background.
@@ -633,7 +676,7 @@ class QRCode:
         The *module_color* parameter sets what color to
         use for the data modules (the black part on most QR codes).
         Likewise, the *background* parameter sets what color to use
-        for the background (the white part on most QR codes).  
+        for the background (the white part on most QR codes).
 
         There are two options for colors. The first, and most widely
         supported, is to use the 8 or 16 color scheme. This scheme uses
@@ -642,7 +685,7 @@ class QRCode:
         yellow, blue, magenta, and cyan. There are an some additional
         named colors that are supported by most terminals: light gray,
         dark gray, light red, light green, light blue, light yellow,
-        light magenta, light cyan, and white. 
+        light magenta, light cyan, and white.
 
         There are two special named colors. The first is the
         "default" color. This color is the color the background of
@@ -668,14 +711,49 @@ class QRCode:
             >>> text = code.terminal()
             >>> print(text)
         """
-        return builder._terminal(self.code, module_color, background,
-                                 quiet_zone)
+        import warnings
+        warnings.warn('This method is deprecated, use term()', category=DeprecationWarning)
+        return builder._terminal_deprecated(self.code, module_color, background, quiet_zone)
 
-    def text(self, quiet_zone=4):
+    def term(self, file=None, quiet_zone=4):
+        """This method prints the QR code to the terminal.
+
+        The *file* parameter is used to specify where to write the document
+        to. It can either be a writable (text) stream or a file path.
+        If ``file`` is ``None`` (default) the code is written to ``sys.stdout``.
+
+        The *quiet_zone* parameter sets how wide the quiet zone around the code
+        should be. According to the standard this should be 4 modules. It is
+        left settable because such a wide quiet zone is unnecessary in many
+        applications.
+
+        Example:
+            >>> code = pyqrcode.create('Example')
+            >>> code.term()
+        """
+        if file is None and sys.platform == 'win32':  # pragma: no cover
+            # Windows < 10 does not support ANSI escape sequences, try to
+            # call the a Windows specific terminal output which uses the
+            # Windows API.
+            try:
+                builder._terminal_win(self.code, self.version, quiet_zone)
+            except OSError:
+                # Use the standard output even if it may print garbage
+                builder._terminal(self.code, self.version, sys.stdout,
+                                   quiet_zone)
+        else:
+            builder._terminal(self.code, self.version, file or sys.stdout,
+                                   quiet_zone)
+
+    def text(self, scale=1, quiet_zone=4):
         """This method returns a string based representation of the QR code.
         The data modules are represented by 1's and the background modules are
         represented by 0's. The main purpose of this method is to act a
         starting point for users to create their own renderers.
+
+        The *scale* parameter sets how large to draw a single module. By
+        default one value ("0" for a light module or "1" for a dark module)
+        is used to draw a single module.
 
         The *quiet_zone* parameter sets how wide the quiet zone around the code
         should be. According to the standard this should be 4 modules. It is
@@ -687,5 +765,5 @@ class QRCode:
             >>> text = code.text()
             >>> print(text)
         """
-        return builder._text(self.code, quiet_zone)
-
+        return builder._text(self.code, self.version, scale=scale,
+                             quiet_zone=quiet_zone)

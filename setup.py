@@ -1,4 +1,5 @@
 # Copyright (c) 2013, Michael Nooner
+# Copyright (c) 2018, Lars Heuer
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -23,39 +24,42 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 from setuptools import setup
-import sys, os.path, shutil
-
-version = '1.2.1'
-
-if sys.version_info < (2, 6, 0) and sys.version_info < (3, 0, 0):
-    sys.stderr.write("pyqrcode requires Python 2.6+ or 3.\n")
-    sys.exit(1)
+import os
+import re
+import io
 
 
-#Make the README.rst file the long description
-#This only happens when we are building from the
-#source.
-if os.path.exists('docs/README.rst'):
-    print('Reading README.rst file')
-    with open( 'docs/README.rst', 'r') as f:
-        longdesc = f.read()
-    shutil.copyfile('docs/README.rst', 'README.rst')
-else:
-    longdesc = None
+def read(*filenames, **kwargs):
+    base_path = os.path.dirname(os.path.realpath(__file__))
+    encoding = kwargs.get('encoding', 'utf-8')
+    sep = kwargs.get('sep', '\n')
+    buf = []
+    for filename in filenames:
+        with io.open(os.path.join(base_path, filename), encoding=encoding) as f:
+            buf.append(f.read())
+    return sep.join(buf)
 
-setup(name='PyQRCode',
-      packages=['pyqrcode'],
-      version=version,
-      description='A QR code generator written purely in Python with SVG, EPS, PNG and terminal output.',
-      author='Michael Nooner',
-      author_email='mnooner256@gmail.com',
-      url='https://github.com/mnooner256/pyqrcode',
-      keywords=['qrcode', 'qr'],
-      license='BSD',
-      extras_require = {
-        'PNG':  ["pypng>=0.0.13"],
-      },
-      classifiers = [
+
+version = re.search(r'''^__version__ = ["']([^'"]+)['"]''',
+                    read('pyqrcode/__init__.py'), flags=re.MULTILINE).group(1)
+
+
+setup(
+    name='PyQRCode',
+    packages=['pyqrcode'],
+    version=version,
+    long_description=read('README.rst', 'CHANGES.rst'),
+    description='A QR code generator written purely in Python with SVG, EPS, PNG and terminal output.',
+    author='Michael Nooner, Lars Heuer',
+    author_email='heuer@semagia.com',
+    url='https://github.com/heuer/pyqrcode',
+    keywords=['qrcode', 'qr'],
+    license='BSD',
+    extras_require={
+      'PNG':  ['pypng>=0.0.13'],
+    },
+    entry_points = {'console_scripts': ['pyqr = pyqrcode.cli:main']},
+    classifiers=[
         'Development Status :: 4 - Beta',
         'Environment :: Console',
         'Intended Audience :: Developers',
@@ -69,8 +73,4 @@ setup(name='PyQRCode',
         'Programming Language :: Python :: 2.6',
         'Programming Language :: Python :: 2.7',
         ],
-      long_description=longdesc,
 )
-
-if os.path.exists('docs/README.rst'):
-    os.remove('README.rst')

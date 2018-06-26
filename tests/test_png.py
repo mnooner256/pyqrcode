@@ -5,7 +5,7 @@ PNG related tests.
 from __future__ import unicode_literals, absolute_import
 import io
 import os
-from nose.tools import eq_, raises
+import pytest
 import pyqrcode
 import png
 
@@ -14,38 +14,62 @@ def test_get_png_size():
     code = pyqrcode.create('Hello world')
     qr_size = 25
     quiet_zone = 0
-    eq_(qr_size, code.get_png_size(1, quiet_zone=quiet_zone))
+    assert qr_size == code.get_png_size(1, quiet_zone=quiet_zone)
     quiet_zone = 1
-    eq_((qr_size + 2 * quiet_zone) * quiet_zone, code.get_png_size(1, quiet_zone=quiet_zone))
+    assert (qr_size + 2 * quiet_zone) * quiet_zone == code.get_png_size(1, quiet_zone=quiet_zone)
     quiet_zone = 4  # (default quiet_zone)
-    eq_((qr_size + 2 * quiet_zone) * 1, code.get_png_size())
-    eq_((qr_size + 2 * quiet_zone) * 1, code.get_png_size(1))
-    eq_((qr_size + 2 * quiet_zone) * 4, code.get_png_size(4))
+    assert (qr_size + 2 * quiet_zone) * 1 == code.get_png_size()
+    assert (qr_size + 2 * quiet_zone) * 1 ==  code.get_png_size(1)
+    assert (qr_size + 2 * quiet_zone) * 4 == code.get_png_size(4)
     quiet_zone = 0
-    eq_((qr_size + 2 * quiet_zone) * 4, code.get_png_size(4, quiet_zone=quiet_zone))
+    assert (qr_size + 2 * quiet_zone) * 4 == code.get_png_size(4, quiet_zone=quiet_zone)
 
 
-def test_get_png_size_scale_int():
+def test_symbol_size():
+    code = pyqrcode.create('Hello world')
+    dim = 25
+    quiet_zone = 0
+    assert (dim, dim) == code.symbol_size(1, quiet_zone=quiet_zone)
+    quiet_zone = 1
+    d = (dim + 2 * quiet_zone) * quiet_zone
+    assert (d, d) == code.symbol_size(1, quiet_zone=quiet_zone)
+    quiet_zone = 4  # (default quiet_zone)
+    d = (dim + 2 * quiet_zone) * 1
+    assert (d, d) == code.symbol_size()
+    assert (d, d) ==  code.symbol_size(1)
+    d = (dim + 2 * quiet_zone) * 4
+    assert d, d == code.symbol_size(4)
+    quiet_zone = 0
+    d = (dim + 2 * quiet_zone) * 4
+    assert (d, d) == code.symbol_size(4, quiet_zone=quiet_zone)
+
+
+def test_symbol_size_scale_int():
     qr = pyqrcode.create('test')
-    eq_(21, qr.get_png_size(scale=1, quiet_zone=0))
+    dim = 21
+    assert (dim, dim) == qr.symbol_size(scale=1, quiet_zone=0)
 
 
-def test_get_png_size_scale_int2():
+def test_symbol_size_scale_int2():
     qr = pyqrcode.create('test')
     quiet_zone = 2
-    eq_(21 + 2 * quiet_zone, qr.get_png_size(scale=1, quiet_zone=quiet_zone))
+    dim = 21 + 2 * quiet_zone
+    assert (dim, dim) == qr.symbol_size(scale=1, quiet_zone=quiet_zone)
 
 
-def test_get_png_size_scale_float():
+def test_symbol_size_scale_float():
     qr = pyqrcode.create('test')
-    eq_(21, qr.get_png_size(scale=1.5, quiet_zone=0))
+    dim = 21 * 1.5
+    assert (dim, dim) == qr.symbol_size(scale=1.5, quiet_zone=0)
 
 
-def test_get_png_size_scale_float2():
+def test_symbol_size_scale_float2():
     qr = pyqrcode.create('test')
     quiet_zone = 2
-    eq_(21 + 2 * quiet_zone, qr.get_png_size(scale=1.5, quiet_zone=quiet_zone))
-    
+    dim = (21 + 2 * quiet_zone) * 1.5
+    assert (dim, dim) == qr.symbol_size(scale=1.5, quiet_zone=quiet_zone)
+
+
 def test_png_as_base64_str():
     """\
     Test PNG to Base64 converions using a known Base64 string.
@@ -64,10 +88,34 @@ def test_png_as_base64_str():
                    "BBmqkPPtIdVc3Kj7aXal2lnzcD1gWRavu7aHLS2lsR0gw5tBrkcV52H6tu"\
                    "IbrfHK8Rhh2ulQxtXIR7JwOunbngpp5vCj0mRx+nLRVVfDcz6YqNeqHaqX"\
                    "hBN+tFYvs2EFvr78aIv+kf6Dm6Pdk09JdaJAAAAAElFTkSuQmCC"
-                   
-    qr = pyqrcode.create('Are you suggesting coconuts migrate?')
+
+    qr = pyqrcode.create('Are you suggesting coconuts migrate?', error='h')
     generated_str = qr.png_as_base64_str(scale=5)
-    eq_(generated_str, expected_str)
+    assert generated_str == expected_str
+
+
+def test_png_uri():
+    """\
+    Test PNG to Base64 converions using a known Base64 string.
+    """
+    expected_str = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAOEAAADhAQAAAAAWyO/XAAACIklEQVR4n"\
+                   "O2YMXKrQBBER6WAkCPsTaSLUbVU6WLmJhyBkIDSuLtXxtgu/8DBbwUiQMB"\
+                   "TMMzsdM8S+Y9jjBd90b/SJSJOS831upyzu/e3zDc86sy0Zk7LUPKtHyMu/"\
+                   "RbdhIDddMAtws17REH0Q8FtlGeguZX10ufcMYn5PDSQSSRR9X0Gqvqec2U"\
+                   "S1xOe/ay+gaoXVNWP049O+f9UB9KJ0znjmre5+64qDsqWREERZzCTG35Za"\
+                   "TNlkE3IkkJWZ572mE2U637iWuMDLL06U0bmzkwRZFJj78gf6ptzC9xLkUk"\
+                   "2J8uLSCG0sbLSnZmOAYOsLYkSD5jSba++jZZ81PeW6wVJXIMeYKZb7AoyB"\
+                   "00JHpB7fU2Ui58tidOAnDKxgavOS9mXV7mQTAnplIKYKTQCLSkrOiOTqu/"\
+                   "hjVwULXnpR81csTa/zKN3eyi88bRoHAzOOePjyk4RMyRN4oHmpIHv/eGi1"\
+                   "A32AiQjPlrj4N0mSpdsVsQ5DMMEZotPNXPRFnM0jaWaJSW3mCmnB6w1Chk"\
+                   "kg9NhnKQmXspZXt7N/E34C3Zodc+zi3LBAdAg24ZDs0WaKfSU9dXmJx+T9"\
+                   "BBmqkPPtIdVc3Kj7aXal2lnzcD1gWRavu7aHLS2lsR0gw5tBrkcV52H6tu"\
+                   "IbrfHK8Rhh2ulQxtXIR7JwOunbngpp5vCj0mRx+nLRVVfDcz6YqNeqHaqX"\
+                   "hBN+tFYvs2EFvr78aIv+kf6Dm6Pdk09JdaJAAAAAElFTkSuQmCC"
+
+    qr = pyqrcode.create('Are you suggesting coconuts migrate?', error='h')
+    generated_str = qr.png_data_uri(scale=5)
+    assert expected_str == generated_str
 
 
 _REF_DATA = (
@@ -85,7 +133,8 @@ _REF_DATA = (
 )
 
 
-def test_write_png():
+@pytest.mark.parametrize('s, error_level, encoding, expected_mode, reference', _REF_DATA)
+def test_write_png(s, error_level, encoding, expected_mode, reference):
     #
     # How does it work?
     #
@@ -103,54 +152,50 @@ def test_write_png():
     # If a generated image isn't equal to the reference file, the error message
     # isn't very helpful, though.
     #
-    def check(s, error_level, encoding, expected_mode, reference):
-        qr = pyqrcode.create(s, error=err, encoding=encoding)
-        eq_(error_level, qr.error)
-        eq_(expected_mode, qr.mode)
-        scale, quiet_zone = 6, 4
-        # Read reference image
-        ref_width, ref_height, ref_pixels = _get_png_info(filename=_get_reference_filename(reference))
-        # Create our image
-        out = io.BytesIO()
-        qr.png(out, scale=scale, quiet_zone=quiet_zone)
-        out.seek(0)
-        # Excpected width/height
-        expected_width = qr.get_png_size(scale, quiet_zone)
-        # Read created image
-        width, height, pixels = _get_png_info(file=out)
-        eq_(expected_width, ref_width)
-        eq_(expected_width, ref_height)
-        eq_(ref_width, width)
-        eq_(ref_height, height)
-        eq_(len(ref_pixels), len(pixels))
-        eq_(ref_pixels, pixels)
-
-    for s, err, encoding, mode, ref in _REF_DATA:
-        yield check, s, err, encoding, mode, ref
+    qr = pyqrcode.create(s, error=error_level, encoding=encoding)
+    assert error_level == qr.error
+    assert expected_mode == qr.mode
+    scale, quiet_zone = 6, 4
+    # Read reference image
+    ref_width, ref_height, ref_pixels = _get_png_info(filename=_get_reference_filename(reference))
+    # Create our image
+    out = io.BytesIO()
+    qr.png(out, scale=scale, quiet_zone=quiet_zone)
+    out.seek(0)
+    # Excpected width/height
+    expected_width, expected_height = qr.symbol_size(scale, quiet_zone)
+    # Read created image
+    width, height, pixels = _get_png_info(file=out)
+    assert expected_width == ref_width
+    assert expected_height == ref_height
+    assert ref_width == width
+    assert ref_height == height
+    assert len(ref_pixels) == len(pixels)
+    assert ref_pixels == pixels
 
 
-@raises(ValueError)
 def test_hexcolor_too_short():
     qr = pyqrcode.create('test')
-    qr.png(io.BytesIO(), module_color='#FFFFF')
+    with pytest.raises(ValueError):
+        qr.png(io.BytesIO(), module_color='#FFFFF')
 
 
-@raises(ValueError)
 def test_hexcolor_too_short_background():
     qr = pyqrcode.create('test')
-    qr.png(io.BytesIO(), background='#FFFFF')
+    with pytest.raises(ValueError):
+        qr.png(io.BytesIO(), background='#FFFFF')
 
 
-@raises(ValueError)
 def test_hexcolor_too_long():
     qr = pyqrcode.create('test')
-    qr.png(io.BytesIO(), module_color='#0000000')
+    with pytest.raises(ValueError):
+        qr.png(io.BytesIO(), module_color='#0000000')
 
 
-@raises(ValueError)
 def test_hexcolor_too_long_background():
     qr = pyqrcode.create('test')
-    qr.png(io.BytesIO(), background='#0000000')
+    with pytest.raises(ValueError):
+        qr.png(io.BytesIO(), background='#0000000')
 
 
 def png_as_matrix(buff, quiet_zone):
@@ -216,5 +261,4 @@ def _get_png_info(**kw):
 
 
 if __name__ == '__main__':
-    import nose
-    nose.core.runmodule()
+    pytest.main([__file__])
