@@ -7,9 +7,9 @@
 # License: BSD License
 #
 """\
-Command line script to generate QR Codes with Segno.
+Command line script to generate QR Codes with PyQRCode.
 
-"QR Code" and "Micro QR Code" are registered trademarks of DENSO WAVE INCORPORATED.
+"QR Code" is a registered trademark of DENSO WAVE INCORPORATED.
 """
 from __future__ import absolute_import, unicode_literals
 import os
