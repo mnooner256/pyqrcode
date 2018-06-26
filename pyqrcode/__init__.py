@@ -567,7 +567,7 @@ class QRCode:
         left settable because such a wide quiet zone is unnecessary in many
         applications where the QR code is not being printed.
         """
-        return builder._xbm(self.code, scale, quiet_zone)
+        return builder._xbm(self.code, self.version, scale, quiet_zone)
 
     def svg(self, file, scale=1, module_color='#000', background=None,
             quiet_zone=4, xmldecl=True, svgns=True, title=None,

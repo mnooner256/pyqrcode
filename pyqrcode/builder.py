@@ -907,44 +907,28 @@ def _text(code, version, scale=1, quiet_zone=4):
     return buf.getvalue()
 
 
-def _xbm(code, scale=1, quiet_zone=4):
+def _xbm(code, version, scale=1, quiet_zone=4):
     """This function will format the QR code as a X BitMap.
     This can be used to display the QR code with Tkinter.
     """
+    row_iter = _matrix_iter(code, version, scale, quiet_zone)
+    width, height = _get_symbol_size(version, scale=scale, quiet_zone=quiet_zone)
     buf = io.StringIO()
-    # Calculate the width in pixels
-    pixel_width = (len(code[0]) + quiet_zone * 2) * scale
-    # Add the size information and open the pixel data section
-    buf.write('#define im_width ')
-    buf.write(str(pixel_width))
-    buf.write('\n')
-    buf.write('#define im_height ')
-    buf.write(str(pixel_width))
-    buf.write('\n')
-    buf.write('static char im_bits[] = {\n')
-    # Calculate the number of bytes per row
-    byte_width = int(math.ceil(pixel_width / 8.0))
-    # Add the top quiet zone
-    buf.write(('0x00,' * byte_width + '\n') * quiet_zone * scale)
-    for row in code:
-        # Add the left quiet zone
-        row_bits = '0' * quiet_zone * scale
-        # Add the actual QR code
-        for pixel in row:
-            row_bits += str(pixel) * scale
-        # Add the right quiet zone
-        row_bits += '0' * quiet_zone * scale
-        # Format the row
-        formated_row = ''
-        for b in range(byte_width):
-            formated_row += '0x{0:02x},'.format(int(row_bits[:8][::-1], 2))
-            row_bits = row_bits[8:]
-        formated_row += '\n'
-        # Add the formatted row
-        buf.write(formated_row * scale)
-    # Add the bottom quiet zone and close the pixel data section
-    buf.write(('0x00,' * byte_width + '\n') * quiet_zone * scale)
-    buf.write('};')
+    with _writable(buf, 'wt') as f:
+        write = f.write
+        write('#define im_width {0}\n'
+              '#define im_height {1}\n'
+              'static unsigned char im_bits[] = {{\n'.format(width, height))
+        i = 0
+        for row in row_iter:
+            iter_ = zip_longest(*[iter(row)] * 8, fillvalue=0x0)
+            # Reverse bits since XBM uses little endian
+            bits = ['0x{0:02x}'.format(reduce(lambda x, y: (x << 1) + y, bits[::-1])) for bits in iter_]
+            i += 1
+            write('    ')
+            write(', '.join(bits))
+            write(',\n' if i < height else '\n')
+        write('};')
     return buf.getvalue()
 
 
@@ -1308,7 +1292,7 @@ def _matrix_iter(matrix, version, scale=1, quiet_zone=4):
     :param int scale: The scaling factor (default: ``1``).
     :param int quiet_zone: The border size.
     """
-    width, height = _get_symbol_size(version, scale=1, quiet_zone=0)
+    width, height = _get_symbol_size(version, scale=1, quiet_zone=0)  # scale=1, quiet_zone=0 is used by intention!
 
     def get_bit(i, j):
         return 0x1 if (0 <= i < height and 0 <= j < width and matrix[i][j]) else 0x0
