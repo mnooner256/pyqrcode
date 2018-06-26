@@ -54,7 +54,7 @@ except NameError:
 # <https://wiki.python.org/moin/PortingToPy3k/BilingualQuickRef#New_Style_Classes>
 __metaclass__ = type
 
-__version__ = '1.3.0'
+__version__ = '1.4.0.dev0'
 
 
 def create(content, error='H', version=None, mode=None, encoding=None):
