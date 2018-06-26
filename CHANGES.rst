@@ -1,6 +1,12 @@
 Changes
 =======
 
+1.4.0 - 2018-mm-dd
+------------------
+* Removed deprecated methods: ``QRCode.get_png_size()``, ``QRCode.png_as_base64_str()``
+ ``QRCode.terminal()``
+
+
 1.3.0 - 2018-06-26
 ------------------
 * Added support for meCards etc. contributed by Riccardo Metere
