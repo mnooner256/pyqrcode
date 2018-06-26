@@ -18,6 +18,9 @@ Changes
 * Faster PNG generation, fixed <https://github.com/mnooner256/pyqrcode/pull/47>
 * Added CLI
   Fixed #4 and <https://github.com/mnooner256/pyqrcode/pull/53>
+* Added term() method to QRCode which prints the QR Code to the terminal.
+  This works with Windows and Unix.
+* Deprecated QRCode.terminal() in favor of QRCode.term()
 
 
 1.2.1 - 2016-06-20

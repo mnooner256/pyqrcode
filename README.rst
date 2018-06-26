@@ -144,8 +144,7 @@ colors in the terminal, there are several caveats).
 
 .. code-block:: python
 
-    >>> print(url.terminal())
-    >>> print(url.terminal('red', 'white'))
+    >>> url.term()
 
 
 The SVG renderer outputs the QR Code as a scalable vector graphic. This

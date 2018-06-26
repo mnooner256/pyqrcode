@@ -34,7 +34,10 @@ import math
 import io
 import codecs
 import itertools
+from itertools import chain
 from contextlib import contextmanager
+from functools import partial
+from xml.sax.saxutils import quoteattr
 import pyqrcode.tables as tables
 try:  # pragma: no cover
     from itertools import zip_longest
@@ -814,7 +817,7 @@ def _writable(file_or_path, mode, encoding=None):
             f.close()
 
 
-def _terminal(code, module_color='default', background='reverse', quiet_zone=4):
+def _terminal_deprecated(code, module_color='default', background='reverse', quiet_zone=4):
     """This method returns a string containing ASCII escape codes,
     such that if printed to a terminal, it will display a vaild
     QR code. The module_color and the background color should be keys
@@ -995,9 +998,6 @@ def _svg(code, version, file, scale=1, module_color='#000', background=None,
     :param debug: Inidicates if errors in the QR code should be added to the
             output (default: ``False``).
     """
-    from functools import partial
-    from xml.sax.saxutils import quoteattr
-
     def write_unicode(write_meth, unicode_str):
         """\
         Encodes the provided string into UTF-8 and writes the result using
@@ -1348,3 +1348,104 @@ def _hex_to_rgb(color):
     if len(color) != 6:
         raise ValueError('Input #{0} is not in #RRGGBB format'.format(color))
     return [int(n, 16) for n in (color[:2], color[2:4], color[4:])]
+
+
+def _matrix_iter(matrix, version, scale=1, quiet_zone=None):
+    """\
+    Returns an interator / generator over the provided matrix which includes
+    the border and the scaling factor.
+
+    If either the `scale` or `border` value is invalid, a py:exc:`ValueError`
+    is raised.
+
+    :param matrix: An iterable of bytearrays.
+    :param int version: A version constant.
+    :param int scale: The scaling factor (default: ``1``).
+    :param int quiet_zone: The border size or ``None`` to specify the
+            default quiet zone (4 for QR Codes, 2 for Micro QR Codes).
+    :raises: py:exc:`ValueError` if an illegal scale or border value is provided
+    """
+    width, height = _get_symbol_size(version, scale=1, quiet_zone=0)
+
+    def get_bit(i, j):
+        return 0x1 if (0 <= i < height and 0 <= j < width and matrix[i][j]) else 0x0
+
+    for i in range(-quiet_zone, height + quiet_zone):
+        for s in range(scale):
+            yield chain.from_iterable(([get_bit(i, j)] * scale for j in range(-quiet_zone, width + quiet_zone)))
+
+
+def _terminal(matrix, version, out, quiet_zone=None):
+    """\
+    Function to write to a terminal which supports ANSI escape codes.
+
+    :param matrix: The matrix to serialize.
+    :param int version: The (Micro) QR code version.
+    :param out: Filename or a file-like object supporting to write text.
+    :param int quiet_zone: Integer indicating the size of the quiet zone.
+            If set to ``None`` (default), the recommended border size
+            will be used (``4`` for QR Codes, ``2`` for a Micro QR Codes).
+    """
+    with _writable(out, 'wt') as f:
+        write = f.write
+        colours = ['\033[{0}m'.format(i) for i in (7, 49)]
+        for row in _matrix_iter(matrix, version, scale=1, quiet_zone=quiet_zone):
+            prev_bit = -1
+            cnt = 0
+            for bit in row:
+                if bit == prev_bit:
+                    cnt += 1
+                else:
+                    if cnt:
+                        write(colours[prev_bit])
+                        write('  ' * cnt)
+                        write('\033[0m')  # reset color
+                    prev_bit = bit
+                    cnt = 1
+            if cnt:
+                write(colours[prev_bit])
+                write('  ' * cnt)
+                write('\033[0m')  # reset color
+            write('\n')
+
+
+def _terminal_win(code, version, quiet_zone=None):  # pragma: no cover
+    """\
+    Function to write a QR Code to a MS Windows terminal.
+
+    :param code: The matrix to serialize.
+    :param int version: The (Micro) QR code version
+    :param int quiet_zone: Integer indicating the size of the quiet zone.
+            If set to ``None`` (default), the recommended border size
+            will be used (``4`` for QR Codes, ``2`` for a Micro QR Codes).
+    """
+    import sys
+    import struct
+    import ctypes
+    write = sys.stdout.write
+    std_out = ctypes.windll.kernel32.GetStdHandle(-11)
+    csbi = ctypes.create_string_buffer(22)
+    res = ctypes.windll.kernel32.GetConsoleScreenBufferInfo(std_out, csbi)
+    if not res:
+        raise OSError('Cannot find information about the console. '
+                      'Not running on the command line?')
+    default_color = struct.unpack(b'hhhhHhhhhhh', csbi.raw)[4]
+    set_color = partial(ctypes.windll.kernel32.SetConsoleTextAttribute, std_out)
+    colours = (240, default_color)
+    for row in _matrix_iter(code, version, scale=1, quiet_zone=quiet_zone):
+        prev_bit = -1
+        cnt = 0
+        for bit in row:
+            if bit == prev_bit:
+                cnt += 1
+            else:
+                if cnt:
+                    set_color(colours[prev_bit])
+                    write('  ' * cnt)
+                prev_bit = bit
+                cnt = 1
+        if cnt:
+            set_color(colours[prev_bit])
+            write('  ' * cnt)
+        set_color(default_color)  # reset color
+        write('\n')

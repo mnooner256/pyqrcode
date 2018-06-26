@@ -41,6 +41,7 @@ Examples:
         >>> number.png('big-number.png')
 """
 from __future__ import absolute_import, division, print_function, with_statement, unicode_literals
+import sys
 import io
 import base64
 import pyqrcode.tables
@@ -665,7 +666,9 @@ class QRCode:
 
     def terminal(self, module_color='default', background='reverse',
                  quiet_zone=4):
-        """This method returns a string containing ASCII escape codes,
+        """DEPRECATED, use term()
+
+        This method returns a string containing ASCII escape codes,
         such that if printed to a compatible terminal, it will display
         a vaild QR code. The code is printed using ASCII escape
         codes that alter the coloring of the background.
@@ -673,7 +676,7 @@ class QRCode:
         The *module_color* parameter sets what color to
         use for the data modules (the black part on most QR codes).
         Likewise, the *background* parameter sets what color to use
-        for the background (the white part on most QR codes).  
+        for the background (the white part on most QR codes).
 
         There are two options for colors. The first, and most widely
         supported, is to use the 8 or 16 color scheme. This scheme uses
@@ -682,7 +685,7 @@ class QRCode:
         yellow, blue, magenta, and cyan. There are an some additional
         named colors that are supported by most terminals: light gray,
         dark gray, light red, light green, light blue, light yellow,
-        light magenta, light cyan, and white. 
+        light magenta, light cyan, and white.
 
         There are two special named colors. The first is the
         "default" color. This color is the color the background of
@@ -708,7 +711,33 @@ class QRCode:
             >>> text = code.terminal()
             >>> print(text)
         """
-        return builder._terminal(self.code, module_color, background, quiet_zone)
+        return builder._terminal_deprecated(self.code, module_color, background, quiet_zone)
+
+    def term(self, file=None, quiet_zone=4):
+        """This method prints the QR code to the terminal.
+
+        The *quiet_zone* parameter sets how wide the quiet zone around the code
+        should be. According to the standard this should be 4 modules. It is
+        left settable because such a wide quiet zone is unnecessary in many
+        applications.
+
+        Example:
+            >>> code = pyqrcode.create('Example')
+            >>> code.terminal()
+        """
+        if file is None and sys.platform == 'win32':  # pragma: no cover
+            # Windows < 10 does not support ANSI escape sequences, try to
+            # call the a Windows specific terminal output which uses the
+            # Windows API.
+            try:
+                builder._terminal_win(self.code, self.version, quiet_zone)
+            except OSError:
+                # Use the standard output even if it may print garbage
+                builder._terminal(self.code, self.version, file or sys.stdout,
+                                   quiet_zone)
+        else:
+            builder._terminal(self.code, self.version, file or sys.stdout,
+                                   quiet_zone)
 
     def text(self, quiet_zone=4):
         """This method returns a string based representation of the QR code.
