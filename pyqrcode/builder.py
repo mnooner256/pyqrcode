@@ -1315,7 +1315,7 @@ def _hex_to_rgb(color):
 
 def _matrix_iter(matrix, version, scale=1, quiet_zone=4):
     """\
-    Returns an interator / generator over the provided matrix which includes
+    Returns an iterator / generator over the provided matrix which includes
     the border and the scaling factor.
 
     :param matrix: An iterable of bytearrays.
