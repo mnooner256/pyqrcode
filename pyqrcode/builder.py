@@ -1095,7 +1095,7 @@ def _svg(code, version, file, scale=1, module_color='#000', background=None,
 
 
 def _png(code, version, file, scale=1, module_color=(0, 0, 0, 255),
-         background=(255, 255, 255, 255), quiet_zone=4, debug=False):
+         background=(255, 255, 255, 255), quiet_zone=4):
     """See: pyqrcode.QRCode.png()
     This function was abstracted away from QRCode to allow for the output of
     QR codes during the build process, i.e. for debugging. It works
@@ -1110,8 +1110,6 @@ def _png(code, version, file, scale=1, module_color=(0, 0, 0, 255),
     :param quiet_zone: Border around the QR code (also known as quiet zone)
             (default: ``4``). Set to zero (``0``) if the code shouldn't
             have a border.
-    :param debug: Inidicates if errors in the QR code should be added (as red
-            modules) to the output (default: ``False``).
     """
     import png
 
@@ -1121,40 +1119,11 @@ def _png(code, version, file, scale=1, module_color=(0, 0, 0, 255),
     except ValueError:
         raise ValueError('The scale parameter must be an integer')
 
-    def scale_code(size):
-        """To perform the scaling we need to inflate the number of bits.
-        The PNG library expects all of the bits when it draws the PNG.
-        Effectively, we double, triple, etc. the number of columns and
-        the number of rows.
+    def invert_row_bits(row):
+        """\
+        Inverts the row bits 0 -> 1, 1 -> 0
         """
-        # This is one row's worth of each possible module
-        # PNG's use 0 for black and 1 for white, this is the
-        # reverse of the QR standard
-        black = [0] * scale
-        white = [1] * scale
-
-        # Tuple to lookup colors
-        # The 3rd color is the module_color unless "debug" is enabled
-        colors = (white, black, (([2] * scale) if debug else black))
-
-        # Whitespace added on the left and right side
-        border_module = white * quiet_zone
-        # This is the row to show up at the top and bottom border
-        border_row = [1] * size
-
-        # Add scale rows before the code as a border, as per the standard
-        for i in range(quiet_zone * scale):
-            yield border_row
-        # Add each row of the to the final PNG bits
-        for row in code:
-            r = tuple(itertools.chain(border_module,
-                                      itertools.chain(*(colors[bit if bit in (0, 1) else 2] for bit in row)),
-                                      border_module))
-            for i in range(scale):
-                yield r
-        # Bottom quiet zone
-        for i in range(quiet_zone * scale):
-            yield border_row
+        return (b ^ 0x1 for b in row)
 
     def png_pallete_color(color):
         """This creates a palette color from a list or tuple. The list or
@@ -1194,25 +1163,19 @@ def _png(code, version, file, scale=1, module_color=(0, 0, 0, 255),
     # foreground color is calculated
     bg_col = png_pallete_color(background) if background is not None else tuple([255 - c for c in fg_col])
     # Assume greyscale if module color is black and background color is white
-    greyscale = fg_col[:3] == (0, 0, 0) and (not debug and transparent or bg_col == (255, 255, 255, 255))
+    greyscale = fg_col[:3] == (0, 0, 0) and (transparent or bg_col == (255, 255, 255, 255))
     transparent_color = 1 if transparent and greyscale else None
     palette = [fg_col, bg_col] if not greyscale else None
-    if debug:
-        # Add "red" as color for error modules
-        palette.append((255, 0, 0, 255))
-        bitdepth = 2
-
     # The size of the PNG
     width, height = _get_symbol_size(version, scale, quiet_zone)
-    # We need to increase the size of the code to match up to the
-    # scale parameter.
-    code_rows = scale_code(width)
     # Write out the PNG
     with _writable(file, 'wb') as f:
         w = png.Writer(width=width, height=height, greyscale=greyscale,
                        transparent=transparent_color, palette=palette,
                        bitdepth=bitdepth)
-        w.write_passes(f, code_rows)
+        w.write_passes(f, (invert_row_bits(row) for row in _matrix_iter(code, version,
+                                                                        scale=scale,
+                                                                        quiet_zone=quiet_zone)))
 
 
 def _eps(code, version, file_or_path, scale=1, module_color=(0, 0, 0),
@@ -1350,20 +1313,15 @@ def _hex_to_rgb(color):
     return [int(n, 16) for n in (color[:2], color[2:4], color[4:])]
 
 
-def _matrix_iter(matrix, version, scale=1, quiet_zone=None):
+def _matrix_iter(matrix, version, scale=1, quiet_zone=4):
     """\
     Returns an interator / generator over the provided matrix which includes
     the border and the scaling factor.
 
-    If either the `scale` or `border` value is invalid, a py:exc:`ValueError`
-    is raised.
-
     :param matrix: An iterable of bytearrays.
     :param int version: A version constant.
     :param int scale: The scaling factor (default: ``1``).
-    :param int quiet_zone: The border size or ``None`` to specify the
-            default quiet zone (4 for QR Codes, 2 for Micro QR Codes).
-    :raises: py:exc:`ValueError` if an illegal scale or border value is provided
+    :param int quiet_zone: The border size.
     """
     width, height = _get_symbol_size(version, scale=1, quiet_zone=0)
 
