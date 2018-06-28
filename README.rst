@@ -30,7 +30,7 @@ Installation
 Installation is simple. It can be installed from pip using the following
 command::
 
-    $ pip install git+https://github.com/heuer/pyqrcode.git
+    $ pip install git+https://github.com/heuer/pyqrcode.git@1.3.0
 
 PyQRCode 1.3.0 is not obtainable from PyPI yet, due to issue
 <https://github.com/pypa/warehouse/issues/4121>
