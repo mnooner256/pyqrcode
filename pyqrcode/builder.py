@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # Copyright (c) 2013, Michael Nooner
-# Copyright (c) 2018, Lars Heuer
+# Copyright (c) 2018 - 2019, Lars Heuer
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
