@@ -1,10 +1,10 @@
 Changes
 =======
 
-1.4.0 - 2018-mm-dd
+1.4.0 - 2019-mm-dd
 ------------------
-* Removed deprecated methods: ``QRCode.get_png_size()``, ``QRCode.png_as_base64_str()``
- ``QRCode.terminal()``
+* Removed deprecated methods: ``QRCode.get_png_size()``,
+  ``QRCode.png_as_base64_str()``, and ``QRCode.terminal()``
 
 
 1.3.0 - 2018-06-26

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # Copyright (c) 2013, Michael Nooner
-# Copyright (c) 2018, Lars Heuer
+# Copyright (c) 2018 - 2019, Lars Heuer
 # All rights reserved.
 
 # Redistribution and use in source and binary forms, with or without
@@ -138,7 +138,7 @@ class QRCode:
         function.
     """
     def __init__(self, content, error='H', version=None, mode=None,
-                 encoding='iso-8859-1'):
+                 encoding=None):
         # Guess the mode of the code, this will also be used for
         # error checking
         guessed_content_type, encoding = QRCode._detect_content_type(content, encoding)
@@ -162,14 +162,12 @@ class QRCode:
         # Decode a 'byte array' contents into a string format
         if isinstance(content, bytes):
             self.data = content.decode(encoding)
-
-        # Give a string an encoding
         elif hasattr(content, 'encode'):
+            # Give a string an encoding
             self.data = content.encode(self.encoding)
-
-        # The contents are not a byte array or string, so
-        # try naively converting to a string representation.
         else:
+            # The contents are not a byte array or string, so
+            # try naively converting to a string representation.
             self.data = str(content)  # str == unicode in Py 2.x, see file head
 
         # Force a passed in mode to be lowercase
