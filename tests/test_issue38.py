@@ -4,7 +4,7 @@ Tests against <https://github.com/mnooner256/pyqrcode/issues/13>
 """
 from __future__ import unicode_literals
 import io
-import pyqrcode
+import pyqrcodeng as pyqrcode
 
 
 def test_long_number_gives_version2():

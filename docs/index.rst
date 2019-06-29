@@ -1,7 +1,7 @@
-Welcome to PyQRCode's documentation!
-************************************
+Welcome to PyQRCodeNG's documentation!
+**************************************
 
-The pyqrcode module is a QR code generator that is simple to use and written
+The PyQRCodeNG module is a QR code generator that is simple to use and written
 in pure python. The module is compatible with Python 2.6, 2.7, and 3.x. The
 module automates most of the building process for you. Generally, QR codes can
 be created using only two lines of code!
@@ -14,7 +14,7 @@ QR codes can be saved as SVG, EPS, PNG (by using the
 not used to render the image files. You can also display a QR code directly in
 a compatible terminal.
 
-The pyqrcode module attempts to follow the QR code standard as closely as
+The PyQRCodeNG module attempts to follow the QR code standard as closely as
 possible. The terminology and the encodings used in pyqrcode come directly
 from the standard. This module also follows the algorithm laid out in the
 standard.
@@ -33,7 +33,7 @@ Contents:
 Requirements
 ============
 
-The pyqrcode module only requires Python 2.6, 2.7, 3.x. You may want to
+The PyQRCodeNG module only requires Python 2.6, 2.7, 3.x. You may want to
 install `pypng <https://pypi.org/project/pypng/>`_ in order to render PNG
 files, but it is optional. Note, pypng is a pure python PNG writer which does
 not require any other libraries.
@@ -42,37 +42,39 @@ not require any other libraries.
 Installation
 ============
 
-Installation is simple. PyQRCode can be installed from pip using the
+Installation is simple. PyQRCodeNG can be installed from pip using the
 following command::
 
-    $ pip install git+https://github.com/heuer/pyqrcode.git
+    $ pip install -U pyqrcodeng
 
-PyQRCode 1.3.0 is not obtainable from PyPI yet, due to issue
-<https://github.com/pypa/warehouse/issues/4121>
 
-Or from the command line using::
+Replacing PyQRCode with PyQRCodeNG
+==================================
+PyQRCodeNG is a fork of PyQRCode since the latter seems to be unmaintained.
+The API is mainly compatible to PyQRCode. In your code you can use the following
+import without changing the QR Code generation code::
 
-    $ python setup.py install
+   >>> import pyqrcodeng as pyqrcode
 
 
 Usage
 =====
 
-The pyqrcode module aims to be as simple to use as possible. Below is a simple
+The PyQRCodeNG module aims to be as simple to use as possible. Below is a simple
 example of creating a QR code for a URL. The code is rendered out as a black
 and white scalable vector graphics file.
 ::
 
-    >>> import pyqrcode
-    >>> url = pyqrcode.create('http://uca.edu')
+    >>> import pyqrcodeng
+    >>> url = pyqrcodeng.create('http://uca.edu')
     >>> url.svg('uca-url.svg', scale=8)
     >>> print(url.terminal(quiet_zone=1))
 
-The pyqrcode module, while easy to use, is powerful. You can set all of the
+The PyQRCodeNG module, while easy to use, is powerful. You can set all of the
 properties of the QR code. If you install the optional pypng library, you can
 also render the code as a PNG image. Below is a more complex example::
 
-    >>> big_code = pyqrcode.create('0987654321', error='L', version=27, mode='binary')
+    >>> big_code = pyqrcodeng.create('0987654321', error='L', version=27, mode='binary')
     >>> big_code.png('code.png', scale=6, module_color=[0, 0, 0, 128], background=[0xff, 0xff, 0xcc])
 
 
@@ -84,7 +86,6 @@ Developer Documentation
 
    moddoc
    tables
-   builder
 
 
 Indices and tables

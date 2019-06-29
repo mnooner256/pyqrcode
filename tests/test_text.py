@@ -3,7 +3,7 @@
 Tests against text generation.
 """
 from __future__ import absolute_import, unicode_literals
-import pyqrcode
+import pyqrcodeng as pyqrcode
 
 
 def test_txt():

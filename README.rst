@@ -1,7 +1,7 @@
-PyQRCode
-========
+PyQRCodeNG
+==========
 
-The PyQRCode module is a QR code generator that is simple to use and written
+The PyQRCodeNG module is a QR code generator that is simple to use and written
 in pure Python. The module can automates most of the building process for
 creating QR codes. Most codes can be created using only two lines of code!
 
@@ -13,15 +13,15 @@ QR codes can be saved as SVG, XBM, EPS, PNG (by using the
 also be displayed directly in most Linux terminal emulators and Tkinter. PIL
 or Pillow are not used to render the image files.
 
-The PyQRCode module attempts to follow the QR code standard as closely as
-possible. The terminology and the encodings used in PyQRCode come directly
+The PyQRCodeNG module attempts to follow the QR code standard as closely as
+possible. The terminology and the encodings used in PyQRCodeNG come directly
 from the standard. This module also follows the algorithm laid out in the
 standard.
 
 Requirements
 ------------
 
-PyQRCode only requires Python 2.6, Python 2.7, or Python 3. You may
+PyQRCodeNG only requires Python 2.6, Python 2.7, or Python 3. You may
 want to install ``PyPNG`` in order to render PNG files, but it is optional.
 
 Installation
@@ -30,14 +30,7 @@ Installation
 Installation is simple. It can be installed from pip using the following
 command::
 
-    $ pip install git+https://github.com/heuer/pyqrcode.git
-
-PyQRCode 1.3.0 is not obtainable from PyPI yet, due to issue
-<https://github.com/pypa/warehouse/issues/4121>
-
-Or from the code::
-
-    $ python setup.py install
+    $ pip install -U pyqrcodeng
 
 
 Usage
@@ -48,8 +41,8 @@ You can construct the class normally, or use the *create* wrapper function.
 
 .. code-block:: python
 
-    >>> import pyqrcode
-    >>> qr = pyqrcode.create('Unladden swallow')
+    >>> import pyqrcodeng
+    >>> qr = pyqrcodeng.create('Unladden swallow')
     >>> qr.png('famous-joke.png', scale=5)
 
 
@@ -66,7 +59,7 @@ actual number.
 
 .. code-block:: python
 
-    >>> number = pyqrcode.create(123456789012345)
+    >>> number = pyqrcodeng.create(123456789012345)
 
 
 The alphanumeric type is very limited in that it can only encode some ASCII
@@ -75,7 +68,7 @@ punctuation characters. The available characters will let you encode a URL
 
 .. code-block:: python
 
-    >>> url = pyqrcode.create('http://uca.edu')
+    >>> url = pyqrcodeng.create('http://uca.edu')
 
 
 When all else fails the data can be encoded in pure binary. The quotation below
@@ -85,7 +78,7 @@ and the new line character.
 
 .. code-block:: python
 
-    >>> life = pyqrcode.create('''MR. CREOSOTE: Better get a bucket. I'm going to throw up.
+    >>> life = pyqrcodeng.create('''MR. CREOSOTE: Better get a bucket. I'm going to throw up.
         MAITRE D: Uh, Gaston! A bucket for monsieur. There you are, monsieur.''')
 
 
@@ -103,7 +96,7 @@ QR code.
 The *error* parameter sets the error correction level of the code. Each level
 has an associated name given by a letter: L, M, Q, or H; each level can
 correct up to 7, 15, 25, or 30 percent of the data respectively. There are
-several ways to specify the level, see pyqrcode.tables.modes for all the
+several ways to specify the level, see pyqrcodeng.tables.modes for all the
 possible values. By default this parameter is set to 'H' which is the highest
 possible error correction, but it has the smallest available data
 capacity.
@@ -127,7 +120,7 @@ forces the encoding to be binary (rather than numeric).
 
 .. code-block:: python
 
-    >>> big_code = pyqrcode.create('0987654321', error='L', version=27, mode='binary')
+    >>> big_code = pyqrcodeng.create('0987654321', error='L', version=27, mode='binary')
 
 
 Rendering
@@ -179,4 +172,4 @@ string of 1's and 0's, with each row of the code on a new line.
 
 Documentation
 -------------
-Read the online documentation at <https://pyqrcode.readthedocs.io/>
+Read the online documentation at <https://pyqrcodeng.readthedocs.io/>

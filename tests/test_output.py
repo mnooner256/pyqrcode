@@ -5,7 +5,7 @@ Differnt output tests.
 from __future__ import unicode_literals, absolute_import
 import io
 import pytest
-import pyqrcode
+import pyqrcodeng as pyqrcode
 try:
     from .test_eps import eps_as_matrix
     from .test_png import png_as_matrix

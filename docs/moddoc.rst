@@ -1,6 +1,6 @@
-PyQRCode Module Documentation
-*****************************
-.. automodule:: pyqrcode
+PyQRCodeNG Module Documentation
+*******************************
+.. automodule:: pyqrcodeng
     :members: create, QRCode
 
 

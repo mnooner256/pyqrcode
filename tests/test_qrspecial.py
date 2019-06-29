@@ -3,7 +3,7 @@
 Tests against qrspecial.
 """
 from __future__ import absolute_import, unicode_literals
-from pyqrcode import qrspecial as qrs
+from pyqrcodeng import qrspecial as qrs
 try:
     str = unicode
 except NameError:

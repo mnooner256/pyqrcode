@@ -5,7 +5,7 @@ Tests against <https://github.com/mnooner256/pyqrcode/issues/29>
 Negative numbers aren't supported by "numeric" mode.
 """
 from __future__ import unicode_literals
-import pyqrcode
+import pyqrcodeng as pyqrcode
 
 
 def test_negative_int():

@@ -10,7 +10,7 @@ take a scaling factor, that way each module is not rendered as 1 pixel.
 Text Based Rendering
 ====================
 
-The pyqrcode module includes a basic text renderer. This will return a string
+The PyQRCodeNG module includes a basic text renderer. This will return a string
 containing the QR code as a string of 1's and 0's, with each row of the code on
 a new line. A :term:`data module` in the QR Code is represented by a 1.
 Likewise, 0 is used to represent the background of the code.
@@ -20,7 +20,7 @@ none of the built in renderers are satisfactory.
 
 .. code-block:: python
 
-  >>> number = pyqrcode.create(123)
+  >>> number = pyqrcodeng.create(123)
   >>> print(number.text())
   00000000000000000000000000000
   00000000000000000000000000000
@@ -62,7 +62,7 @@ codes. Hence, most Linux terminals are supported.
 
 .. code-block:: python
 
-  >>> text = pyqrcode.create('Example')
+  >>> text = pyqrcodeng.create('Example')
   >>> text.term()
 
 
@@ -97,17 +97,17 @@ XBM Rendering
 
 The XBM file format is a simple black and white image format. The image data
 takes the form of a valid C header file. XBM rendering is handled via the
-:py:meth:`pyqrcode.QRCode.xbm` method.
+:py:meth:`pyqrcodeng.QRCode.xbm` method.
 
 XMB's are natively supported by Tkinter. This makes displaying QR codes in a
 Tkinter application very simple.
 
 .. code-block:: python
 
-    >>> import pyqrcode
+    >>> import pyqrcodeng
     >>> import tkinter
     >>> # Create and render the QR code
-    >>> code = pyqrcode.create('Knights who say ni!')
+    >>> code = pyqrcodeng.create('Knights who say ni!')
     >>> code_xbm = code.xbm(scale=5)
     >>> # Create a tk window
     >>> top = tkinter.Tk()
@@ -125,7 +125,7 @@ Scalable Vector Graphic (SVG)
 -----------------------------
 
 The SVG renderer outputs the QR code as a scalable vector graphic using
-the :py:meth:`pyqrcode.QRCode.svg` method.
+the :py:meth:`pyqrcodeng.QRCode.svg` method.
 
 The method draws the QR code using a set of paths. By default, no background is
 drawn, i.e. the resulting code has a transparent background. The
@@ -133,7 +133,7 @@ default foreground (module) color is black.
 
 .. code-block:: python
 
-  >>> url = pyqrcode.create('http://uca.edu')
+  >>> url = pyqrcodeng.create('http://uca.edu')
   >>> url.svg('uca.svg', scale=4)
   >>> # in-memory stream is also supported
   >>> buffer = io.BytesIO()
@@ -156,7 +156,7 @@ Encapsulated PostScript (EPS)
 -----------------------------
 
 The EPS renderer outputs the QR code an encapsulated PostScript document using
-the :py:meth:`pyqrcode.QRCode.eps` method. *This renderer does not require any
+the :py:meth:`pyqrcodeng.QRCode.eps` method. *This renderer does not require any
 external modules.*
 
 The method draws the EPS document using lines of contiguous modules. By default,
@@ -166,7 +166,7 @@ being drawn at 1 point (1/72 of an inch).
 
 .. code-block:: python
 
-  >>> qr = pyqrcode.create('Hello world')
+  >>> qr = pyqrcodeng.create('Hello world')
   >>> qr.eps('hello-world.eps', scale=2.5, module_color='#36C')
   >>> qr.eps('hello-world2.eps', background='#eee')
   >>> out = io.StringIO()
@@ -176,7 +176,7 @@ Portable Network Graphic (PNG)
 ------------------------------
 
 The PNG renderer outputs the QR code as a portable network graphic file using
-the :py:meth:`pyqrcode.QRCode.png` method.
+the :py:meth:`pyqrcodeng.QRCode.png` method.
 
 .. note::
 
@@ -185,7 +185,7 @@ the :py:meth:`pyqrcode.QRCode.png` method.
 
 .. code-block:: python
 
-  >>> url = pyqrcode.create('http://uca.edu')
+  >>> url = pyqrcodeng.create('http://uca.edu')
   >>> with open('code.png', 'w') as fstream:
   ...     url.png(fstream, scale=5)
   >>> # same as above

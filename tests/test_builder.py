@@ -3,7 +3,7 @@
 Test against the buidler module.
 """
 from __future__ import unicode_literals
-from pyqrcode import builder
+from pyqrcodeng import builder
 
 
 def test_illegal_mode():

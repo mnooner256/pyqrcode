@@ -15,7 +15,7 @@ from __future__ import absolute_import, unicode_literals
 import os
 import sys
 import argparse
-import pyqrcode
+import pyqrcodeng
 
 
 _SUPPORTED_EXT = ('svg', 'png', 'eps')
@@ -33,7 +33,7 @@ def make_parser():
         return val if val != int(val) else int(val)
 
     parser = argparse.ArgumentParser(prog='pyqr',
-                                     description='PyQRCode QR Code generator version {0}'.format(pyqrcode.__version__))
+                                     description='PyQRCode QR Code generator version {0}'.format(pyqrcodeng.__version__))
     parser.add_argument('--version', '-v', help='QR Code version: 1 .. 40',
                         required=False,)
     parser.add_argument('--error', '-e', help='Error correction level: "L": 7%%, "M": 15%%, "Q": 25%%, "H": 30%% (default)',
@@ -75,7 +75,7 @@ def make_parser():
                            action='store_true')
     parser.add_mutually_exclusive_group().add_argument('--ver', '-V', help="Shows PyQRCode's version",
                                                        action='version',
-                                                       version='PyQRCode {0}'.format(pyqrcode.__version__))
+                                                       version='PyQRCode {0}'.format(pyqrcodeng.__version__))
     parser.add_argument('content', nargs='+', help='The content to encode')
     return parser
 
@@ -132,7 +132,7 @@ def make_code(config):
     if version:
         version = int(version)
     kw = dict(mode=mode, error=config.pop('error'), version=version)
-    return pyqrcode.create(' '.join(config.pop('content')), **kw)
+    return pyqrcodeng.create(' '.join(config.pop('content')), **kw)
 
 
 def main(args=sys.argv[1:]):

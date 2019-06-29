@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
-# pyqrcode documentation build configuration file, created by
+# pyqrcodeng documentation build configuration file, created by
 # sphinx-quickstart on Fri Jun  7 12:48:22 2013.
 #
 # This file is execfile()d with the current directory set to its containing dir.
@@ -13,8 +13,9 @@
 # serve to show the default.
 
 import sys, os
+import datetime
 
-import pyqrcode
+import pyqrcodeng
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -43,15 +44,16 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = 'pyqrcode'
-copyright = '2013-2016, Michael Nooner'
+project = 'pyqrcodeng'
+copyright = '2013-2016, Michael Nooner, 2018 - {0} Lars Heuer'.format(datetime.datetime.now().year)
+author = 'Michael Nooner, Lars Heuer'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
 # built documents.
 #
 # The short X.Y version.
-version = pyqrcode.__version__
+version = pyqrcodeng.__version__
 # The full version, including alpha/beta/rc tags.
 release = ''
 
@@ -189,8 +191,8 @@ latex_elements = {
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
-  ('index', 'pyqrcode.tex', 'pyqrcode Documentation',
-   'Michael Nooner', 'manual'),
+  ('index', 'pyqrcodeng.tex', 'PyQRCodeNG Documentation',
+   'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -219,8 +221,8 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    ('index', 'pyqrcode', 'pyqrcode Documentation',
-     ['Michael Nooner'], 1)
+    ('index', 'pyqrcodeng', 'PyQRCodeNG Documentation',
+     [author], 1)
 ]
 
 # If true, show URL addresses after external links.
@@ -233,8 +235,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-  ('index', 'pyqrcode', 'pyqrcode Documentation',
-   'Michael Nooner', 'pyqrcode', 'One line description of project.',
+  ('index', 'pyqrcodeng', 'PyQRCodeNG Documentation',
+   author, 'pyqrcodeng', 'One line description of project.',
    'Miscellaneous'),
 ]
 
