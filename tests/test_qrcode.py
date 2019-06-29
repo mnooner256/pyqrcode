@@ -3,7 +3,7 @@
 Different tests against the PyQRCode package.
 """
 from __future__ import unicode_literals
-import pyqrcode
+import pyqrcodeng as pyqrcode
 import pytest
 
 

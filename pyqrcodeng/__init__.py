@@ -32,20 +32,20 @@ It is recommended that you use the :func:`pyqrcode.create` function to build the
 QRCode object. This results in cleaner looking code.
 
 Examples:
-        >>> import pyqrcode
+        >>> import pyqrcodeng
         >>> import sys
-        >>> url = pyqrcode.create('http://uca.edu')
+        >>> url = pyqrcodeng.create('http://uca.edu')
         >>> url.svg(sys.stdout, scale=1)
         >>> url.svg('uca.svg', scale=4)
-        >>> number = pyqrcode.create(123456789012345)
+        >>> number = pyqrcodeng.create(123456789012345)
         >>> number.png('big-number.png')
 """
 from __future__ import absolute_import, division, print_function, with_statement, unicode_literals
 import sys
 import io
 import base64
-import pyqrcode.tables
-import pyqrcode.builder as builder
+import pyqrcodeng.tables
+import pyqrcodeng.builder as builder
 try:  # pragma: no cover
     str = unicode  # Python 2
 except NameError:
@@ -125,7 +125,7 @@ class QRCode:
     You can find the PyPNG module at http://packages.python.org/pypng/.
 
     Examples:
-        >>> from pyqrcode import QRCode
+        >>> from pyqrcodeng import QRCode
         >>> import sys
         >>> url = QRCode('http://uca.edu')
         >>> url.svg(sys.stdout, scale=1)
@@ -415,7 +415,7 @@ class QRCode:
         applications where the QR code is not being printed.
 
         Example:
-            >>> code = pyqrcode.QRCode("I don't like spam!")
+            >>> code = pyqrcodeng.QRCode("I don't like spam!")
             >>> print(code.symbol_size(1))
             (31, 31)
             >>> print(code.symbol_size(5))
@@ -480,7 +480,7 @@ class QRCode:
         applications where the QR code is not being printed.
 
         Example:
-            >>> code = pyqrcode.create('Are you suggesting coconuts migrate?')
+            >>> code = pyqrcodeng.create('Are you suggesting coconuts migrate?')
             >>> code.png('swallow.png', scale=5)
             >>> code.png('swallow.png', scale=5,
                          module_color=(0x66, 0x33, 0x0),      # Dark brown
@@ -498,7 +498,7 @@ class QRCode:
         web development, since no file needs to be created.
         
         Example:
-            >>> code = pyqrcode.create('Are you suggesting coconuts migrate?')
+            >>> code = pyqrcodeng.create('Are you suggesting coconuts migrate?')
             >>> image_as_str = code.png_as_base64_str(scale=5)
             >>> html_img = '<img src="data:image/png;base64,{}">'.format(image_as_str)
 
@@ -541,9 +541,9 @@ class QRCode:
         parameter. Instead it retuns the rendered QR code data as a string.
         
         Example of using this renderer with Tkinter:
-            >>> import pyqrcode
+            >>> import pyqrcodeng
             >>> import tkinter
-            >>> code = pyqrcode.create('Knights who say ni!')
+            >>> code = pyqrcodeng.create('Knights who say ni!')
             >>> code_xbm = code.xbm(scale=5)
             >>>
             >>> top = tkinter.Tk()
@@ -618,7 +618,7 @@ class QRCode:
         applications where the QR code is not being printed.
         
         Example:
-            >>> code = pyqrcode.create('Hello. Uhh, can we have your liver?')
+            >>> code = pyqrcodeng.create('Hello. Uhh, can we have your liver?')
             >>> code.svg('live-organ-transplants.svg', 3.6)
             >>> code.svg('live-organ-transplants.svg', scale=4,
                          module_color='brown', background='0xFFFFFF')
@@ -655,7 +655,7 @@ class QRCode:
         the code. As per the standard, the default value is 4 modules.
 
         Examples:
-            >>> qr = pyqrcode.create('Hello world')
+            >>> qr = pyqrcodeng.create('Hello world')
             >>> qr.eps('hello-world.eps', scale=2.5, module_color='#36C')
             >>> qr.eps('hello-world2.eps', background='#eee')
             >>> out = io.StringIO()
@@ -707,7 +707,7 @@ class QRCode:
         applications.
 
         Example:
-            >>> code = pyqrcode.create('Example')
+            >>> code = pyqrcodeng.create('Example')
             >>> text = code.terminal()
             >>> print(text)
         """
@@ -728,7 +728,7 @@ class QRCode:
         applications.
 
         Example:
-            >>> code = pyqrcode.create('Example')
+            >>> code = pyqrcodeng.create('Example')
             >>> code.term()
         """
         if file is None and sys.platform == 'win32':  # pragma: no cover
@@ -761,7 +761,7 @@ class QRCode:
         applications.
 
         Example:
-            >>> code = pyqrcode.create('Example')
+            >>> code = pyqrcodeng.create('Example')
             >>> text = code.text()
             >>> print(text)
         """

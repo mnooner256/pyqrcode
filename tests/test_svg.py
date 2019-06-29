@@ -6,7 +6,7 @@ from __future__ import absolute_import, unicode_literals
 import re
 import io
 import xml.etree.ElementTree as etree
-import pyqrcode
+import pyqrcodeng as pyqrcode
 
 _SVG_NS = 'http://www.w3.org/2000/svg'
 

@@ -33,8 +33,8 @@ You can also use a positive integer as the code's contents.
 
 .. code-block:: python
 
-  >>> number = pyqrcode.create(123456789012345)
-  >>> number2 = pyqrcode.create('0987654321')
+  >>> number = pyqrcodeng.create(123456789012345)
+  >>> number2 = pyqrcodeng.create('0987654321')
 
 Alphanumeric
 ============
@@ -48,13 +48,13 @@ characters. It encodes:
 * Eight punctuation characters: $, %, \*, +, -, ., /, and :
 
 A complete list of the possible characters can be found in the
-:py:data:`pyqrcode.tables.ascii_codes` dictionary. While limited, this encoding
+:py:data:`pyqrcodeng.tables.ascii_codes` dictionary. While limited, this encoding
 is much more efficient than using the binary encoding, in many cases. Luckily,
 the available characters will let you encode a URL.
 
 .. code-block:: python
 
-  >>> url = pyqrcode.create('http://uca.edu'.upper())
+  >>> url = pyqrcodeng.create('http://uca.edu'.upper())
 
 Kanji
 =====
@@ -71,8 +71,8 @@ Alternatively, you can explicitly define the data's encoding.
 .. code-block:: python
 
   >>> utf8 = 'モンティ'.encode('utf-8')
-  >>> monty = pyqrcode.create(utf8, encoding='utf-8')
-  >>> python = pyqrcode.create('錦蛇')
+  >>> monty = pyqrcodeng.create(utf8, encoding='utf-8')
+  >>> python = pyqrcodeng.create('錦蛇')
 
 Binary
 ======
@@ -88,5 +88,5 @@ characters will not have their case changed.
 
 .. code-block:: python
 
-  >>> life = pyqrcode.create('''MR. CREOSOTE: Better get a bucket. I'm going to throw up.
+  >>> life = pyqrcodeng.create('''MR. CREOSOTE: Better get a bucket. I'm going to throw up.
       MAITRE D: Uh, Gaston! A bucket for monsieur. There you are, monsieur.''')

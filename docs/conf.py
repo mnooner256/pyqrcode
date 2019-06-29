@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
-# pyqrcode documentation build configuration file, created by
+# pyqrcodeng documentation build configuration file, created by
 # sphinx-quickstart on Fri Jun  7 12:48:22 2013.
 #
 # This file is execfile()d with the current directory set to its containing dir.
@@ -14,7 +14,7 @@
 
 import sys, os
 
-import pyqrcode
+import pyqrcodeng
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -51,7 +51,7 @@ copyright = '2013-2016, Michael Nooner'
 # built documents.
 #
 # The short X.Y version.
-version = pyqrcode.__version__
+version = pyqrcodeng.__version__
 # The full version, including alpha/beta/rc tags.
 release = ''
 

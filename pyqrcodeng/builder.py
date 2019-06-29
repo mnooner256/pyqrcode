@@ -37,7 +37,7 @@ from itertools import chain
 from contextlib import contextmanager
 from functools import partial, reduce
 from xml.sax.saxutils import quoteattr
-import pyqrcode.tables as tables
+import pyqrcodeng.tables as tables
 try:  # pragma: no cover
     from itertools import zip_longest
 except ImportError:  # pragma: no cover

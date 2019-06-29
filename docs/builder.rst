@@ -1,6 +1,6 @@
-PyQRCode Builder Documentation
-******************************
+PyQRCodeNG Builder Documentation
+********************************
 
-.. automodule:: pyqrcode.builder
+.. automodule:: pyqrcodeng.builder
    :special-members: __init__
    :members:

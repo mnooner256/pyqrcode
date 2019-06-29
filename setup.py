@@ -41,24 +41,24 @@ def read(*filenames, **kwargs):
 
 
 version = re.search(r'''^__version__ = ["']([^'"]+)['"]''',
-                    read('pyqrcode/__init__.py'), flags=re.MULTILINE).group(1)
+                    read('pyqrcodeng/__init__.py'), flags=re.MULTILINE).group(1)
 
 
 setup(
-    name='PyQRCode',
-    packages=['pyqrcode'],
+    name='PyQRCodeNG',
+    packages=['pyqrcodeng'],
     version=version,
     long_description=read('README.rst', 'CHANGES.rst'),
     description='A QR code generator written purely in Python with SVG, EPS, PNG and terminal output.',
     author='Michael Nooner, Lars Heuer',
     author_email='heuer@semagia.com',
-    url='https://github.com/heuer/pyqrcode',
+    url='https://github.com/heuer/pyqrcodeng',
     keywords=['qrcode', 'qr'],
     license='BSD',
     extras_require={
       'PNG':  ['pypng>=0.0.13'],
     },
-    entry_points = {'console_scripts': ['pyqr = pyqrcode.cli:main']},
+    entry_points = {'console_scripts': ['pyqr = pyqrcodeng.cli:main']},
     classifiers=[
         'Development Status :: 4 - Beta',
         'Environment :: Console',

@@ -1,4 +1,4 @@
-PyQRCode Tables
-***************
-.. automodule:: pyqrcode.tables
+PyQRCodeNG Tables
+*****************
+.. automodule:: pyqrcodeng.tables
    :members:

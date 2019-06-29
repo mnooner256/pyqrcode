@@ -6,7 +6,7 @@ from __future__ import absolute_import, unicode_literals
 import re
 import io
 import pytest
-import pyqrcode
+import pyqrcodeng as pyqrcode
 
 
 def test_illegal_color_float():

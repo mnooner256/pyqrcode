@@ -3,7 +3,7 @@
 Tests against <https://github.com/mnooner256/pyqrcode/issues/15>
 """
 from __future__ import unicode_literals
-import pyqrcode
+import pyqrcodeng as pyqrcode
 
 
 def test_create_numeric():

@@ -5,7 +5,7 @@ XBM related tests.
 from __future__ import unicode_literals, absolute_import
 import os
 import pytest
-import pyqrcode
+import pyqrcodeng as pyqrcode
 
 #Create by:
 #   First I ran: pyqrcode.create('Test', scale=1).png('test.png')
