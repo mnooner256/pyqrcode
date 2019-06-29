@@ -35,7 +35,7 @@ except NameError:
 # <https://wiki.python.org/moin/PortingToPy3k/BilingualQuickRef#New_Style_Classes>
 __metaclass__ = type
 
-__version__ = '1.3.1'
+__version__ = '1.3.2'
 
 
 def create(content, error='H', version=None, mode=None, encoding=None):

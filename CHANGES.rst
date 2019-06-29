@@ -1,7 +1,7 @@
 Changes
 =======
 
-1.3.1 - 2019-06-29
+1.3.2 - 2019-06-29
 ------------------
 * Initial release of PyQRCode NG (PyQRCode Next Generation)
 
@@ -58,6 +58,7 @@ Changes
 * Fixed issue where file streams were not being closed correctly
 * **Special thanks goes to [Lars (heuer)](https://github.com/heuer) who 
   contributed a massive amount of improvements in this version.**
+
   * Enormously improved SVG implementation. Now uses paths instead of lines.
     Also allows for SVG fragments instead of entire documents.
   * We now have unit tests!! He wrote over 100 unit tests for
