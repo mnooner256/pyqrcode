@@ -33,6 +33,18 @@ command::
     $ pip install -U pyqrcodeng
 
 
+Replacing PyQRCode with PyQRCodeNG
+----------------------------------
+
+PyQRCodeNG is a fork of PyQRCode since the latter seems to be unmaintained.
+The API is mainly compatible to PyQRCode. In your code you can use the following
+import without changing the QR Code generation code.
+
+.. code-block:: python
+
+    >>> import pyqrcodeng as pyqrcode
+
+
 Usage
 -----
 
