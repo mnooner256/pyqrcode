@@ -119,11 +119,12 @@ class QRCode:
         function.
     """
     def __init__(self, content, error='H', version=None, mode=None,
-                 encoding='iso-8859-1'):
+                 encoding=None):
         # Guess the mode of the code, this will also be used for
         # error checking
         guessed_content_type, encoding = QRCode._detect_content_type(content, encoding)
-        
+
+        encoding_provided = encoding is not None
         if encoding is None:
             encoding = 'iso-8859-1'
 
@@ -145,7 +146,14 @@ class QRCode:
             self.data = content.decode(encoding)
         # Give a string an encoding
         elif hasattr(content, 'encode'):
-            self.data = content.encode(self.encoding)
+            try:
+                self.data = content.encode(self.encoding)
+            except UnicodeEncodeError as ex:
+                if not encoding_provided:
+                    self.encoding = 'utf-8'
+                    self.data = content.encode(self.encoding)
+                else:
+                    raise ex
         else:
             # The contents are not a byte array or string, so
             # try naively converting to a string representation.
