@@ -1,9 +1,9 @@
 Changes
 =======
 
-1.3.1 - 2019-mm-dd
+1.3.1 - 2019-06-29
 ------------------
-
+* Initial release of PyQRCode NG (PyQRCode Next Generation)
 
 
 1.3.0 - 2018-06-26
