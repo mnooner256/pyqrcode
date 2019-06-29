@@ -12,6 +12,7 @@ def test_umlaut():
     assert 'binary' == code.mode
     assert s.encode('iso-8859-1') == code.data
 
+
 def test_ascii():
     s = 'MAERCHENBUCH'
     code = pyqrcode.create(s, error='M', encoding='utf-8')

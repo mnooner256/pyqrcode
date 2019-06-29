@@ -10,21 +10,6 @@ import pyqrcodeng as pyqrcode
 import png
 
 
-def test_get_png_size():
-    code = pyqrcode.create('Hello world')
-    qr_size = 25
-    quiet_zone = 0
-    assert qr_size == code.get_png_size(1, quiet_zone=quiet_zone)
-    quiet_zone = 1
-    assert (qr_size + 2 * quiet_zone) * quiet_zone == code.get_png_size(1, quiet_zone=quiet_zone)
-    quiet_zone = 4  # (default quiet_zone)
-    assert (qr_size + 2 * quiet_zone) * 1 == code.get_png_size()
-    assert (qr_size + 2 * quiet_zone) * 1 ==  code.get_png_size(1)
-    assert (qr_size + 2 * quiet_zone) * 4 == code.get_png_size(4)
-    quiet_zone = 0
-    assert (qr_size + 2 * quiet_zone) * 4 == code.get_png_size(4, quiet_zone=quiet_zone)
-
-
 def test_symbol_size():
     code = pyqrcode.create('Hello world')
     dim = 25
@@ -68,30 +53,6 @@ def test_symbol_size_scale_float2():
     quiet_zone = 2
     dim = (21 + 2 * quiet_zone) * 1.5
     assert (dim, dim) == qr.symbol_size(scale=1.5, quiet_zone=quiet_zone)
-
-
-def test_png_as_base64_str():
-    """\
-    Test PNG to Base64 converions using a known Base64 string.
-    """
-    expected_str = "iVBORw0KGgoAAAANSUhEUgAAAOEAAADhAQAAAAAWyO/XAAACIklEQVR4n"\
-                   "O2YMXKrQBBER6WAkCPsTaSLUbVU6WLmJhyBkIDSuLtXxtgu/8DBbwUiQMB"\
-                   "TMMzsdM8S+Y9jjBd90b/SJSJOS831upyzu/e3zDc86sy0Zk7LUPKtHyMu/"\
-                   "RbdhIDddMAtws17REH0Q8FtlGeguZX10ufcMYn5PDSQSSRR9X0Gqvqec2U"\
-                   "S1xOe/ay+gaoXVNWP049O+f9UB9KJ0znjmre5+64qDsqWREERZzCTG35Za"\
-                   "TNlkE3IkkJWZ572mE2U637iWuMDLL06U0bmzkwRZFJj78gf6ptzC9xLkUk"\
-                   "2J8uLSCG0sbLSnZmOAYOsLYkSD5jSba++jZZ81PeW6wVJXIMeYKZb7AoyB"\
-                   "00JHpB7fU2Ui58tidOAnDKxgavOS9mXV7mQTAnplIKYKTQCLSkrOiOTqu/"\
-                   "hjVwULXnpR81csTa/zKN3eyi88bRoHAzOOePjyk4RMyRN4oHmpIHv/eGi1"\
-                   "A32AiQjPlrj4N0mSpdsVsQ5DMMEZotPNXPRFnM0jaWaJSW3mCmnB6w1Chk"\
-                   "kg9NhnKQmXspZXt7N/E34C3Zodc+zi3LBAdAg24ZDs0WaKfSU9dXmJx+T9"\
-                   "BBmqkPPtIdVc3Kj7aXal2lnzcD1gWRavu7aHLS2lsR0gw5tBrkcV52H6tu"\
-                   "IbrfHK8Rhh2ulQxtXIR7JwOunbngpp5vCj0mRx+nLRVVfDcz6YqNeqHaqX"\
-                   "hBN+tFYvs2EFvr78aIv+kf6Dm6Pdk09JdaJAAAAAElFTkSuQmCC"
-
-    qr = pyqrcode.create('Are you suggesting coconuts migrate?', error='h')
-    generated_str = qr.png_as_base64_str(scale=5)
-    assert generated_str == expected_str
 
 
 def test_png_uri():

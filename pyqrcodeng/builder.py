@@ -1,29 +1,10 @@
 # -*- coding: utf-8 -*-
 # Copyright (c) 2013, Michael Nooner
-# Copyright (c) 2018, Lars Heuer
+# Copyright (c) 2018 - 2019, Lars Heuer
 # All rights reserved.
 #
-# Redistribution and use in source and binary forms, with or without
-# modification, are permitted provided that the following conditions are met:
-#     * Redistributions of source code must retain the above copyright
-#       notice, this list of conditions and the following disclaimer.
-#     * Redistributions in binary form must reproduce the above copyright
-#       notice, this list of conditions and the following disclaimer in the
-#       documentation and/or other materials provided with the distribution.
-#     * Neither the name of the copyright holder nor the names of its 
-#       contributors may be used to endorse or promote products derived from
-#       this software without specific prior written permission
+# License: BSD License
 #
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-# ARE DISCLAIMED. IN NO EVENT SHALL <COPYRIGHT HOLDER> BE LIABLE FOR ANY
-# DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-# (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-# LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-# ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-# SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """This module does the actual generation of the QR codes. The QRCodeBuilder
 builds the code. While the various output methods draw the code into a file.
 
@@ -814,76 +795,6 @@ def _writable(file_or_path, mode, encoding=None):
     finally:
         if must_close:
             f.close()
-
-
-def _terminal_deprecated(code, module_color='default', background='reverse', quiet_zone=4):
-    """This method returns a string containing ASCII escape codes,
-    such that if printed to a terminal, it will display a vaild
-    QR code. The module_color and the background color should be keys
-    in the tables.term_colors table for printing using the 8/16
-    color scheme. Alternatively, they can be a number between 0 and
-    256 in order to use the 88/256 color scheme. Otherwise, a
-    ValueError will be raised.
-
-    Note, the code is outputted by changing the background color. Then
-    two spaces are written to the terminal. Finally, the terminal is
-    reset back to how it was.
-    """
-    buf = io.StringIO()
-
-    def draw_border():
-        for i in range(quiet_zone):
-            buf.write(background)
-
-    if module_color in tables.term_colors:
-        data = '\033[{0}m  \033[0m'.format(
-            tables.term_colors[module_color])
-    elif 0 <= module_color <= 256:
-        data = '\033[48;5;{0}m  \033[0m'.format(module_color)
-    else:
-        raise ValueError('The module color, {0}, must a key in '
-                         'pyqrcode.tables.term_colors or a number '
-                         'between 0 and 256.'.format(
-                         module_color))
-
-    if background in tables.term_colors:
-        background = '\033[{0}m  \033[0m'.format(
-            tables.term_colors[background])
-    elif 0 <= background <= 256:
-        background = '\033[48;5;{0}m  \033[0m'.format(background)
-    else:
-        raise ValueError('The background color, {0}, must a key in '
-                         'pyqrcode.tables.term_colors or a number '
-                         'between 0 and 256.'.format(
-                         background))
-
-    # This will be the beginning and ending row for the code.
-    border_row = background * (len(code[0]) + (2 * quiet_zone))
-    # Make sure we begin on a new line, and force the terminal back
-    # to normal
-    buf.write('\n')
-    # QRCodes have a quiet zone consisting of background modules
-    for i in range(quiet_zone):
-        buf.write(border_row)
-        buf.write('\n')
-    for row in code:
-        # Each code has a quiet zone on the left side, this is the left
-        # border for this code
-        draw_border()
-        for bit in row:
-            if bit == 1:
-                buf.write(data)
-            elif bit == 0:
-                buf.write(background)
-        # Each row ends with a quiet zone on the right side, this is the
-        # right hand border background modules
-        draw_border()
-        buf.write('\n')
-    # QRCodes have a background quiet zone row following the code
-    for i in range(quiet_zone):
-        buf.write(border_row)
-        buf.write('\n')
-    return buf.getvalue()
 
 
 def _text(code, version, scale=1, quiet_zone=4):
