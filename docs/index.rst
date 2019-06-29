@@ -1,5 +1,5 @@
 Welcome to PyQRCodeNG's documentation!
-*********************```**************
+**************************************
 
 The PyQRCodeNG module is a QR code generator that is simple to use and written
 in pure python. The module is compatible with Python 2.6, 2.7, and 3.x. The
@@ -48,6 +48,15 @@ following command::
     $ pip install -U pyqrcodeng
 
 
+Replacing PyQRCode with PyQRCodeNG
+==================================
+PyQRCodeNG is a fork of PyQRCode since the latter seems to be unmaintained.
+The API is mainly compatible to PyQRCode. In your code you can use the following
+import without changing the QR Code generation code::
+
+   >>> import pyqrcodeng as pyqrcode
+
+
 Usage
 =====
 
@@ -77,7 +86,6 @@ Developer Documentation
 
    moddoc
    tables
-   builder
 
 
 Indices and tables
