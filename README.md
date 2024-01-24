@@ -2,7 +2,7 @@ pyqrcode
 ================================
 
 The pyqrcode module is a QR code generator that is simple to use and written
-in pure python. The module can automates most of the building process for
+in pure python. The module can automate most of the building process for
 creating QR codes. Most codes can be created using only two lines of code!
 
 Unlike other generators, all of the helpers can be controlled manually. You are
@@ -65,7 +65,7 @@ This module supports all four encodings for data: numeric, alphanumeric, kanji,
 and binary.
 
 The numeric type is the most efficient way to encode digits. As the
-name implies it is designed to encode integers. Some numbers might be two
+name implies it is designed to encode integers. Some numbers might be too
 large, the object can use a string containing only digits instead of an
 actual number.
 
@@ -94,16 +94,16 @@ code (this will be implemented in a future version).
 
 ### Manually Setting The QR Code's Properties ###
 
-There are many situation where you might wish to have more fine grained control
+There are many situations where you might wish to have more fine-grained control
 over how the QR Code is generated. You can specify all the properties of your
-QR code through the *create* function. There are three main properties to a
+QR code through the *create* function. There are three main properties of a
 QR code.
 
 The _error_ parameter sets the error correction level of the code. Each level
 has an associated name given by a letter: L, M, Q, or H; each level can
 correct up to 7, 15, 25, or 30 percent of the data respectively. There are
 several ways to specify the level, see pyqrcode.tables.modes for all the
-possible values. By default this parameter is set to 'H' which is the highest
+possible values. By default, this parameter is set to 'H' which is the highest
 possible error correction, but it has the smallest available data
 capacity.
 
@@ -117,7 +117,7 @@ generated codes would have the same size.
 
 Finally, the _mode_ parameter sets how the contents will be encoded. As
 mentioned above, three of the five possible encodings have been written. By
-default the object uses the most efficient encoding for the contents. You can
+default, the object uses the most efficient encoding for the contents. You can
 change this though. See qrcode.tables.modes for a list of possible values
 for this parameter.
 
@@ -131,10 +131,10 @@ forces the encoding to be binary (rather than numeric).
 ### Rendering ###
 
 There are many possible formats for rendering the QR Code. The first is
-to render it as a string of 1's and 0's. This is method is used to help end
+to render it as a string of 1's and 0's. This method is used to help end
 users create their own renderer. It is also possible to print the
 code such that it is directly displayable in most Linux terminals.
-There are several image based renderers.
+There are several image-based renderers.
 
 The terminal renderer outputs a string of ASCII escape codes that when
 displayed in a compatible terminal, will display a valid QR code. The
@@ -148,7 +148,7 @@ colors in the terminal, there are several caveats).
 
 The SVG renderer outputs the QR Code as a scalable vector graphic. This
 renderer does not require any external modules. Instead it hand draws the
-QR code as a set paths.
+QR code as a set of paths.
 
 ```python
 >>> url.svg(sys.stdout, scale=1)
@@ -164,7 +164,7 @@ take advantage of transparency.
 >>> life.png('sketch.png', scale=6, module_color=(0, 0, 0, 128), background=(0xff, 0xff, 0xcc))
 ```
 
-Finally, there is a text based renderer. This will output the QR code as a
+Finally, there is a text-based renderer. This will output the QR code as a
 string of 1's and 0's, with each row of the code on a new line.
 
 ```python
